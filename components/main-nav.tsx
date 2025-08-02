@@ -55,8 +55,8 @@ export default function MainNav() {
         {/* Center Logo */}
         <div className="flex-1 flex justify-center">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/images/milo-logo.png" alt="Milo Logo" width={40} height={40} className="h-10 w-10" />
-            <span className="text-2xl font-bold tracking-tight">MILO</span>
+            <Image src="/images/milo-logo.png" alt="Milo Logo" width={40} height={40} className="h-15 w-15" />
+            <span className="text-2xl font-bold tracking-tight">MILO COMPANY</span>
           </Link>
         </div>
 

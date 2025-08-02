@@ -133,6 +133,48 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                     <div className="w-4 h-4 rounded-full bg-white border border-gray-300 cursor-pointer" />
                     <div className="w-4 h-4 rounded-full bg-amber-700 border border-gray-300 cursor-pointer" />
                   </div>
+
+                  {/* Add to Cart Button */}
+                  <Button 
+                    className="w-full mt-4 bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-none transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      
+                      // Add to cart functionality with localStorage
+                      const cartItem = {
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        slug: product.slug,
+                        quantity: 1,
+                        addedAt: new Date().toISOString()
+                      }
+                      
+                      // Get existing cart from localStorage
+                      const existingCart = localStorage.getItem('cart')
+                      let cart = existingCart ? JSON.parse(existingCart) : []
+                      
+                      // Check if item already exists in cart
+                      const existingItemIndex = cart.findIndex((item: any) => item.id === product.id)
+                      
+                      if (existingItemIndex > -1) {
+                        // If item exists, increase quantity
+                        cart[existingItemIndex].quantity += 1
+                      } else {
+                        // If item doesn't exist, add new item
+                        cart.push(cartItem)
+                      }
+                      
+                      // Save updated cart to localStorage
+                      localStorage.setItem('cart', JSON.stringify(cart))
+                      
+                      // Optional: Show success message or update UI
+                      console.log('Producto añadido al carrito:', product.name)
+                    }}
+                  >
+                    AÑADIR AL CARRITO
+                  </Button>
                 </div>
               </div>
             ))}
