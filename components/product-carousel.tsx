@@ -80,7 +80,8 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
         )}
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto pb-4 mx-4 md:-mx-6 lg:mx-8 scrollbar-hide snap-x snap-mandatory"
+          className="flex overflow-x-auto mx-4 md:-mx-6 lg:mx-8 scrollbar-hide snap-x snap-mandatory"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className="flex gap-8 px-4 md:px-6 lg:px-8">
             {products.map((product) => (
