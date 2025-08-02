@@ -26,10 +26,18 @@ export default function CartPage() {
       try {
         const cart = localStorage.getItem('cart')
         if (cart) {
-          setCartItems(JSON.parse(cart))
+          const parsedCart = JSON.parse(cart)
+          // Ensure parsedCart is an array
+          if (Array.isArray(parsedCart)) {
+            setCartItems(parsedCart)
+          } else {
+            console.warn('Cart data is not an array, starting with empty cart')
+            setCartItems([])
+          }
         }
       } catch (error) {
         console.error('Error loading cart:', error)
+        setCartItems([])
       }
       setIsLoading(false)
     }

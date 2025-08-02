@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { getItemBySlug, getItemsByCollectionSlug } from "@/lib/actions/items"
+import AddToCartButton from "@/components/add-to-cart-button"
 
 type ProductPageProps = {
   params: {
@@ -100,9 +101,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 ></div>
               </div>
             </div>
-            <Button className="w-full py-3 bg-black text-white hover:bg-gray-800 rounded-none text-lg font-semibold">
-              Añadir al Carrito
-            </Button>
+            <AddToCartButton
+              product={{
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                image: item.images?.[0],
+                slug: item.slug
+              }}
+              className="w-full py-3 bg-black text-white hover:bg-gray-800 rounded-none text-lg font-semibold"
+            />
             <Link
               href={`/${item.collection?.slug || collectionSlug}`}
               className="text-sm text-gray-600 hover:underline mt-4 block"
@@ -130,9 +138,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </Link>
                   <h3 className="text-base font-semibold pt-2">{relatedItem.name}</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Gs {Math.round(relatedItem.price).toLocaleString('es-PY')}</p>
+                  <AddToCartButton
+                    product={{
+                      id: relatedItem.id,
+                      name: relatedItem.name,
+                      price: relatedItem.price,
+                      image: relatedItem.images?.[0],
+                      slug: relatedItem.slug
+                    }}
+                    className="w-full mt-2 bg-black hover:bg-gray-800 text-white font-medium py-1.5 px-3 rounded-none text-xs transition-colors"
+                  >
+                    AÑADIR AL CARRITO
+                  </AddToCartButton>
                   <Link
                     href={`/${relatedItem.collection?.slug || collectionSlug}/${relatedItem.slug}`}
-                    className="text-xs font-medium hover:underline underline-offset-4 mt-1"
+                    className="text-xs font-medium hover:underline underline-offset-4 mt-1 text-center"
                   >
                     Ver Prenda
                   </Link>

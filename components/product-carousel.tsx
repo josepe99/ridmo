@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react"
 import type { Item } from "@/lib/data"
+import AddToCartButton from "@/components/add-to-cart-button"
 
 type ProductCarouselProps = {
   title: string
@@ -135,49 +136,16 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                   </div>
 
                   {/* Add to Cart Button */}
-                  <Button 
-                    className="w-full mt-4 bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-none transition-colors"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      
-                      // Add to cart functionality with localStorage
-                      const cartItem = {
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        image: product.image,
-                        slug: product.slug,
-                        quantity: 1,
-                        addedAt: new Date().toISOString()
-                      }
-                      
-                      // Get existing cart from localStorage
-                      const existingCart = localStorage.getItem('cart')
-                      let cart = existingCart ? JSON.parse(existingCart) : []
-                      
-                      // Check if item already exists in cart
-                      const existingItemIndex = cart.findIndex((item: any) => item.id === product.id)
-                      
-                      if (existingItemIndex > -1) {
-                        // If item exists, increase quantity
-                        cart[existingItemIndex].quantity += 1
-                      } else {
-                        // If item doesn't exist, add new item
-                        cart.push(cartItem)
-                      }
-                      
-                      // Save updated cart to localStorage
-                      localStorage.setItem('cart', JSON.stringify(cart))
-                      
-                      // Dispatch custom event to update cart counter
-                      window.dispatchEvent(new Event('cartUpdated'))
-                      
-                      // Optional: Show success message or update UI
-                      console.log('Producto añadido al carrito:', product.name)
+                  <AddToCartButton
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                      slug: product.slug
                     }}
-                  >
-                    AÑADIR AL CARRITO
-                  </Button>
+                    className="w-full mt-4 bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-none transition-colors"
+                  />
                 </div>
               </div>
             ))}
@@ -207,19 +175,6 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
             <span className="sr-only">Siguiente</span>
           </Button>
         )}
-
-        {/* Dot Indicators */}
-        <div className="flex justify-center gap-2 mt-8">
-          {Array.from({ length: Math.ceil(products.length / itemsPerView) }).map((_, index) => (
-            <span
-              key={index}
-              className={cn(
-                "h-2 w-2 rounded-full border border-black",
-                index === currentDotIndex ? "bg-black" : "bg-white",
-              )}
-            />
-          ))}
-        </div>
       </div>
     </section>
   )

@@ -26,7 +26,10 @@ export default function MainNav() {
       const cart = localStorage.getItem('cart')
       if (cart) {
         const cartItems = JSON.parse(cart)
-        return cartItems.reduce((total: number, item: any) => total + (item.quantity || 1), 0)
+        // Ensure cartItems is an array
+        if (Array.isArray(cartItems)) {
+          return cartItems.reduce((total: number, item: any) => total + (item.quantity || 1), 0)
+        }
       }
     } catch (error) {
       console.error('Error reading cart from localStorage:', error)
