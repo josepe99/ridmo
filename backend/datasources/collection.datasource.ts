@@ -38,6 +38,17 @@ export class CollectionDatasource extends BaseDatasource {
           items: {
             where: { isActive: true },
             take: 5, // Just get a few items for preview
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              description: true,
+              price: true,
+              comparePrice: true,
+              images: true, // Include images array
+              tags: true,
+              createdAt: true,
+            },
           },
         },
         orderBy: {

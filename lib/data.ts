@@ -7,7 +7,7 @@ export type Item = {
   collectionSlug: string
   description: string
   price: number
-  imageUrl: string
+  image: string
 }
 
 export type Collection = {
@@ -15,7 +15,7 @@ export type Collection = {
   name: string
   slug: string
   description: string
-  imageUrl: string
+  image: string
 }
 
 export const collections: Collection[] = [
@@ -24,21 +24,21 @@ export const collections: Collection[] = [
     name: "Colección Primavera-Verano 2025",
     slug: slugify("Colección Primavera-Verano 2025"),
     description: "Frescura y ligereza para los días soleados.",
-    imageUrl: "/placeholder.svg?height=400&width=600",
+    image: "/placeholder.svg?height=400&width=600",
   },
   {
     id: "2",
     name: "Colección Otoño-Invierno 2024",
     slug: slugify("Colección Otoño-Invierno 2024"),
     description: "Elegancia y calidez para las noches frías.",
-    imageUrl: "/placeholder.svg?height=400&width=600",
+    image: "/placeholder.svg?height=400&width=600",
   },
   {
     id: "3",
     name: "Colección Esencial",
     slug: slugify("Colección Esencial"),
     description: "Básicos atemporales que no pueden faltar en tu armario.",
-    imageUrl: "/placeholder.svg?height=400&width=600",
+    image: "/placeholder.svg?height=400&width=600",
   },
 ]
 
@@ -50,7 +50,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Primavera-Verano 2025"),
     description: "Un vestido fluido de seda, perfecto para el día a día o una ocasión especial.",
     price: 250.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p2",
@@ -59,7 +59,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Primavera-Verano 2025"),
     description: "Camisa de lino transpirable, ideal para climas cálidos.",
     price: 95.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p3",
@@ -68,7 +68,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Otoño-Invierno 2024"),
     description: "Abrigo de lana virgen con corte clásico, para un estilo sofisticado.",
     price: 480.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p4",
@@ -77,7 +77,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Otoño-Invierno 2024"),
     description: "Jersey de cachemira suave y cálido, un básico de lujo.",
     price: 320.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p5",
@@ -86,7 +86,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Esencial"),
     description: "Pantalón de corte sastre, adaptable a cualquier look.",
     price: 150.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p6",
@@ -95,7 +95,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Esencial"),
     description: "Camiseta de algodón orgánico, suave y duradera.",
     price: 60.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p7",
@@ -104,7 +104,7 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Esencial"),
     description: "Zapatillas de diseño moderno para el día a día.",
     price: 120.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
   {
     id: "p8",
@@ -113,10 +113,9 @@ export const items: Item[] = [
     collectionSlug: slugify("Colección Esencial"),
     description: "Chaqueta vaquera clásica con un toque moderno.",
     price: 180.0,
-    imageUrl: "/placeholder.svg?height=400&width=300",
+    image: "/placeholder.svg?height=400&width=300",
   },
 ]
 
 // Alias for backward compatibility
 export const products = items;
-export type Product = Item;

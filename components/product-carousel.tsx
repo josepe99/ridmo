@@ -6,11 +6,11 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react"
-import type { Product } from "@/lib/data"
+import type { Item } from "@/lib/data"
 
 type ProductCarouselProps = {
   title: string
-  products: Product[]
+  products: Item[]
   collectionSlug?: string
 }
 
@@ -94,12 +94,12 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                 {/* Contenedor de la imagen con fondo blanco rectangular */}
                 <div className="relative w-full aspect-[3/4] bg-white overflow-hidden border border-gray-100">
                   <Link
-                    href={`/${collectionSlug || product.collectionSlug}/${product.slug}`}
+                    href={`/${collectionSlug}/${product.slug}`}
                     className="group absolute inset-0 flex items-center justify-center"
                     prefetch={false}
                   >
                     <Image
-                      src={product.imageUrl || "/placeholder.svg?height=400&width=300&query=fashion product"}
+                      src={product.image || "/placeholder.svg?height=400&width=300&query=fashion product"}
                       fill // Usar fill para que la imagen ocupe el contenedor
                       style={{ objectFit: "contain" }} // Mantener object-contain para que la imagen no se corte
                       alt={product.name}

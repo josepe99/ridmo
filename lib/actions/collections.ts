@@ -1,8 +1,8 @@
 'use server'
 
-import { CollectionDatasource } from '@/backend/datasources/collection.datasource'
+import { CollectionController } from '@/backend/controllers/collection.controller'
 
-const collectionDatasource = new CollectionDatasource()
+const collectionController = new CollectionController()
 
 export async function getCollections(options?: {
   page?: number
@@ -10,7 +10,7 @@ export async function getCollections(options?: {
   isActive?: boolean
 }) {
   try {
-    const result = await collectionDatasource.findMany({
+    const result = await collectionController.getCollections({
       page: options?.page || 1,
       limit: options?.limit || 100,
       isActive: options?.isActive,
@@ -24,7 +24,7 @@ export async function getCollections(options?: {
 
 export async function getCollectionById(id: string) {
   try {
-    const result = await collectionDatasource.findById(id)
+    const result = await collectionController.getCollectionById(id)
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching collection:', error)
@@ -34,8 +34,7 @@ export async function getCollectionById(id: string) {
 
 export async function getCollectionBySlug(slug: string) {
   try {
-    const collections = await collectionDatasource.findMany({ page: 1, limit: 100 })
-    const collection = collections.data.find((c: any) => c.slug === slug)
+    const collection = await collectionController.getCollectionBySlug(slug)
     
     if (collection) {
       return { success: true, data: collection }

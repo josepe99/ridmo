@@ -28,6 +28,29 @@ export class CollectionController extends BaseController {
     this.collectionDatasource = new CollectionDatasource();
   }
 
+  // Methods for actions (non-HTTP)
+  async getCollections(options?: {
+    page?: number
+    limit?: number
+    isActive?: boolean
+  }) {
+    return await this.collectionDatasource.findMany({
+      page: options?.page || 1,
+      limit: options?.limit || 100,
+      isActive: options?.isActive,
+    });
+  }
+
+  async getCollectionById(id: string) {
+    return await this.collectionDatasource.findById(id);
+  }
+
+  async getCollectionBySlug(slug: string) {
+    const collections = await this.collectionDatasource.findMany({ page: 1, limit: 100 });
+    return collections.data.find((c: any) => c.slug === slug) || null;
+  }
+
+  // HTTP methods
   async GET(request: NextRequest): Promise<NextResponse> {
     return this.handleRequest(
       request,
