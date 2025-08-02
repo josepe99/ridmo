@@ -169,6 +169,9 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                       // Save updated cart to localStorage
                       localStorage.setItem('cart', JSON.stringify(cart))
                       
+                      // Dispatch custom event to update cart counter
+                      window.dispatchEvent(new Event('cartUpdated'))
+                      
                       // Optional: Show success message or update UI
                       console.log('Producto añadido al carrito:', product.name)
                     }}

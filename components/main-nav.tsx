@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, ShoppingBag, X, User, Settings } from "lucide-react"
@@ -13,11 +13,46 @@ import { Input } from "@/components/ui/input"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [cartItemCount, setCartItemCount] = useState(0)
   const { user } = useUser()
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen)
   }
+
+  // Function to get cart count from localStorage
+  const getCartCount = () => {
+    try {
+      const cart = localStorage.getItem('cart')
+      if (cart) {
+        const cartItems = JSON.parse(cart)
+        return cartItems.reduce((total: number, item: any) => total + (item.quantity || 1), 0)
+      }
+    } catch (error) {
+      console.error('Error reading cart from localStorage:', error)
+    }
+    return 0
+  }
+
+  // Update cart count on component mount and when localStorage changes
+  useEffect(() => {
+    setCartItemCount(getCartCount())
+
+    // Listen for storage changes (when cart is updated from other components)
+    const handleStorageChange = () => {
+      setCartItemCount(getCartCount())
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Also listen for custom cart update events
+    window.addEventListener('cartUpdated', handleStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('cartUpdated', handleStorageChange)
+    }
+  }, [])
 
   // Check if user has admin role
   const isAdmin = user?.publicMetadata?.role === 'admin'
@@ -71,9 +106,11 @@ export default function MainNav() {
             <Button variant="ghost" size="icon" className="rounded-full relative">
               <ShoppingBag className="h-5 w-5" />
               <span className="sr-only">Carrito de compras</span>
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-xs text-white">
-                0
-              </span>
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-xs text-white">
+                  {cartItemCount}
+                </span>
+              )}
             </Button>
           </Link>
 
