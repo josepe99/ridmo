@@ -31,13 +31,17 @@ export class CloudinaryService {
     bytes: number;
   }> {
     try {
-      const uploadOptions = {
+      const uploadOptions: any = {
         folder: options.folder || 'milowearco',
         transformation: options.transformation || [],
-        format: options.format,
         quality: options.quality || 'auto',
         ...options,
       };
+
+      // Only include format if it's specified and not 'auto'
+      if (options.format && options.format !== 'auto') {
+        uploadOptions.format = options.format;
+      }
 
       let uploadData: any;
 
@@ -122,7 +126,7 @@ export class CloudinaryService {
   ): string {
     return cloudinary.url(publicId, {
       quality: options.quality || 'auto',
-      format: options.format || 'auto',
+      fetch_format: 'auto', // Use f_auto for delivery
       ...options,
     });
   }
@@ -137,7 +141,6 @@ export class CloudinaryService {
       height,
       crop: 'fill',
       quality: 'auto',
-      format: 'auto',
     });
   }
 
@@ -150,7 +153,6 @@ export class CloudinaryService {
       url: this.generateUrl(publicId, {
         width,
         quality: 'auto',
-        format: 'auto',
         crop: 'scale',
       }),
     }));

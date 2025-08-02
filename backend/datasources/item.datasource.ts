@@ -370,4 +370,26 @@ export class ItemDatasource extends BaseDatasource {
       },
     });
   }
+
+  async isSlugExists(slug: string, excludeId?: string): Promise<boolean> {
+    const where: any = { slug };
+    
+    if (excludeId) {
+      where.NOT = { id: excludeId };
+    }
+
+    const existingItem = await this.prisma.item.findUnique({
+      where,
+      select: { id: true },
+    });
+
+    return !!existingItem;
+  }
+
+  async validateSlug(slug: string, excludeId?: string): Promise<void> {
+    const exists = await this.isSlugExists(slug, excludeId);
+    if (exists) {
+      throw new Error('An item with this slug already exists');
+    }
+  }
 }

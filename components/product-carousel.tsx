@@ -63,11 +63,11 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
 
   // Determine the number of dots based on visible items at different breakpoints
   const getItemsPerView = () => {
-    if (typeof window === "undefined") return 4 // Default for server-side rendering
-    if (window.innerWidth >= 1024) return 4 // lg
-    if (window.innerWidth >= 768) return 3 // md
-    if (window.innerWidth >= 640) return 2 // sm
-    return 1.5 // Mobile (for 2.5 effect, but we'll use 1.5 for dot calculation)
+    if (typeof window === "undefined") return 2 // Default for server-side rendering
+    if (window.innerWidth >= 1024) return 2.2 // lg - about 2 large items per view
+    if (window.innerWidth >= 768) return 2 // md - 2 items per view  
+    if (window.innerWidth >= 640) return 1.5 // sm - 1.5 items per view
+    return 1.15 // Mobile - slightly more than 1 large item visible
   }
 
   const itemsPerView = getItemsPerView()
@@ -80,14 +80,14 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
         )}
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto pb-4 -mx-4 md:-mx-6 lg:-mx-8 scrollbar-hide snap-x snap-mandatory"
+          className="flex overflow-x-auto pb-4 mx-4 md:-mx-6 lg:mx-8 scrollbar-hide snap-x snap-mandatory"
         >
           <div className="flex gap-8 px-4 md:px-6 lg:px-8">
             {products.map((product) => (
               <div
                 key={product.id}
                 className={cn(
-                  "flex-shrink-0 w-[calc(50%-1rem)] sm:w-[calc(33.33%-1.33rem)] md:w-[calc(25%-1.5rem)] lg:w-[calc(25%-1.5rem)]", // Adjusted widths for full responsiveness
+                  "flex-shrink-0 w-[calc(35%-1rem)] sm:w-[calc(65%-1.33rem)] md:w-[calc(50%-1.5rem)] lg:w-[calc(100%-1.5rem)]", // Much larger card sizes
                   "relative flex flex-col items-center justify-start snap-start",
                 )}
               >

@@ -9,8 +9,11 @@ type CollectionPageProps = {
   }
 }
 
-export default function CollectionPage({ params }: CollectionPageProps) {
-  const collection = collections.find((c) => c.slug === params.collectionSlug)
+export default async function CollectionPage({ params }: CollectionPageProps) {
+  // Await params before accessing properties (Next.js 15 requirement)
+  const { collectionSlug } = await params
+  
+  const collection = collections.find((c) => c.slug === collectionSlug)
 
   if (!collection) {
     notFound()

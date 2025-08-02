@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css"
 import MainNav from "@/components/main-nav"
 import Footer from "@/components/footer"
+import { Toaster } from "sonner"
 import { 
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
@@ -41,6 +42,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

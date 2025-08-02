@@ -11,8 +11,11 @@ type ProductPageProps = {
   }
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = products.find((p) => p.collectionSlug === params.collectionSlug && p.slug === params.productSlug)
+export default async function ProductPage({ params }: ProductPageProps) {
+  // Await params before accessing properties (Next.js 15 requirement)
+  const { collectionSlug, productSlug } = await params
+  
+  const product = products.find((p) => p.collectionSlug === collectionSlug && p.slug === productSlug)
 
   if (!product) {
     notFound()

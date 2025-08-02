@@ -4,8 +4,8 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, ShoppingBag, X, User } from "lucide-react"
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { Search, ShoppingBag, X, User, Settings } from "lucide-react"
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -13,10 +13,14 @@ import { Input } from "@/components/ui/input"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { user } = useUser()
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen)
   }
+
+  // Check if user has admin role
+  const isAdmin = user?.publicMetadata?.role === 'admin'
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white text-black border-b border-gray-200">
@@ -62,28 +66,7 @@ export default function MainNav() {
             <Search className="h-5 w-5" />
             <span className="sr-only">Buscar</span>
           </Button>
-          
-          {/* User Authentication */}
-          <SignedOut>
-            <Link href="/sign-in">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Iniciar sesión</span>
-              </Button>
-            </Link>
-          </SignedOut>
-          
-          <SignedIn>
-            <UserButton 
-              appearance={{
-                elements: {
-                  avatarBox: 'w-8 h-8',
-                }
-              }}
-              afterSignOutUrl="/"
-            />
-          </SignedIn>
-          
+
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="rounded-full relative">
               <ShoppingBag className="h-5 w-5" />
@@ -93,6 +76,37 @@ export default function MainNav() {
               </span>
             </Button>
           </Link>
+
+          {/* Admin Link - Only show for admin users */}
+          {isAdmin && (
+            <Link href="/admin/collections">
+              <Button variant="ghost" size="icon" className="rounded-full" title="Admin Panel">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Admin</span>
+              </Button>
+            </Link>
+          )}
+
+          {/* User Authentication */}
+          <SignedOut>
+            <Link href="/sign-in">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Iniciar sesión</span>
+              </Button>
+            </Link>
+          </SignedOut>
+
+          <SignedIn>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: 'w-8 h-8',
+                }
+              }}
+              afterSignOutUrl="/"
+            />
+          </SignedIn>
         </div>
       </div>
 

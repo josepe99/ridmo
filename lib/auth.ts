@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 
 export async function requireAuth() {
@@ -17,15 +17,16 @@ export async function getAuthUser() {
 }
 
 export async function requireAdmin() {
-  const { userId, sessionClaims } = await auth()
+  const { userId } = await auth()
   
   if (!userId) {
     redirect('/sign-in')
   }
   
-  // Check if user has admin role (you'll need to set this up in Clerk)
-  const metadata = sessionClaims?.metadata as { role?: string } | undefined
-  const isAdmin = metadata?.role === 'admin'
+  // Check if user has admin role using private metadata
+  const user = await currentUser()
+  const privateMetadata = user?.privateMetadata as { role?: string } | undefined
+  const isAdmin = privateMetadata?.role === 'ADMIN'
   
   if (!isAdmin) {
     redirect('/')
