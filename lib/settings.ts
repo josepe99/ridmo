@@ -22,6 +22,7 @@ export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://lo
 
 // WhatsApp Configuration
 export const WHATSAPP_PHONE_NUMBER = process.env.WHATSAPP_PHONE_NUMBER || '';
+export const NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || '';
 
 // Validation function to ensure all required environment variables are set
 export function validateEnvironmentVariables() {

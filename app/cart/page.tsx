@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Minus, Plus, Trash2 } from "lucide-react"
+import { ShoppingBag, Minus, Plus, Trash2, MessageCircle } from "lucide-react"
+import { WhatsAppService } from "@/lib/whatsapp"
 
 interface CartItem {
   id: string
@@ -77,6 +78,30 @@ export default function CartPage() {
 
   // Calculate total price
   const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+
+  // Send cart to WhatsApp
+  const sendCartToWhatsApp = () => {
+    try {
+      const order = WhatsAppService.createOrderFromCart(cartItems, {
+        name: "Cliente", // You can modify this to get actual customer name
+        phone: "",
+        email: "",
+        notes: `Pedido desde la tienda online - ${cartItems.length} artículo${cartItems.length !== 1 ? 's' : ''}`
+      })
+      
+      const whatsappURL = WhatsAppService.generateWhatsAppURL(order)
+      
+      if (!whatsappURL.includes('wa.me/')) {
+        alert('Error: Número de WhatsApp no configurado correctamente. Contacta al administrador.')
+        return
+      }
+      
+      window.open(whatsappURL, '_blank')
+    } catch (error) {
+      console.error('Error sending to WhatsApp:', error)
+      alert('Error al enviar a WhatsApp. Inténtalo nuevamente.')
+    }
+  }
 
   if (isLoading) {
     return (
@@ -192,10 +217,17 @@ export default function CartPage() {
                 </div>
               </div>
               
-              <div className="text-center">
-                <Button className="bg-black text-white hover:bg-gray-800 rounded-none px-12 py-3 text-lg">
-                  Proceder al Pago
+              <div className="text-center space-y-4">
+                <Button 
+                  onClick={sendCartToWhatsApp}
+                  className="bg-green-600 text-white hover:bg-green-700 rounded-none px-12 py-3 text-lg flex items-center gap-2 mx-auto"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  Enviar Carrito por WhatsApp
                 </Button>
+                <p className="text-sm text-gray-600">
+                  Te redirigiremos a WhatsApp para finalizar tu pedido
+                </p>
               </div>
             </div>
           </div>

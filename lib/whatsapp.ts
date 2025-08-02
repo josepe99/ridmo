@@ -21,21 +21,15 @@ export interface WhatsAppOrder {
 }
 
 export class WhatsAppService {
-  private static phoneNumber = process.env.WHATSAPP_PHONE_NUMBER || '';
+  private static phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || process.env.WHATSAPP_PHONE_NUMBER || '';
 
   static formatOrderMessage(order: WhatsAppOrder): string {
     const { items, customerName, customerPhone, customerEmail, shippingAddress, notes } = order;
 
-    let message = `🛍️ *NUEVO PEDIDO - MILO*\n\n`;
+    let message = `*NUEVO PEDIDO - MILO*\n\n`;
     
-    // Customer information
-    message += `👤 *Cliente:* ${customerName}\n`;
-    if (customerPhone) message += `📱 *Teléfono:* ${customerPhone}\n`;
-    if (customerEmail) message += `📧 *Email:* ${customerEmail}\n`;
-    message += `\n`;
-
     // Items
-    message += `🛒 *Productos:*\n`;
+    message += `*Productos:*\n`;
     let total = 0;
     
     items.forEach((item, index) => {
@@ -44,16 +38,16 @@ export class WhatsAppService {
       
       message += `${index + 1}. *${item.name}*\n`;
       message += `   Cantidad: ${item.quantity}\n`;
-      message += `   Precio: $${item.price.toFixed(2)}\n`;
+      message += `   Precio: Gs ${item.price.toFixed(2)}\n`;
       if (item.sku) message += `   SKU: ${item.sku}\n`;
-      message += `   Subtotal: $${itemTotal.toFixed(2)}\n\n`;
+      message += `   Subtotal: Gs ${itemTotal.toFixed(2)}\n\n`;
     });
 
-    message += `💰 *Total: $${total.toFixed(2)}*\n\n`;
+    message += `*Total: Gs ${total.toFixed(2)}*\n\n`;
 
     // Shipping address
     if (shippingAddress) {
-      message += `📦 *Dirección de Envío:*\n`;
+      message += `*Dirección de Envío:*\n`;
       message += `${shippingAddress.street}\n`;
       message += `${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}\n`;
       message += `${shippingAddress.country}\n\n`;
@@ -61,10 +55,10 @@ export class WhatsAppService {
 
     // Notes
     if (notes) {
-      message += `📝 *Notas:* ${notes}\n\n`;
+      message += `*Notas:* ${notes}\n\n`;
     }
 
-    message += `⏰ *Fecha:* ${new Date().toLocaleString('es-ES')}\n`;
+    message += `*Fecha:* ${new Date().toLocaleString('es-ES')}\n`;
 
     return message;
   }
@@ -106,21 +100,21 @@ export class WhatsAppService {
   }
 
   static formatItemForSharing(item: any): string {
-    let message = `🛍️ *${item.name}* - MILO\n\n`;
+    let message = `*${item.name}* - MILO\n\n`;
     
     if (item.description) {
-      message += `📝 ${item.description}\n\n`;
+      message += `${item.description}\n\n`;
     }
     
-    message += `💰 *Precio:* $${item.price}\n`;
+    message += `*Precio:* Gs ${item.price}\n`;
     
     if (item.comparePrice && item.comparePrice > item.price) {
       const discount = Math.round(((item.comparePrice - item.price) / item.comparePrice) * 100);
-      message += `🏷️ *Precio regular:* ~$${item.comparePrice}~ (${discount}% OFF)\n`;
+      message += `*Precio regular:* ~Gs ${item.comparePrice}~ (${discount}% OFF)\n`;
     }
     
     if (item.coleccion) {
-      message += `📂 *Colección:* ${item.coleccion.name}\n`;
+      message += `*Colección:* ${item.coleccion.name}\n`;
     }
     
     message += `\n¿Te interesa? ¡Contáctanos para más información!`;
