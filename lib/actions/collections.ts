@@ -33,16 +33,11 @@ export async function getCollectionById(id: string) {
 }
 
 export async function getCollectionBySlug(slug: string) {
-  try {
-    const collection = await collectionController.getCollectionBySlug(slug)
-    
-    if (collection) {
-      return { success: true, data: collection }
-    }
-    
-    return { success: false, error: 'Collection not found' }
-  } catch (error) {
-    console.error('Error fetching collection by slug:', error)
-    return { success: false, error: 'Failed to fetch collection by slug' }
+  const collection = await collectionController.getCollectionBySlug(slug)
+  
+  if (!collection) {
+    throw new Error('Collection not found')
   }
+  
+  return collection
 }

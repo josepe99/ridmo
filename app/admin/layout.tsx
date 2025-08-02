@@ -38,7 +38,7 @@ export default async function AdminLayout({
         <div className="container mx-auto px-4">
           <nav className="flex space-x-8">
             <Link
-              href="/admin/collections"
+              href="/admin"
               className="flex items-center gap-2 px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
             >
               <Package className="h-4 w-4" />

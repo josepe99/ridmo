@@ -39,6 +39,31 @@ export class ItemController extends BaseController {
     this.imageController = new ImageController();
   }
 
+  // Methods for actions (non-HTTP)
+  async getItems(options?: {
+    page?: number
+    limit?: number
+    collectionId?: string
+    search?: string
+    isActive?: boolean
+  }) {
+    return await this.itemDatasource.findMany({
+      page: options?.page || 1,
+      limit: options?.limit || 10,
+      collectionId: options?.collectionId,
+      search: options?.search,
+      isActive: options?.isActive,
+    });
+  }
+
+  async getItemById(id: string) {
+    return await this.itemDatasource.findById(id, true);
+  }
+
+  async getItemBySlug(slug: string) {
+    return await this.itemDatasource.findBySlug(slug, true);
+  }
+
   async GET(request: NextRequest): Promise<NextResponse> {
     return this.handleRequest(
       request,

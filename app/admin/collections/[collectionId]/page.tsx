@@ -19,11 +19,8 @@ interface PageProps {
 export default async function AdminCollectionPage({ params }: PageProps) {
   await requireAdmin()
 
-  // Await params before accessing properties (Next.js 15 requirement)
-  const { collectionId } = await params
-
   const collection = await prisma.collection.findUnique({
-    where: { id: collectionId },
+    where: { id: params.collectionId },
     include: {
       items: {
         orderBy: {
@@ -41,7 +38,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/admin/collections">
+        <Link href="/admin">
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>

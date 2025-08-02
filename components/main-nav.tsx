@@ -147,11 +147,6 @@ export default function MainNav() {
         </div>
       </div>
 
-      {/* Secondary Navigation (Desktop Only) - Removed all links */}
-      <nav className="hidden lg:flex justify-center py-4 border-t border-gray-200">
-        <ul className="flex gap-8">{/* No links here as requested */}</ul>
-      </nav>
-
       {/* Full-screen Search Overlay */}
       {isSearchOpen && (
         <div className="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center p-4 animate-in fade-in-0 duration-300">

@@ -1,8 +1,8 @@
 'use server'
 
-import { ItemDatasource } from '@/backend/datasources/item.datasource'
+import { ItemController } from '@/backend/controllers/item.controller'
 
-const itemDatasource = new ItemDatasource()
+const itemController = new ItemController()
 
 export async function getItems(options?: {
   page?: number
@@ -12,7 +12,7 @@ export async function getItems(options?: {
   isActive?: boolean
 }) {
   try {
-    const result = await itemDatasource.findMany({
+    const result = await itemController.getItems({
       page: options?.page || 1,
       limit: options?.limit || 10,
       collectionId: options?.collectionId,
@@ -28,7 +28,7 @@ export async function getItems(options?: {
 
 export async function getItemById(id: string) {
   try {
-    const result = await itemDatasource.findById(id)
+    const result = await itemController.getItemById(id)
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching item:', error)
@@ -38,7 +38,7 @@ export async function getItemById(id: string) {
 
 export async function getItemsByCollectionId(collectionId: string) {
   try {
-    const result = await itemDatasource.findMany({
+    const result = await itemController.getItems({
       page: 1,
       limit: 100,
       collectionId: collectionId,
@@ -51,26 +51,25 @@ export async function getItemsByCollectionId(collectionId: string) {
   }
 }
 
-export async function getItemsByCollectionSlug(collectionSlug: string) {
-  try {
-    // Import collections action to get collection by slug
-    const { getCollectionBySlug } = await import('./collections')
-    const collectionResult = await getCollectionBySlug(collectionSlug)
-    
-    if (!collectionResult.success || !collectionResult.data) {
-      return { success: false, error: 'Collection not found' }
-    }
-
-    const result = await itemDatasource.findMany({
-      page: 1,
-      limit: 100,
-      collectionId: collectionResult.data.id,
-      isActive: true
-    })
-    
-    return { success: true, data: result }
-  } catch (error) {
-    console.error('Error fetching items by collection slug:', error)
-    return { success: false, error: 'Failed to fetch items by collection slug' }
+export async function getItemBySlug(slug: string) {
+  const result = await itemController.getItemBySlug(slug)
+  if (!result) {
+    throw new Error('Item not found')
   }
+  return result
+}
+
+export async function getItemsByCollectionSlug(collectionSlug: string) {
+  // Import collections action to get collection by slug
+  const { getCollectionBySlug } = await import('./collections')
+  const collection = await getCollectionBySlug(collectionSlug)
+
+  const result = await itemController.getItems({
+    page: 1,
+    limit: 100,
+    collectionId: collection.id,
+    isActive: true
+  })
+  
+  return result.data
 }

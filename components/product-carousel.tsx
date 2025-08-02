@@ -118,7 +118,7 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                       )}
                       <h3 className="text-lg font-semibold">{product.name}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{product.description}</p>
-                      <p className="text-base font-semibold mt-1">€{product.price.toFixed(2)}</p>
+                      <p className="text-base font-semibold mt-1">Gs {Math.round(product.price).toLocaleString('es-PY')}</p>
                     </div>
                     {/* Heart Icon */}
                     <Button variant="ghost" size="icon" className="rounded-full self-start -mt-2">

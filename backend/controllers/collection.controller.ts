@@ -46,8 +46,7 @@ export class CollectionController extends BaseController {
   }
 
   async getCollectionBySlug(slug: string) {
-    const collections = await this.collectionDatasource.findMany({ page: 1, limit: 100 });
-    return collections.data.find((c: any) => c.slug === slug) || null;
+    return await this.collectionDatasource.findBySlug(slug, false);
   }
 
   // HTTP methods

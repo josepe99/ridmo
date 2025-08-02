@@ -27,6 +27,7 @@ export default async function HomePage() {
               key={collection.id}
               title={collection.name} 
               products={itemsWithFirstImage} 
+              collectionSlug={collection.slug}
             />
           )
         }
