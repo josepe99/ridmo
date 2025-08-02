@@ -76,7 +76,7 @@ export default function CollectionHero({ collections }: CollectionHeroProps) {
         <p className="text-lg md:text-xl max-w-2xl mb-8 drop-shadow-md">
           {activeCollection.description}
         </p>
-        <Link href={`/coleccion/${activeCollection.slug}`}>
+        <Link href={`/${activeCollection.slug}`}>
           <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg font-semibold rounded-none transition-colors">
             DESCUBRIR
           </Button>
