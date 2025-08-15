@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
@@ -63,13 +64,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <div className="container px-4 md:px-6 grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="flex justify-center">
-            <Image
-              src={item.images?.[0] || "/placeholder.svg?height=600&width=400&query=product image"}
-              width={400}
-              height={600}
-              alt={item.name}
-              className="object-cover rounded-lg shadow-lg"
-            />
+            {Array.isArray(item.images) && item.images.length > 0 ? (
+              <div className="w-full max-w-xs sm:max-w-md">
+                <Carousel>
+                  <CarouselContent>
+                    {item.images.map((img: string, idx: number) => (
+                      <CarouselItem key={idx}>
+                        <Image
+                          src={img}
+                          width={400}
+                          height={600}
+                          alt={item.name + " imagen " + (idx + 1)}
+                          className="object-cover rounded-lg shadow-lg w-full h-auto"
+                          priority={idx === 0}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              </div>
+            ) : (
+              <Image
+                src={"/placeholder.svg?height=600&width=400&query=product image"}
+                width={400}
+                height={600}
+                alt={item.name}
+                className="object-cover rounded-lg shadow-lg"
+              />
+            )}
           </div>
           <div className="grid gap-6">
             <div>
