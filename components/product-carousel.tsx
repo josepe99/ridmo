@@ -134,7 +134,6 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                   <div className="flex gap-1 mt-2">
                     <div className="w-4 h-4 rounded-full bg-black border border-gray-300 cursor-pointer" />
                     <div className="w-4 h-4 rounded-full bg-white border border-gray-300 cursor-pointer" />
-                    <div className="w-4 h-4 rounded-full bg-amber-700 border border-gray-300 cursor-pointer" />
                   </div>
 
                   {/* Add to Cart Button */}

@@ -165,10 +165,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <span className="font-medium">Color:</span>
                 <div className="w-6 h-6 rounded-full bg-black border border-gray-300 cursor-pointer" title="Negro"></div>
                 <div className="w-6 h-6 rounded-full bg-white border border-gray-300 cursor-pointer" title="Blanco"></div>
-                <div
-                  className="w-6 h-6 rounded-full bg-gray-500 border border-gray-300 cursor-pointer"
-                  title="Gris"
-                ></div>
               </div>
             </div>
             <AddToCartButton
