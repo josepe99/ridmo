@@ -102,18 +102,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <div className="space-y-4">
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{item.description}</p>
-              {/* Placeholder for size/color selection */}
-              <div className="flex items-center gap-4">
+              {/* Selección de talles */}
+              <div className="flex items-center gap-4 flex-wrap">
                 <span className="font-medium">Talla:</span>
-                <Button variant="outline" size="sm" className="rounded-none bg-transparent">
-                  S
-                </Button>
-                <Button variant="outline" size="sm" className="rounded-none bg-transparent">
-                  M
-                </Button>
-                <Button variant="outline" size="sm" className="rounded-none bg-transparent">
-                  L
-                </Button>
+                {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
+                  <Button
+                    key={size}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none bg-transparent"
+                  >
+                    {size}
+                  </Button>
+                ))}
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-medium">Color:</span>
