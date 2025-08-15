@@ -100,10 +100,10 @@ export default function MainNav() {
 
         {/* Right Icons */}
         <div className="flex items-center gap-4 lg:w-1/3 justify-end">
-          <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleSearch}>
+          {/* <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleSearch}>
             <Search className="h-5 w-5" />
             <span className="sr-only">Buscar</span>
-          </Button>
+          </Button> */}
 
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="rounded-full relative">
