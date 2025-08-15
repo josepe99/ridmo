@@ -8,7 +8,6 @@ import { Search, ShoppingBag, X, User, Settings } from "lucide-react"
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 
 export default function MainNav() {
@@ -47,7 +46,7 @@ export default function MainNav() {
     }
 
     window.addEventListener('storage', handleStorageChange)
-    
+
     // Also listen for custom cart update events
     window.addEventListener('cartUpdated', handleStorageChange)
 
@@ -63,21 +62,17 @@ export default function MainNav() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white text-black border-b border-gray-200">
       {/* Main Header */}
-      <div className="flex items-center justify-between h-20 px-4 md:px-6">
+      <div className="relative flex items-center h-20 px-4 md:px-6">
         {/* Center Logo */}
-        <div className="flex-1 flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/images/milo-logo.png" alt="Milo Logo" width={40} height={40} className="h-15 w-15" />
-            <span className="text-2xl font-bold tracking-tight">MILO COMPANY</span>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
+          <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
+            <Image src="/images/milo-logo.png" alt="Milo Logo" width={48} height={48} className="h-12 w-12" />
+            <span className="text-3xl font-extrabold tracking-tight hidden md:block">MILO COMPANY</span>
           </Link>
         </div>
-
         {/* Right Icons */}
-        <div className="flex items-center gap-4 lg:w-1/3 justify-end">
-          {/* <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleSearch}>
-            <Search className="h-5 w-5" />
-            <span className="sr-only">Buscar</span>
-          </Button> */}
+        <div className="ml-auto flex items-center gap-4 lg:w-1/3 justify-end">
+          {/* Botón de búsqueda eliminado, solo logo y MILO COMPANY quedan en el centro */}
 
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="rounded-full relative">
