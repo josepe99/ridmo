@@ -130,12 +130,12 @@ export default async function AdminCollectionPage({ params }: PageProps) {
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex justify-between">
                       <span>Price:</span>
-                      <span className="font-medium">${item.price}</span>
+                      <span className="font-medium">Gs. {item.price}</span>
                     </div>
                     {item.comparePrice && (
                       <div className="flex justify-between">
                         <span>Compare:</span>
-                        <span className="line-through">${item.comparePrice}</span>
+                        <span className="line-through">Gs. {item.comparePrice}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
