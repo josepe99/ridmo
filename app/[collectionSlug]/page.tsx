@@ -1,3 +1,48 @@
+import { Metadata } from "next"
+// Metadata dinámico para SEO y Open Graph de la colección
+export async function generateMetadata({ params }: { params: { collectionSlug: string } }): Promise<Metadata> {
+  const { collectionSlug } = params;
+  try {
+    const collection = await getCollectionBySlug(collectionSlug);
+    if (!collection) return {};
+    const title = `${collection.name} | Milo Wear Company`;
+    const description = collection.description?.slice(0, 160) || `Descubre la colección ${collection.name} en Milo Wear Company.`;
+    const imageUrl = collection.image || "/images/milo-logo.png";
+    const url = `https://www.milocompany.store/${collection.slug}`;
+    return {
+      title,
+      description,
+      openGraph: {
+        type: "website",
+        locale: "es_PY",
+        url,
+        siteName: "Milo Wear Company",
+        title,
+        description,
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${collection.name} - Milo Wear Company`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [imageUrl],
+        creator: "@milowearcompany",
+      },
+      alternates: {
+        canonical: url,
+      },
+    };
+  } catch {
+    return {};
+  }
+}
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"

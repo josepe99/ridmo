@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Metadata } from "next"
 import Image from "next/image"
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import { notFound } from "next/navigation"
@@ -12,6 +13,50 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { getItemBySlug, getItemsByCollectionSlug } from "@/lib/actions/items"
+// Metadata dinámico para SEO y Open Graph
+export async function generateMetadata({ params }: { params: { collectionSlug: string; productSlug: string } }): Promise<Metadata> {
+  const { productSlug } = params;
+  try {
+    const item = await getItemBySlug(productSlug);
+    if (!item) return {};
+    const title = `${item.name} | Milo Wear Company`;
+    const description = item.description?.slice(0, 160) || "Descubre la mejor moda urbana en Milo Wear Company.";
+    const imageUrl = item.images?.[0] || "/placeholder.jpg";
+    const url = `https://www.milocompany.store/${item.collection?.slug || params.collectionSlug}/${item.slug}`;
+    return {
+      title,
+      description,
+      openGraph: {
+        type: "website",
+        locale: "es_PY",
+        url,
+        siteName: "Milo Wear Company",
+        title,
+        description,
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${item.name} - Milo Wear Company`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [imageUrl],
+        creator: "@milowearcompany",
+      },
+      alternates: {
+        canonical: url,
+      },
+    };
+  } catch {
+    return {};
+  }
+}
 import AddToCartButton from "@/components/add-to-cart-button"
 
 type ProductPageProps = {
