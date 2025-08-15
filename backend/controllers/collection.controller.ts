@@ -28,6 +28,12 @@ export class CollectionController extends BaseController {
     this.collectionDatasource = new CollectionDatasource();
   }
 
+  async updateCollection(id: string, data: any) {
+    // Validar los datos usando el schema
+    updateCollectionSchema.parse(data);
+    return await this.collectionDatasource.update(id, data);
+  }
+
   // Methods for actions (non-HTTP)
   async getCollections(options?: {
     page?: number

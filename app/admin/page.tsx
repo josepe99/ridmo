@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Edit, Eye } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+
 import { CreateCollectionModal } from '@/components/admin/create-collection-modal'
+import { EditCollectionModal } from '@/components/admin/edit-collection-modal'
 
 export default async function AdminCollectionsPage() {
   await requireAdmin()
@@ -75,9 +77,7 @@ export default async function AdminCollectionsPage() {
                     View
                   </Button>
                 </Link>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4" />
-                </Button>
+                <EditCollectionModal collection={collection} />
               </div>
             </CardContent>
           </Card>
