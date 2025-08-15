@@ -89,24 +89,26 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
               <div
                 key={product.id}
                 className={cn(
-                  "flex-shrink-0 w-[calc(35%-1rem)] sm:w-[calc(65%-1.33rem)] md:w-[calc(50%-1.5rem)] lg:w-[calc(100%-1.5rem)]", // Much larger card sizes
+                  "flex-shrink-0 w-[180px] sm:w-[220px] md:w-[240px] lg:w-[260px]", // Tamaños más pequeños
                   "relative flex flex-col items-center justify-start snap-start",
                 )}
               >
                 {/* Contenedor de la imagen con fondo blanco rectangular */}
-                <div className="relative w-full aspect-[3/4] bg-white overflow-hidden border border-gray-100">
+                <div className="relative w-full aspect-[3/4] max-h-[320px] bg-white overflow-hidden border border-gray-100 flex items-center justify-center">
                   <Link
                     href={`/${collectionSlug}/${product.slug}`}
-                    className="group absolute inset-0 flex items-center justify-center"
+                    className="group w-full h-full flex items-center justify-center"
                     prefetch={false}
                   >
-                    <Image
-                      src={product.image || "/placeholder.svg?height=400&width=300&query=fashion product"}
-                      fill // Usar fill para que la imagen ocupe el contenedor
-                      style={{ objectFit: "contain" }} // Mantener object-contain para que la imagen no se corte
-                      alt={product.name}
-                      className="transition-transform duration-300 group-hover:scale-105"
-                    />
+                    <div className="relative w-[120px] h-[160px] sm:w-[150px] sm:h-[200px] md:w-[180px] md:h-[240px] lg:w-[200px] lg:h-[260px]">
+                      <Image
+                        src={product.image || "/placeholder.svg?height=400&width=300&query=fashion product"}
+                        fill
+                        style={{ objectFit: "contain" }}
+                        alt={product.name}
+                        className="transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
                   </Link>
                 </div>
 
