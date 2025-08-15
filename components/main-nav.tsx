@@ -64,32 +64,6 @@ export default function MainNav() {
     <header className="sticky top-0 z-50 w-full bg-white text-black border-b border-gray-200">
       {/* Main Header */}
       <div className="flex items-center justify-between h-20 px-4 md:px-6">
-        {/* Left side (Mobile Menu Trigger) */}
-        <div className="flex items-center lg:w-1/3">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
-                <MenuIcon className="h-6 w-6" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-              <Link href="/" className="mr-6 flex items-center gap-2 py-4">
-                <Image src="/images/milo-logo.png" alt="Milo Logo" width={32} height={32} className="h-8 w-8" />
-                <span className="text-lg font-semibold tracking-tight">MILO</span>
-              </Link>
-              <nav className="grid gap-4 py-6 text-lg font-medium">
-                <Link href="/" className="flex w-full items-center py-2">
-                  Inicio
-                </Link>
-                <Link href="/coleccion" className="flex w-full items-center py-2">
-                  Colecciones
-                </Link>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        </div>
-
         {/* Center Logo */}
         <div className="flex-1 flex justify-center">
           <Link href="/" className="flex items-center gap-2">
