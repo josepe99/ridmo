@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import ProductCarousel from "@/components/product-carousel"
 import { getCollections } from "@/lib/actions/collections"
 import CollectionHero from "@/components/collection-hero"
