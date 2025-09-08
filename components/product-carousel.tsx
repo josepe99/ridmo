@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react"
 import type { Item } from "@/lib/data"
 import AddToCartButton from "@/components/add-to-cart-button"
+import Price from "@/components/price"
 
 type ProductCarouselProps = {
   title: string
@@ -121,7 +122,7 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                       )}
                       <h3 className="text-lg font-semibold">{product.name}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{product.description}</p>
-                      <p className="text-base font-semibold mt-1">Gs {Math.round(product.price).toLocaleString('es-PY')}</p>
+                      <Price value={product.price} className="text-base font-semibold mt-1" />
                     </div>
                     {/* Heart Icon */}
                     <Button variant="ghost" size="icon" className="rounded-full self-start -mt-2">

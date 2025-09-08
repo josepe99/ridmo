@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { CreateItemModal } from '@/components/admin/create-item-modal'
 import { EditItemModal } from '@/components/admin/edit-item-modal'
+import Price from '@/components/price'
 
 interface PageProps {
   params: {
@@ -130,12 +131,12 @@ export default async function AdminCollectionPage({ params }: PageProps) {
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex justify-between">
                       <span>Price:</span>
-                      <span className="font-medium">Gs. {item.price}</span>
+                      <Price value={item.price} className="font-medium" />
                     </div>
                     {item.comparePrice && (
                       <div className="flex justify-between">
                         <span>Compare:</span>
-                        <span className="line-through">Gs. {item.comparePrice}</span>
+                        <Price value={item.comparePrice} className="line-through" />
                       </div>
                     )}
                     <div className="flex justify-between">

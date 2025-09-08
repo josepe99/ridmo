@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { getCollectionBySlug } from "@/lib/actions/collections"
 import { getItemsByCollectionSlug } from "@/lib/actions/items"
+import Price from "@/components/price"
 
 type CollectionPageProps = {
   params: {
@@ -126,13 +127,9 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
                   </Link>
                   <div className="space-y-1 pt-2">
                     <h3 className="text-base font-semibold line-clamp-2">{item.name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Gs {Math.round(item.price).toLocaleString('es-PY')}
-                    </p>
+                    <Price value={item.price} className="text-sm text-gray-500 dark:text-gray-400" />
                     {item.comparePrice && item.comparePrice > item.price && (
-                      <p className="text-xs text-gray-400 line-through">
-                        Gs {Math.round(item.comparePrice).toLocaleString('es-PY')}
-                      </p>
+                      <Price value={item.comparePrice} className="text-xs text-gray-400 line-through" />
                     )}
                     <Link
                       href={`/${collectionSlug}/${item.slug}`}

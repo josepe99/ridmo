@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ShoppingBag, Minus, Plus, Trash2, MessageCircle } from "lucide-react"
 import { WhatsAppService } from "@/lib/whatsapp"
+import { useCountry } from "@/context/country-context"
 
 interface CartItem {
   id: string
@@ -20,6 +21,7 @@ interface CartItem {
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { formatPrice, convertPrice, currencyCode } = useCountry()
 
   // Load cart items from localStorage
   useEffect(() => {
@@ -82,14 +84,18 @@ export default function CartPage() {
   // Send cart to WhatsApp
   const sendCartToWhatsApp = () => {
     try {
-      const order = WhatsAppService.createOrderFromCart(cartItems, {
+      const convertedItems = cartItems.map(item => ({
+        ...item,
+        price: convertPrice(item.price)
+      }))
+      const order = WhatsAppService.createOrderFromCart(convertedItems, {
         name: "Cliente", // You can modify this to get actual customer name
         phone: "",
         email: "",
         notes: `Pedido desde la tienda online - ${cartItems.length} artículo${cartItems.length !== 1 ? 's' : ''}`
       })
-      
-      const whatsappURL = WhatsAppService.generateWhatsAppURL(order)
+
+      const whatsappURL = WhatsAppService.generateWhatsAppURL(order, currencyCode)
       
       if (!whatsappURL.includes('wa.me/')) {
         alert('Error: Número de WhatsApp no configurado correctamente. Contacta al administrador.')
@@ -149,7 +155,7 @@ export default function CartPage() {
                   <div className="flex-1 flex flex-col sm:flex-row justify-between">
                     <div className="mb-4 sm:mb-0">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-gray-600">Gs {item.price.toFixed(2)}</p>
+                      <p className="text-gray-600">{formatPrice(item.price)}</p>
                     </div>
                     
                     {/* Quantity Controls */}
@@ -187,7 +193,7 @@ export default function CartPage() {
                   
                   {/* Item Total */}
                   <div className="text-right">
-                    <p className="font-semibold">Gs {(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-semibold">{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}
@@ -212,7 +218,7 @@ export default function CartPage() {
                 </div>
                 
                 <div className="text-right">
-                  <p className="text-lg">Total: <span className="font-bold text-2xl">Gs {totalPrice.toFixed(2)}</span></p>
+                  <p className="text-lg">Total: <span className="font-bold text-2xl">{formatPrice(totalPrice)}</span></p>
                   <p className="text-sm text-gray-600">{cartItems.length} artículo{cartItems.length !== 1 ? 's' : ''}</p>
                 </div>
               </div>

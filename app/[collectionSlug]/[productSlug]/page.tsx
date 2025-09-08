@@ -58,6 +58,7 @@ export async function generateMetadata({ params }: { params: { collectionSlug: s
   }
 }
 import AddToCartButton from "@/components/add-to-cart-button"
+import Price from "@/components/price"
 
 type ProductPageProps = {
   params: {
@@ -143,7 +144,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="grid gap-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">{item.name}</h1>
-              <p className="text-2xl font-semibold mt-2">Gs {Math.round(item.price).toLocaleString('es-PY')}</p>
+              <Price value={item.price} className="text-2xl font-semibold mt-2" />
             </div>
             <div className="space-y-4">
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{item.description}</p>
@@ -203,7 +204,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     />
                   </Link>
                   <h3 className="text-base font-semibold pt-2">{relatedItem.name}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Gs {Math.round(relatedItem.price).toLocaleString('es-PY')}</p>
+                  <Price value={relatedItem.price} className="text-sm text-gray-500 dark:text-gray-400" />
                   <AddToCartButton
                     product={{
                       id: relatedItem.id,

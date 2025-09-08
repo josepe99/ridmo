@@ -23,27 +23,28 @@ export interface WhatsAppOrder {
 export class WhatsAppService {
   private static phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || process.env.WHATSAPP_PHONE_NUMBER || '';
 
-  static formatOrderMessage(order: WhatsAppOrder): string {
+  static formatOrderMessage(order: WhatsAppOrder, currency: string): string {
     const { items, customerName, customerPhone, customerEmail, shippingAddress, notes } = order;
 
+    const symbol = currency === 'PYG' ? 'Gs' : '$';
     let message = `*NUEVO PEDIDO - MILO*\n\n`;
-    
+
     // Items
     message += `*Productos:*\n`;
     let total = 0;
-    
+
     items.forEach((item, index) => {
       const itemTotal = item.price * item.quantity;
       total += itemTotal;
-      
+
       message += `${index + 1}. *${item.name}*\n`;
       message += `   Cantidad: ${item.quantity}\n`;
-      message += `   Precio: Gs ${item.price.toFixed(2)}\n`;
+      message += `   Precio: ${symbol} ${item.price.toFixed(2)}\n`;
       if (item.sku) message += `   SKU: ${item.sku}\n`;
-      message += `   Subtotal: Gs ${itemTotal.toFixed(2)}\n\n`;
+      message += `   Subtotal: ${symbol} ${itemTotal.toFixed(2)}\n\n`;
     });
 
-    message += `*Total: Gs ${total.toFixed(2)}*\n\n`;
+    message += `*Total: ${symbol} ${total.toFixed(2)}*\n\n`;
 
     // Shipping address
     if (shippingAddress) {
@@ -63,8 +64,8 @@ export class WhatsAppService {
     return message;
   }
 
-  static generateWhatsAppURL(order: WhatsAppOrder): string {
-    const message = this.formatOrderMessage(order);
+  static generateWhatsAppURL(order: WhatsAppOrder, currency: string): string {
+    const message = this.formatOrderMessage(order, currency);
     const encodedMessage = encodeURIComponent(message);
     
     // Use WhatsApp Web URL with the business phone number
@@ -72,8 +73,8 @@ export class WhatsAppService {
     return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
   }
 
-  static generateWhatsAppLink(order: WhatsAppOrder): string {
-    const message = this.formatOrderMessage(order);
+  static generateWhatsAppLink(order: WhatsAppOrder, currency: string): string {
+    const message = this.formatOrderMessage(order, currency);
     const encodedMessage = encodeURIComponent(message);
     
     // For mobile apps, use the whatsapp:// protocol
@@ -99,31 +100,32 @@ export class WhatsAppService {
     };
   }
 
-  static formatItemForSharing(item: any): string {
+  static formatItemForSharing(item: any, currency: string): string {
+    const symbol = currency === 'PYG' ? 'Gs' : '$';
     let message = `*${item.name}* - MILO\n\n`;
-    
+
     if (item.description) {
       message += `${item.description}\n\n`;
     }
-    
-    message += `*Precio:* Gs ${item.price}\n`;
-    
+
+    message += `*Precio:* ${symbol} ${item.price}\n`;
+
     if (item.comparePrice && item.comparePrice > item.price) {
       const discount = Math.round(((item.comparePrice - item.price) / item.comparePrice) * 100);
-      message += `*Precio regular:* ~Gs ${item.comparePrice}~ (${discount}% OFF)\n`;
+      message += `*Precio regular:* ~${symbol} ${item.comparePrice}~ (${discount}% OFF)\n`;
     }
-    
+
     if (item.coleccion) {
       message += `*Colección:* ${item.coleccion.name}\n`;
     }
-    
+
     message += `\n¿Te interesa? ¡Contáctanos para más información!`;
-    
+
     return message;
   }
 
-  static generateItemShareURL(item: any): string {
-    const message = this.formatItemForSharing(item);
+  static generateItemShareURL(item: any, currency: string): string {
+    const message = this.formatItemForSharing(item, currency);
     const encodedMessage = encodeURIComponent(message);
     
     const phoneNumber = this.phoneNumber.replace(/\D/g, '');

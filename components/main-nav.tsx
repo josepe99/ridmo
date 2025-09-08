@@ -9,11 +9,13 @@ import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useCountry, Country } from "@/context/country-context"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [cartItemCount, setCartItemCount] = useState(0)
   const { user } = useUser()
+  const { country, setCountry } = useCountry()
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen)
@@ -72,6 +74,14 @@ export default function MainNav() {
         </div>
         {/* Right Icons */}
         <div className="ml-auto flex items-center gap-4 lg:w-1/3 justify-end">
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value as Country)}
+            className="border rounded px-2 py-1 text-sm"
+          >
+            <option value="AR">AR</option>
+            <option value="PY">PY</option>
+          </select>
           {/* Botón de búsqueda eliminado, solo logo y MILO COMPANY quedan en el centro */}
 
           <Link href="/cart">
