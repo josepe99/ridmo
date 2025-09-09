@@ -125,10 +125,10 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                       <Price value={product.price} className="text-base font-semibold mt-1" />
                     </div>
                     {/* Heart Icon */}
-                    <Button variant="ghost" size="icon" className="rounded-full self-start -mt-2">
+                    {/* <Button variant="ghost" size="icon" className="rounded-full self-start -mt-2">
                       <Heart className="h-5 w-5 text-gray-500 hover:text-black" />
                       <span className="sr-only">Añadir a lista de deseos</span>
-                    </Button>
+                    </Button> */}
                   </div>
 
                   {/* Color Swatches */}
