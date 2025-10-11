@@ -1,12 +1,15 @@
-export const dynamic = "force-dynamic"
-import ProductCarousel from "@/components/product-carousel"
-import { getCollections } from "@/lib/actions/collections"
-import CollectionHero from "@/components/collection-hero"
-import { Metadata } from "next"
+import ProductCarousel from "@/components/product-carousel";
+import { getCollections } from "@/lib/actions/collections";
+import CollectionHero from "@/components/collection-hero";
+import { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Milo Wear Company - Ropa Urbana y Streetwear en Paraguay | Moda Urbana Exclusiva",
-  description: "Descubre la mejor ropa urbana y streetwear en Paraguay. Milo Wear Company ofrece colecciones exclusivas de moda urbana, casual y lifestyle. Estilo urbano auténtico para jóvenes paraguayos.",
+  title:
+    "Milo Wear Company - Ropa Urbana y Streetwear en Paraguay | Moda Urbana Exclusiva",
+  description:
+    "Descubre la mejor ropa urbana y streetwear en Paraguay. Milo Wear Company ofrece colecciones exclusivas de moda urbana, casual y lifestyle. Estilo urbano auténtico para jóvenes paraguayos.",
   keywords: [
     "ropa urbana Paraguay",
     "streetwear Paraguay",
@@ -24,7 +27,7 @@ export const metadata: Metadata = {
     "tienda ropa urbana online Paraguay",
     "oversized Paraguay",
     "hoodie Paraguay",
-    "sudaderas Paraguay"
+    "sudaderas Paraguay",
   ].join(", "),
   authors: [{ name: "Milo Wear Company" }],
   creator: "Milo Wear Company",
@@ -46,7 +49,8 @@ export const metadata: Metadata = {
     url: "https://www.milocompany.store",
     siteName: "Milo Wear Company",
     title: "Milo Wear Company - Ropa Urbana y Streetwear en Paraguay",
-    description: "Descubre la mejor ropa urbana y streetwear en Paraguay. Colecciones exclusivas de moda urbana, casual y lifestyle para jóvenes paraguayos.",
+    description:
+      "Descubre la mejor ropa urbana y streetwear en Paraguay. Colecciones exclusivas de moda urbana, casual y lifestyle para jóvenes paraguayos.",
     images: [
       {
         url: "/images/milo-logo.png",
@@ -59,7 +63,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Milo Wear Company - Ropa Urbana y Streetwear en Paraguay",
-    description: "Descubre la mejor ropa urbana y streetwear en Paraguay. Colecciones exclusivas de moda urbana, casual y lifestyle para jóvenes paraguayos.",
+    description:
+      "Descubre la mejor ropa urbana y streetwear en Paraguay. Colecciones exclusivas de moda urbana, casual y lifestyle para jóvenes paraguayos.",
     images: ["/images/milo-logo.png"],
     creator: "@milowearcompany",
   },
@@ -69,15 +74,18 @@ export const metadata: Metadata = {
   other: {
     "geo.region": "PY",
     "geo.placename": "Paraguay",
-    "ICBM": "-25.2637, -57.5759", // Coordenadas de Asunción
+    ICBM: "-25.2637, -57.5759", // Coordenadas de Asunción
   },
-}
+};
 
 export default async function HomePage() {
   // Fetch collections with their items
-  const collectionsResult = await getCollections({ isActive: true })
+  const collectionsResult = await getCollections({ isActive: true });
 
-  const collections = collectionsResult.success && collectionsResult.data ? collectionsResult.data.data : []
+  const collections =
+    collectionsResult.success && collectionsResult.data
+      ? collectionsResult.data.data
+      : [];
 
   return (
     <>
@@ -86,24 +94,25 @@ export default async function HomePage() {
       {/* Map through collections and show ProductCarousel for each */}
       {collections.map((collection: any) => {
         // Get items with first image for each collection
-        const itemsWithFirstImage = collection.items?.map((item: any) => ({
-          ...item,
-          image: item.images?.[0] || null // Get first image or null
-        })) || []
+        const itemsWithFirstImage =
+          collection.items?.map((item: any) => ({
+            ...item,
+            image: item.images?.[0] || null, // Get first image or null
+          })) || [];
 
         // Only show carousel if collection has items
         if (itemsWithFirstImage.length > 0) {
           return (
-            <ProductCarousel 
+            <ProductCarousel
               key={collection.id}
-              title={collection.name} 
-              products={itemsWithFirstImage} 
+              title={collection.name}
+              products={itemsWithFirstImage}
               collectionSlug={collection.slug}
             />
-          )
+          );
         }
-        return null
+        return null;
       })}
     </>
-  )
+  );
 }
