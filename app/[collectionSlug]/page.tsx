@@ -5,8 +5,8 @@ export async function generateMetadata({ params }: { params: { collectionSlug: s
   try {
     const collection = await getCollectionBySlug(collectionSlug);
     if (!collection) return {};
-    const title = `${collection.name} | Milo Wear Company`;
-    const description = collection.description?.slice(0, 160) || `Descubre la colección ${collection.name} en Milo Wear Company.`;
+    const title = `${collection.name} | RIDMO`;
+    const description = collection.description?.slice(0, 160) || `Descubre la colección ${collection.name} en RIDMO.`;
     const imageUrl = collection.image || "/images/milo-logo.png";
     const url = `https://www.milocompany.store/${collection.slug}`;
     return {
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: { collectionSlug: s
         type: "website",
         locale: "es_PY",
         url,
-        siteName: "Milo Wear Company",
+        siteName: "RIDMO",
         title,
         description,
         images: [
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { collectionSlug: s
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${collection.name} - Milo Wear Company`,
+            alt: `${collection.name} - RIDMO`,
           },
         ],
       },

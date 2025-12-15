@@ -62,14 +62,14 @@ export default function MainNav() {
   const isAdmin = user?.publicMetadata?.role === 'admin'
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white text-black border-b border-gray-200">
+    <header className="sticky top-0 z-50 w-full bg-black text-white border-b border-gray-800">
       {/* Main Header */}
       <div className="relative flex items-center h-20 px-4 md:px-6">
         {/* Center Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
           <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
-            <Image src="/images/milo-logo.png" alt="Milo Logo" width={48} height={48} className="h-12 w-12" />
-            <span className="text-3xl font-extrabold tracking-tight hidden md:block">MILO COMPANY</span>
+            <Image src="/images/ridmo-logo.png" alt="Milo Logo" width={48} height={48} className="h-12 w-12" />
+            <span className="text-3xl font-extrabold tracking-tight hidden md:block">RIDMO</span>
           </Link>
         </div>
         {/* Right Icons */}
@@ -77,19 +77,19 @@ export default function MainNav() {
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value as Country)}
-            className="border rounded px-2 py-1 text-sm"
+            className="border border-gray-600 rounded px-2 py-1 text-sm bg-black text-white"
           >
             <option value="AR">AR</option>
             <option value="PY">PY</option>
           </select>
-          {/* Botón de búsqueda eliminado, solo logo y MILO COMPANY quedan en el centro */}
+          {/* Botón de búsqueda eliminado, solo logo y RIDMO quedan en el centro */}
 
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="rounded-full relative">
               <ShoppingBag className="h-5 w-5" />
               <span className="sr-only">Carrito de compras</span>
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-xs text-white">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs text-black">
                   {cartItemCount}
                 </span>
               )}

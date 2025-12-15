@@ -42,7 +42,7 @@ export default function RootLayout({
             `}
           </Script>
         </head>
-        <body className={inter.className}>
+        <body className={inter.className} suppressHydrationWarning>
           <CountryProvider>
             <div className="flex flex-col min-h-screen">
               <MainNav />
