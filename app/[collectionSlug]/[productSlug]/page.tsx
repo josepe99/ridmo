@@ -1,9 +1,16 @@
-import Link from "next/link"
+import { getItemBySlug, getItemsByCollectionSlug } from "@/lib/actions/items"
+import { Button } from "@/components/ui/button"
+import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import Image from "next/image"
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
-import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -12,7 +19,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { getItemBySlug, getItemsByCollectionSlug } from "@/lib/actions/items"
 // Metadata dinámico para SEO y Open Graph
 export async function generateMetadata({ params }: { params: { collectionSlug: string; productSlug: string } }): Promise<Metadata> {
   const { productSlug } = params;
