@@ -2,11 +2,10 @@ import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Edit, Eye } from 'lucide-react'
+import { Plus, Eye } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-import { CreateCollectionModal } from '@/components/admin/create-collection-modal'
 import { EditCollectionModal } from '@/components/admin/edit-collection-modal'
 
 export default async function AdminCollectionsPage() {
@@ -32,7 +31,12 @@ export default async function AdminCollectionsPage() {
           <h1 className="text-3xl font-bold">Admin - Collections</h1>
           <p className="text-gray-600 mt-2">Manage your product collections</p>
         </div>
-        <CreateCollectionModal />
+        <Link href="/admin/collections/create">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            New Collection
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -92,7 +96,12 @@ export default async function AdminCollectionsPage() {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No collections yet</h3>
             <p className="text-gray-500 mb-4">Get started by creating your first collection</p>
-            <CreateCollectionModal />
+            <Link href="/admin/collections/create">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Collection
+              </Button>
+            </Link>
           </div>
         </div>
       )}
