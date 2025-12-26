@@ -47,6 +47,10 @@ export class CollectionController extends BaseController {
     });
   }
 
+  async getByAdmin(id: string) {
+    return await this.collectionDatasource.getByAdmin(id);
+  }
+
   async getCollectionById(id: string) {
     return await this.collectionDatasource.findById(id);
   }

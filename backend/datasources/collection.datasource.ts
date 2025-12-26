@@ -158,6 +158,17 @@ export class CollectionDatasource extends BaseDatasource {
     });
   }
 
+  async getByAdmin(id: string): Promise<any | null> {
+    return await this.prisma.collection.findUnique({
+      where: { id },
+      include: {
+        items: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+  }
+
   async getCollectionWithItems(
     slug: string,
     itemsPage: number = 1,

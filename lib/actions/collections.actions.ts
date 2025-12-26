@@ -49,6 +49,16 @@ export async function getCollectionById(id: string) {
   }
 }
 
+export async function getByAdminAction(id: string) {
+  try {
+    const result = await collectionController.getByAdmin(id)
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Error fetching admin collection:', error)
+    return { success: false, error: 'Failed to fetch collection' }
+  }
+}
+
 export async function getCollectionBySlug(slug: string) {
   const collection = await collectionController.getCollectionBySlug(slug)
   

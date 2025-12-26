@@ -54,7 +54,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { getCollectionBySlug } from "@/lib/actions/collections"
+import { getCollectionBySlug } from "@/lib/actions/collections.actions"
 import { getItemsByCollectionSlug } from "@/lib/actions/items"
 import Price from "@/components/price"
 

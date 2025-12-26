@@ -1,15 +1,15 @@
-import { requireAdmin } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, ArrowLeft, Trash2 } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { notFound } from 'next/navigation'
-import { CreateItemModal } from '@/components/admin/create-item-modal'
-import { EditItemModal } from '@/components/admin/edit-item-modal'
-import Price from '@/components/price'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CreateItemModal } from '@/components/admin/create-item-modal';
+import { getByAdminAction } from '@/lib/actions/collections.actions';
+import { EditItemModal } from '@/components/admin/edit-item-modal';
+import { Plus, Edit, ArrowLeft, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { notFound } from 'next/navigation';
+import { requireAdmin } from '@/lib/auth';
+import Price from '@/components/price';
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface PageProps {
   params: {
@@ -20,20 +20,13 @@ interface PageProps {
 export default async function AdminCollectionPage({ params }: PageProps) {
   await requireAdmin()
 
-  const collection = await prisma.collection.findUnique({
-    where: { id: params.collectionId },
-    include: {
-      items: {
-        orderBy: {
-          createdAt: 'desc'
-        }
-      }
-    }
-  })
+  const collectionResult = await getByAdminAction(params.collectionId)
 
-  if (!collection) {
+  if (!collectionResult.success || !collectionResult.data) {
     notFound()
   }
+
+  const collection = collectionResult.data
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -61,7 +61,7 @@ export async function getItemBySlug(slug: string) {
 
 export async function getItemsByCollectionSlug(collectionSlug: string) {
   // Import collections action to get collection by slug
-  const { getCollectionBySlug } = await import('./collections')
+  const { getCollectionBySlug } = await import('./collections.actions')
   const collection = await getCollectionBySlug(collectionSlug)
 
   const result = await itemController.getItems({

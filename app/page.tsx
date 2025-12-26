@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ProductCarousel from "@/components/product-carousel";
-import { getCollections } from "@/lib/actions/collections";
+import { getCollections } from "@/lib/actions/collections.actions";
 import CollectionHero from "@/components/collection-hero";
 import { Metadata } from "next";
 
