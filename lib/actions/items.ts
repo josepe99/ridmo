@@ -1,6 +1,6 @@
 'use server'
 
-import { ItemController } from '@/backend/controllers/item.controller'
+import { ItemController } from '@/lib/controllers/item.controller'
 
 const itemController = new ItemController()
 

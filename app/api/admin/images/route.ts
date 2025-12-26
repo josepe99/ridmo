@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
-import { ImageController } from '@/backend/controllers/image.controller';
+import { ImageController } from '@/lib/controllers/image.controller';
 
 const imageController = new ImageController();
 

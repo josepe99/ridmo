@@ -1,7 +1,7 @@
 'use server'
 
 import { unstable_cache } from 'next/cache'
-import { CollectionController } from '@/backend/controllers/collection.controller'
+import { CollectionController } from '@/lib/controllers/collection.controller'
 
 const collectionController = new CollectionController()
 

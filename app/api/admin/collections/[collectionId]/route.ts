@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
-import { CollectionController } from '@/backend/controllers/collection.controller';
+import { CollectionController } from '@/lib/controllers/collection.controller';
 
 const collectionController = new CollectionController();
 
