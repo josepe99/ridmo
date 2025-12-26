@@ -23,6 +23,11 @@ interface CollectionFormProps {
   cancelLabel?: string
   onCancel?: () => void
   renderImageField?: (value: string, onChange: (value: string) => void) => React.ReactNode
+  onUploadImage: (formData: FormData) => Promise<{
+    success: boolean
+    data?: { url?: string }
+    error?: string
+  }>
 }
 
 const defaultValues: CollectionFormValues = {
@@ -41,12 +46,15 @@ export function CollectionForm({
   cancelLabel = "Cancel",
   onCancel,
   renderImageField,
+  onUploadImage,
 }: CollectionFormProps) {
   const [values, setValues] = useState<CollectionFormValues>({
     ...defaultValues,
     ...initialValues,
   })
   const [submitting, setSubmitting] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const generateSlug = (name: string) => {
     return name
@@ -66,6 +74,32 @@ export function CollectionForm({
       name,
       slug: generateSlug(name),
     }))
+  }
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadError(null)
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const result = await onUploadImage(formData)
+
+      if (!result?.success || !result?.data?.url) {
+        throw new Error(result?.error || "Failed to upload image")
+      }
+
+      setValues(prev => ({ ...prev, imageUrl: result.data.url }))
+    } catch (error) {
+      console.error("Error uploading image", error)
+      setUploadError("Failed to upload image. Please try again.")
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -90,15 +124,31 @@ export function CollectionForm({
   const imageField = renderImageField
     ? renderImageField(values.imageUrl, (url) => setValues(prev => ({ ...prev, imageUrl: url })))
     : (
-      <div className="grid gap-2">
-        <Label htmlFor="imageUrl">Image URL</Label>
-        <Input
-          id="imageUrl"
-          value={values.imageUrl}
-          onChange={(e) => setValues(prev => ({ ...prev, imageUrl: e.target.value }))}
-          placeholder="https://..."
-          disabled={submitting}
-        />
+      <div className="grid gap-3">
+        <div className="grid gap-2">
+          <Label htmlFor="imageFile">Upload image</Label>
+          <Input
+            id="imageFile"
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            disabled={submitting || uploading}
+          />
+          {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="imageUrl">Image URL</Label>
+          <Input
+            id="imageUrl"
+            value={values.imageUrl}
+            onChange={(e) => setValues(prev => ({ ...prev, imageUrl: e.target.value }))}
+            placeholder="https://..."
+            disabled={submitting}
+          />
+          {values.imageUrl && (
+            <p className="text-xs text-gray-500 break-all">Uploaded link: {values.imageUrl}</p>
+          )}
+        </div>
       </div>
     )
 

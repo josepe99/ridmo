@@ -3,6 +3,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverActions: {
+      // Allow larger payloads for server actions (e.g., image uploads)
+      bodySizeLimit: '25mb',
+    },
+  },
   images: {
     remotePatterns: [
       {

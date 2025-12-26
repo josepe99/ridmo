@@ -20,7 +20,15 @@ interface PageProps {
 export default async function AdminCollectionPage({ params }: PageProps) {
   await requireAdmin()
 
-  const collectionResult = await getByAdminAction(params.collectionId)
+  // Await params to satisfy Next.js dynamic API requirements
+  const { collectionId: rawCollectionId } = await params
+  const collectionId = rawCollectionId?.trim()
+
+  if (!collectionId) {
+    notFound()
+  }
+
+  const collectionResult = await getByAdminAction(collectionId)
 
   if (!collectionResult.success || !collectionResult.data) {
     notFound()

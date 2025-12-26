@@ -9,7 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CollectionForm, CollectionFormValues } from "@/app/admin/collections/components/CollectionForm"
 
-export function CreateCollectionPageClient() {
+interface CreateCollectionPageClientProps {
+  onUploadImage: (formData: FormData) => Promise<{
+    success: boolean
+    data?: { url?: string }
+    error?: string
+  }>
+}
+
+export function CreateCollectionPageClient({ onUploadImage }: CreateCollectionPageClientProps) {
   const router = useRouter()
 
   const handleSubmit = async (values: CollectionFormValues) => {
@@ -56,6 +64,7 @@ export function CreateCollectionPageClient() {
                 submitLabel="Create collection"
                 submittingLabel="Creating..."
                 onSubmit={handleSubmit}
+                onUploadImage={onUploadImage}
               />
             </CardContent>
           </Card>

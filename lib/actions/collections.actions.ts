@@ -50,8 +50,13 @@ export async function getCollectionById(id: string) {
 }
 
 export async function getByAdminAction(id: string) {
+  const identifier = id?.trim()
+  if (!identifier) {
+    return { success: false, error: 'Collection id is required' }
+  }
+
   try {
-    const result = await collectionController.getByAdmin(id)
+    const result = await collectionController.getByAdmin(identifier)
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching admin collection:', error)

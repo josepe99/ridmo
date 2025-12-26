@@ -115,6 +115,7 @@ export class CollectionDatasource extends BaseDatasource {
         description: data.description,
         imageUrl: data.imageUrl,
         isActive: data.isActive ?? true,
+        deletedAt: null,
       },
     });
   }
@@ -159,8 +160,31 @@ export class CollectionDatasource extends BaseDatasource {
   }
 
   async getByAdmin(id: string): Promise<any | null> {
+    const identifier = id?.trim();
+    if (!identifier) {
+      throw new Error('Collection id or slug is required');
+    }
+
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
+
+    if (isObjectId) {
+      return await this.prisma.collection.findFirst({
+        where: {
+          OR: [
+            { id: identifier },
+            { slug: identifier },
+          ],
+        },
+        include: {
+          items: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      });
+    }
+
     return await this.prisma.collection.findUnique({
-      where: { id },
+      where: { slug: identifier },
       include: {
         items: {
           orderBy: { createdAt: 'desc' },
