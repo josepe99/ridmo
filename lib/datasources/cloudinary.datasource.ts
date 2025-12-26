@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from './settings';
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '../settings';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -16,6 +16,23 @@ export interface CloudinaryUploadOptions {
   width?: number;
   height?: number;
   crop?: string;
+}
+
+export interface CloudinaryResource {
+  assetId: string;
+  publicId: string;
+  url: string;
+  secureUrl?: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+  createdAt?: string;
+}
+
+export interface CloudinaryListOptions {
+  folder?: string;
+  maxResults?: number;
 }
 
 export class CloudinaryService {
@@ -95,6 +112,31 @@ export class CloudinaryService {
     return await Promise.all(uploadPromises);
   }
 
+  static async getImage(publicId: string): Promise<CloudinaryResource> {
+    try {
+      const resource = await cloudinary.api.resource(publicId);
+      return this.mapResource(resource);
+    } catch (error) {
+      console.error('Cloudinary get image error:', error);
+      throw new Error('Failed to get image from Cloudinary');
+    }
+  }
+
+  static async getImages(options: CloudinaryListOptions = {}): Promise<CloudinaryResource[]> {
+    try {
+      const result = await cloudinary.api.resources({
+        type: 'upload',
+        prefix: options.folder,
+        max_results: options.maxResults || 50,
+      });
+
+      return (result.resources || []).map((resource: any) => this.mapResource(resource));
+    } catch (error) {
+      console.error('Cloudinary list images error:', error);
+      throw new Error('Failed to list images from Cloudinary');
+    }
+  }
+
   static async deleteImage(publicId: string): Promise<void> {
     try {
       await cloudinary.uploader.destroy(publicId);
@@ -111,6 +153,10 @@ export class CloudinaryService {
       console.error('Cloudinary batch delete error:', error);
       throw new Error('Failed to delete images from Cloudinary');
     }
+  }
+
+  static async removeImage(publicId: string): Promise<void> {
+    return this.deleteImage(publicId);
   }
 
   static generateUrl(
@@ -156,6 +202,20 @@ export class CloudinaryService {
         crop: 'scale',
       }),
     }));
+  }
+
+  private static mapResource(resource: any): CloudinaryResource {
+    return {
+      assetId: resource.asset_id,
+      publicId: resource.public_id,
+      url: resource.secure_url || resource.url,
+      secureUrl: resource.secure_url,
+      format: resource.format,
+      bytes: resource.bytes,
+      width: resource.width,
+      height: resource.height,
+      createdAt: resource.created_at,
+    };
   }
 }
 

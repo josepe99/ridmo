@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BaseController } from './base.controller';
-import { CloudinaryService, CloudinaryUploadOptions } from '@/lib/cloudinary';
+import { CloudinaryService, CloudinaryUploadOptions } from '@/lib/datasources/cloudinary.datasource';
 
 export interface ImageUploadResponse {
   url: string;
