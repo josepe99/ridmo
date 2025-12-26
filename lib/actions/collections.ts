@@ -1,8 +1,25 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { CollectionController } from '@/backend/controllers/collection.controller'
 
 const collectionController = new CollectionController()
+
+// Cached version of getCollections for homepage - revalidates every 60 seconds
+const getCachedCollections = unstable_cache(
+  async (page: number, limit: number, isActive?: boolean) => {
+    return await collectionController.getCollections({
+      page,
+      limit,
+      isActive,
+    })
+  },
+  ['collections-list'],
+  { 
+    revalidate: 60, // Cache for 60 seconds
+    tags: ['collections'] 
+  }
+)
 
 export async function getCollections(options?: {
   page?: number
@@ -10,11 +27,11 @@ export async function getCollections(options?: {
   isActive?: boolean
 }) {
   try {
-    const result = await collectionController.getCollections({
-      page: options?.page || 1,
-      limit: options?.limit || 100,
-      isActive: options?.isActive,
-    })
+    const result = await getCachedCollections(
+      options?.page || 1,
+      options?.limit || 100,
+      options?.isActive
+    )
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching collections:', error)

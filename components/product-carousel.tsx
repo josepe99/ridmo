@@ -108,6 +108,8 @@ export default function ProductCarousel({ title, products, collectionSlug }: Pro
                         style={{ objectFit: "contain" }}
                         alt={product.name}
                         className="transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                        sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, (max-width: 1024px) 180px, 200px"
                       />
                     </div>
                   </Link>

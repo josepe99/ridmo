@@ -35,10 +35,12 @@ export default function CollectionHero({ collections }: CollectionHeroProps) {
         <div className="relative w-full h-full">
           <Image
             src="/placeholder.svg?height=1080&width=1920"
-            alt="Nueva Colección MILO"
+            alt="Nueva Colección RIDMO"
             fill
             style={{ objectFit: "cover" }}
             className="z-0"
+            priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-black/30 z-10" />
           <div className="relative z-20 flex flex-col items-start justify-center h-full px-4 md:px-12 lg:px-24 text-white">
@@ -70,6 +72,8 @@ export default function CollectionHero({ collections }: CollectionHeroProps) {
           fill
           style={{ objectFit: "cover" }}
           className="z-0"
+          priority
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/30 z-10" />
         <div className="relative z-20 flex flex-col items-start justify-center h-full px-4 md:px-12 lg:px-24 text-white">

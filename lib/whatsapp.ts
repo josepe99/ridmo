@@ -27,7 +27,7 @@ export class WhatsAppService {
     const { items, customerName, customerPhone, customerEmail, shippingAddress, notes } = order;
 
     const symbol = currency === 'PYG' ? 'Gs' : '$';
-    let message = `*NUEVO PEDIDO - MILO*\n\n`;
+    let message = `*NUEVO PEDIDO - RIDMO*\n\n`;
 
     // Items
     message += `*Productos:*\n`;
@@ -102,7 +102,7 @@ export class WhatsAppService {
 
   static formatItemForSharing(item: any, currency: string): string {
     const symbol = currency === 'PYG' ? 'Gs' : '$';
-    let message = `*${item.name}* - MILO\n\n`;
+    let message = `*${item.name}* - RIDMO\n\n`;
 
     if (item.description) {
       message += `${item.description}\n\n`;
