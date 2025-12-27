@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreateItemModal } from '@/components/admin/create-item-modal';
 import { getByAdminAction } from '@/lib/actions/collections.actions';
 import { EditItemModal } from '@/components/admin/edit-item-modal';
-import { Plus, Edit, ArrowLeft, Trash2 } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { notFound } from 'next/navigation';
@@ -35,6 +34,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
   }
 
   const collection = collectionResult.data
+  const createItemHref = `/admin/item/create?collectionId=${collection.id}`
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -49,7 +49,12 @@ export default async function AdminCollectionPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold">{collection.name}</h1>
           <p className="text-gray-600 mt-1">{collection.description || 'No description'}</p>
         </div>
-        <CreateItemModal collectionId={collection.id} />
+        <Link href={createItemHref}>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Item
+          </Button>
+        </Link>
       </div>
 
       {/* Collection Info */}
@@ -166,7 +171,12 @@ export default async function AdminCollectionPage({ params }: PageProps) {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No items yet</h3>
               <p className="text-gray-500 mb-4">Add your first item to this collection</p>
-              <CreateItemModal collectionId={collection.id} />
+              <Link href={createItemHref}>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Item
+                </Button>
+              </Link>
             </div>
           </div>
         )}
