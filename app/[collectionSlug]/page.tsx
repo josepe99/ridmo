@@ -1,7 +1,15 @@
 import { Metadata } from "next"
+
+type CollectionParams = {
+  collectionSlug: string
+}
 // Metadata dinámico para SEO y Open Graph de la colección
-export async function generateMetadata({ params }: { params: { collectionSlug: string } }): Promise<Metadata> {
-  const { collectionSlug } = params;
+export async function generateMetadata(
+  { params }: { params?: CollectionParams | Promise<CollectionParams> } = {}
+): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params)
+  const collectionSlug = resolvedParams?.collectionSlug
+  if (!collectionSlug) return {}
   try {
     const collection = await getCollectionBySlug(collectionSlug);
     if (!collection) return {};
@@ -44,19 +52,11 @@ export async function generateMetadata({ params }: { params: { collectionSlug: s
   }
 }
 import Link from "next/link"
-import Image from "next/image"
 import { notFound } from "next/navigation"
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import CatalogBreadcrumb from "@/components/catalog-breadcrumb"
 import { getCollectionBySlug } from "@/lib/actions/collections.actions"
 import { getItemsByCollectionSlug } from "@/lib/actions/items"
-import Price from "@/components/price"
+import ProductsGrid from "@/components/products/products-grid"
 
 type CollectionPageProps = {
   params: {
@@ -79,69 +79,29 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       notFound()
     }
 
+    const products = items.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      slug: item.slug,
+      description: item.description ?? "",
+      price: item.price,
+      image: item.images?.[0] || "",
+      collectionSlug,
+    }))
+
     return (
-      <section className="py-12 md:py-24 lg:py-32">
+      <section className="py-6 md:py-24 lg:py-5">
         {/* Breadcrumb */}
-        <div className="container px-4 md:px-6 mb-8">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/">Inicio</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{collection.name}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
+        <CatalogBreadcrumb collectionLabel={collection.name} className="mb-1" />
 
-        {/* Collection Header */}
-        <div className="container px-4 md:px-6 mb-12">
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">{collection.name}</h1>
-            {collection.description && (
-              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                {collection.description}
-              </p>
-            )}
-          </div>
-        </div>
-
+    
         {/* Items Grid */}
-        <div className="container px-4 md:px-6">
-          {items.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {items.map((item: any) => (
-                <div key={item.id} className="grid gap-1 group">
-                  <Link href={`/${collectionSlug}/${item.slug}`} prefetch={false}>
-                    <Image
-                      src={item.images?.[0] || "/placeholder.svg?height=300&width=200&query=product"}
-                      width={200}
-                      height={300}
-                      alt={item.name}
-                      className="mx-auto aspect-[2/3] overflow-hidden object-cover object-center sm:w-full transition-all group-hover:scale-105 rounded-lg"
-                    />
-                  </Link>
-                  <div className="space-y-1 pt-2">
-                    <h3 className="text-base font-semibold line-clamp-2">{item.name}</h3>
-                    <Price value={item.price} className="text-sm text-gray-500 dark:text-gray-400" />
-                    {item.comparePrice && item.comparePrice > item.price && (
-                      <Price value={item.comparePrice} className="text-xs text-gray-400 line-through" />
-                    )}
-                    <Link
-                      href={`/${collectionSlug}/${item.slug}`}
-                      className="text-xs font-medium hover:underline underline-offset-4 mt-1 block"
-                    >
-                      Ver Prenda
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
+        {products.length > 0 ? (
+          <div className="mt-4">
+            <ProductsGrid products={products} collectionSlug={collectionSlug} />
+          </div>
+        ) : (
+          <div className="container px-4 md:px-6">
             <div className="text-center py-12">
               <h3 className="text-xl font-semibold mb-2">No hay productos disponibles</h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -154,8 +114,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
                 Volver al inicio
               </Link>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
     )
   } catch (error) {

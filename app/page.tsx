@@ -3,6 +3,7 @@ import ProductCarousel from "@/components/product-carousel";
 import { getCollections } from "@/lib/actions/collections.actions";
 import CollectionHero from "@/components/collection-hero";
 import { Metadata } from "next";
+import ProductsGrid from "@/components/products/products-grid";
 
 // Enable ISR with 60-second revalidation instead of force-dynamic
 export const revalidate = 60;
@@ -143,12 +144,13 @@ async function CollectionsContent() {
         // Only show carousel if collection has items
         if (itemsWithFirstImage.length > 0) {
           return (
-            <ProductCarousel
-              key={collection.id}
-              title={collection.name}
-              products={itemsWithFirstImage}
-              collectionSlug={collection.slug}
-            />
+            <div key={collection.id} className="mt-10">
+              <ProductsGrid
+                title={collection.name}
+                products={itemsWithFirstImage}
+                collectionSlug={collection.slug}
+              />
+            </div>
           );
         }
         return null;

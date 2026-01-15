@@ -11,14 +11,7 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel"
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import CatalogBreadcrumb from "@/components/catalog-breadcrumb"
 // Metadata dinámico para SEO y Open Graph
 export async function generateMetadata({ params }: { params: { collectionSlug: string; productSlug: string } }): Promise<Metadata> {
   const { productSlug } = params;
@@ -88,31 +81,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const filteredRelatedItems = relatedItems.filter((i: any) => i.id !== item.id)
 
     return (
-      <section className="py-12 md:py-24 lg:py-32">
+      <section className="py-6 md:py-24 lg:py-5">
         {/* Breadcrumb */}
-        <div className="container px-4 md:px-6 mb-8">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/">Inicio</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href={`/${item.collection?.slug || collectionSlug}`}>
-                    {item.collection?.name || 'Colección'}
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{item.name}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
+        <CatalogBreadcrumb
+          collectionLabel={item.collection?.name || "Coleccion"}
+          collectionHref={`/${item.collection?.slug || collectionSlug}`}
+          productLabel={item.name}
+        />
 
         <div className="container px-4 md:px-6 grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="flex justify-center">
