@@ -13,6 +13,7 @@ import { useCountry, Country } from "@/context/country-context"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [activeModal, setActiveModal] = useState<"menu" | "contact" | null>(null)
   const [cartItemCount, setCartItemCount] = useState(0)
   const { user } = useUser()
   const { country, setCountry } = useCountry()
@@ -20,6 +21,10 @@ export default function MainNav() {
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen)
   }
+
+  const openMenu = () => setActiveModal("menu")
+  const openContact = () => setActiveModal("contact")
+  const closeModal = () => setActiveModal(null)
 
   // Function to get cart count from localStorage
   const getCartCount = () => {
@@ -58,13 +63,57 @@ export default function MainNav() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!activeModal) return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setActiveModal(null)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [activeModal])
+
   // Check if user has admin role
   const isAdmin = user?.publicMetadata?.role === 'admin'
+  const menuPrimaryItems = [
+    "La Familia Collection",
+    "Handbags",
+    "Women",
+    "Men",
+    "New In",
+    "Children",
+    "Travel",
+    "Jewelry & Watches",
+    "Decor & Lifestyle",
+    "Fragrances & Make-Up",
+    "Gifts",
+  ]
+  const menuSecondaryItems = ["Gucci Services", "World of Gucci", "Store Locator"]
+  const contactItems = ["WhatsApp", "Email", "Instagram"]
 
   return (
     <header className="sticky top-0 z-50 w-full">
       {/* Main Header */}
       <div className="relative flex items-center h-15 px-4 md:px-6">
+        <div className="flex items-center gap-3 lg:w-1/3">
+          <Button
+            variant="ghost"
+            className="gap-2 text-xs font-semibold uppercase tracking-[0.2em]"
+            onClick={openContact}
+          >
+            <span className="text-sm leading-none">+</span>
+            Contactanos
+          </Button>
+        </div>
         {/* Center Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
           <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
@@ -117,8 +166,101 @@ export default function MainNav() {
               afterSignOutUrl="/"
             />
           </SignedIn>
+
+          <Button
+            variant="ghost"
+            className="gap-2 text-xs font-semibold uppercase tracking-[0.2em]"
+            onClick={openMenu}
+          >
+            <MenuIcon className="h-4 w-4" />
+            Menu
+          </Button>
         </div>
       </div>
+
+      {activeModal && (
+        <div className="fixed inset-0 z-[70]">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={closeModal}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="nav-modal-title"
+            className="absolute inset-y-0 right-0 w-full max-w-[420px] bg-white px-8 py-10 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="nav-modal-title" className="sr-only">
+              {activeModal === "menu" ? "Menu" : "Contactanos"}
+            </h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-6 top-6 rounded-full bg-black text-white hover:bg-black/90"
+              onClick={closeModal}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Cerrar modal</span>
+            </Button>
+
+            {activeModal === "menu" ? (
+              <nav className="mt-10 space-y-6">
+                <ul className="space-y-4 text-lg font-medium text-black">
+                  {menuPrimaryItems.map((item) => (
+                    <li key={item}>
+                      <button
+                        type="button"
+                        className="transition-opacity hover:opacity-60"
+                        onClick={closeModal}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <ul className="space-y-3 text-sm font-medium text-black/70">
+                  {menuSecondaryItems.map((item) => (
+                    <li key={item}>
+                      <button
+                        type="button"
+                        className="transition-opacity hover:opacity-60"
+                        onClick={closeModal}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ) : (
+              <div className="mt-10 space-y-6">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
+                    Contactanos
+                  </p>
+                  <p className="mt-3 text-sm text-black/70">
+                    Escribenos y te ayudamos con lo que necesites.
+                  </p>
+                </div>
+                <ul className="space-y-4 text-lg font-medium text-black">
+                  {contactItems.map((item) => (
+                    <li key={item}>
+                      <button
+                        type="button"
+                        className="transition-opacity hover:opacity-60"
+                        onClick={closeModal}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Full-screen Search Overlay */}
       {isSearchOpen && (
