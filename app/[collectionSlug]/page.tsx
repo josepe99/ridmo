@@ -56,7 +56,7 @@ import { notFound } from "next/navigation"
 import CatalogBreadcrumb from "@/components/catalog-breadcrumb"
 import { getCollectionBySlug } from "@/lib/actions/collections.actions"
 import { getItemsByCollectionSlug } from "@/lib/actions/items"
-import ProductsGrid from "@/components/products/products-grid"
+import ProductsGrid from "@/components/products/home-grid/products-grid"
 
 type CollectionPageProps = {
   params: {

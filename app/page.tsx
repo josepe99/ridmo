@@ -3,7 +3,7 @@ import ProductCarousel from "@/components/product-carousel";
 import { getCollections } from "@/lib/actions/collections.actions";
 import CollectionHero from "@/components/collection-hero";
 import { Metadata } from "next";
-import ProductsGrid from "@/components/products/products-grid";
+import ProductsGrid from "@/components/products/home-grid/products-grid";
 
 // Enable ISR with 60-second revalidation instead of force-dynamic
 export const revalidate = 60;
