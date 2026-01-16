@@ -62,26 +62,17 @@ export default function MainNav() {
   const isAdmin = user?.publicMetadata?.role === 'admin'
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-black text-white border-b border-gray-800">
+    <header className="sticky top-0 z-50 w-full">
       {/* Main Header */}
-      <div className="relative flex items-center h-20 px-4 md:px-6">
+      <div className="relative flex items-center h-15 px-4 md:px-6">
         {/* Center Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
           <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
-            <Image src="/images/ridmo-logo.png" alt="Milo Logo" width={48} height={48} className="h-12 w-12" />
-            <span className="text-3xl font-extrabold tracking-tight hidden md:block">RIDMO</span>
+            <span className="text-4xl font-extrabold tracking-tight hidden md:block">RIDMO</span>
           </Link>
         </div>
         {/* Right Icons */}
         <div className="ml-auto flex items-center gap-4 lg:w-1/3 justify-end">
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value as Country)}
-            className="border border-gray-600 rounded px-2 py-1 text-sm bg-black text-white"
-          >
-            <option value="AR">AR</option>
-            <option value="PY">PY</option>
-          </select>
           {/* Botón de búsqueda eliminado, solo logo y RIDMO quedan en el centro */}
 
           <Link href="/cart">

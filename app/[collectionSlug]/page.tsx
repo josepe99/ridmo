@@ -90,7 +90,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
     }))
 
     return (
-      <section className="py-6 md:py-24 lg:py-5">
+      <section className="pb-6 md:pb-24 lg:pb-5">
         {/* Breadcrumb */}
         <CatalogBreadcrumb collectionLabel={collection.name} className="mb-1" />
 
