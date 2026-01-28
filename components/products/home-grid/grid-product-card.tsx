@@ -22,11 +22,11 @@ export default function GridProductCard({
     <div className="relative flex flex-col items-center justify-start">
       <div
         className="relative w-full aspect-[3/4] max-h-[520px] bg-white
-          overflow-hidden border border-gray-100 flex items-center justify-center"
+          overflow-hidden border border-gray-100"
       >
         <Link
           href={href}
-          className="group w-full h-full flex items-center justify-center"
+          className="group block w-full h-full"
           prefetch={false}
         >
           <Image
@@ -35,9 +35,8 @@ export default function GridProductCard({
               "/placeholder.svg?height=400&width=300&query=fashion product"
             }
             fill
-            style={{ objectFit: "contain" }}
             alt={product.name}
-            className="transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />
         </Link>
