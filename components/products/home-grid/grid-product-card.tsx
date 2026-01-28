@@ -43,7 +43,7 @@ export default function GridProductCard({
         </Link>
       </div>
       <div className="relative z-10 w-full text-left mt-2 px-2">
-        <span className="text-xs">{product.name}</span>
+        <span className="text-xs font-display">{product.name}</span>
         <br />
         <Price value={product.price} className="text-xs mt-1" />
       </div>

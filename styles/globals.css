@@ -3,7 +3,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: "Didot";
+  src: url("/fonts/Didot.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Didot";
+  src: url("/fonts/Didot-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Didot";
+  src: url("/fonts/Didot-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk";
+  src: url("/fonts/NeueHaasDisplay.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --font-display: "Didot", "Bodoni MT", "Didot LT STD", "Bodoni 72",
+    "Times New Roman", serif;
+  --font-sans: "Neue Haas Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -117,7 +152,38 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-family: var(--font-sans);
+  }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .heading,
+  .display,
+  [data-slot$="title"] {
+    font-family: var(--font-display);
+  }
+  button,
+  input,
+  textarea,
+  select,
+  option,
+  optgroup,
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: inherit;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    font-family: inherit;
   }
 }

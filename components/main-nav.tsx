@@ -1,22 +1,18 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Search, ShoppingBag, X, User, Settings } from "lucide-react"
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
-
+import { Search, ShoppingBag, X, User, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useCountry, Country } from "@/context/country-context"
+import { useState, useEffect } from "react"
+import type React from "react"
+import Link from "next/link"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<"menu" | "contact" | null>(null)
   const [cartItemCount, setCartItemCount] = useState(0)
   const { user } = useUser()
-  const { country, setCountry } = useCountry()
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen)
@@ -117,7 +113,7 @@ export default function MainNav() {
         {/* Center Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
           <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
-            <span className="text-4xl font-extrabold tracking-tight hidden md:block">RIDMO</span>
+            <span className="text-4xl font-extrabold tracking-tight hidden md:block font-display">RIDMO</span>
           </Link>
         </div>
         {/* Right Icons */}

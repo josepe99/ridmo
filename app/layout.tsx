@@ -2,7 +2,6 @@ import { CountryProvider } from "@/context/country-context";
 import { ClerkProvider } from "@clerk/nextjs";
 import MainNav from "@/components/main-nav";
 import Footer from "@/components/footer";
-import { Inter } from "next/font/google";
 import type React from "react";
 import Script from "next/script";
 import "./globals.css";
@@ -14,8 +13,6 @@ import {
   NEXT_PUBLIC_CLERK_SIGN_IN_URL,
   NEXT_PUBLIC_CLERK_SIGN_UP_URL,
 } from "@/lib/settings";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -42,7 +39,7 @@ export default function RootLayout({
             `}
           </Script>
         </head>
-        <body className={inter.className} suppressHydrationWarning>
+        <body className="font-sans" suppressHydrationWarning>
           <CountryProvider>
             <div className="flex flex-col min-h-screen">
               <MainNav />

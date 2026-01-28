@@ -155,7 +155,7 @@ export default function CartPage() {
                   <div className="flex-1 flex flex-col sm:flex-row justify-between">
                     <div className="mb-4 sm:mb-0">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-gray-600">{formatPrice(item.price)}</p>
+                      <p className="text-gray-600 font-display">{formatPrice(item.price)}</p>
                     </div>
                     
                     {/* Quantity Controls */}
@@ -193,7 +193,7 @@ export default function CartPage() {
                   
                   {/* Item Total */}
                   <div className="text-right">
-                    <p className="font-semibold">{formatPrice(item.price * item.quantity)}</p>
+                    <p className="font-semibold font-display">{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}
@@ -218,7 +218,10 @@ export default function CartPage() {
                 </div>
                 
                 <div className="text-right">
-                  <p className="text-lg">Total: <span className="font-bold text-2xl">{formatPrice(totalPrice)}</span></p>
+                  <p className="text-lg">
+                    Total:{" "}
+                    <span className="font-bold text-2xl font-display">{formatPrice(totalPrice)}</span>
+                  </p>
                   <p className="text-sm text-gray-600">{cartItems.length} artículo{cartItems.length !== 1 ? 's' : ''}</p>
                 </div>
               </div>

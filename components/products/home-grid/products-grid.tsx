@@ -20,10 +20,10 @@ export default function ProductsGrid({
   }
 
   return (
-    <section className="w-full bg-white border-t border-gray-100">
+    <section className="w-full bg-white">
       <div className="px-4 md:px-1">
         {title && (
-          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4 uppercase tracking-wide">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-6 uppercase tracking-wide font-display">
             {title}
           </h2>
         )}

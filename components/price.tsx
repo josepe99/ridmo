@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 type PriceProps = {
   value: number;
   className?: string;
@@ -14,5 +16,5 @@ export default function Price({ value, className }: PriceProps) {
 
   const formatted = priceFormatter.format(value);
 
-  return <span className={className}>Gs. {formatted}</span>;
+  return <span className={cn("font-display", className)}>Gs. {formatted}</span>;
 }
