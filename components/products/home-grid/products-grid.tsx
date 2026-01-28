@@ -23,7 +23,9 @@ export default function ProductsGrid({
     <section className="w-full bg-white">
       <div className="px-4 md:px-1">
         {title && (
-          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-6 uppercase tracking-wide font-display">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-6 uppercase
+            tracking-wide font-display"
+          >
             {title}
           </h2>
         )}

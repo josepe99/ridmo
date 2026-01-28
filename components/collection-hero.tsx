@@ -29,38 +29,6 @@ export default function CollectionHero({ collections }: CollectionHeroProps) {
     setCurrentCollectionIndex((prevIndex) => (prevIndex - 1 + collections.length) % collections.length)
   }
 
-  if (!collections || collections.length === 0) {
-    return (
-      <section className="relative w-full h-[400px] md:h-[500px] overflow-hidden">
-        <div className="relative w-full h-full">
-          <Image
-            src="/placeholder.svg?height=1080&width=1920"
-            alt="Nueva Colección RIDMO"
-            fill
-            style={{ objectFit: "cover" }}
-            className="z-0"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-black/30 z-10" />
-          <div className="relative z-20 flex flex-col items-start justify-center h-full px-4 md:px-12 lg:px-24 text-white">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 drop-shadow-lg">
-              COLECCIÓN OTOÑO 2025
-            </h1>
-            <p className="text-lg md:text-xl max-w-2xl mb-8 drop-shadow-md">
-              Descubre la sofisticación y el diseño atemporal en nuestra última propuesta.
-            </p>
-            <Link href="/coleccion">
-              <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg font-semibold rounded-none transition-colors">
-                DESCUBRIR
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
   const activeCollection = collections[currentCollectionIndex]
 
   return (
@@ -76,11 +44,11 @@ export default function CollectionHero({ collections }: CollectionHeroProps) {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/30 z-10" />
-        <div className="relative z-20 flex flex-col items-start justify-center h-full px-4 md:px-12 lg:px-24 text-white">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 drop-shadow-lg">
+        <div className="absolute inset-x-0 bottom-10 z-20 flex flex-col items-start justify-end px-4 md:px-12 lg:px-24 pb-8 text-white">
+          <span className="text-xl md:text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-lg">
             {activeCollection.name.toUpperCase()}
-          </h1>
-          <p className="text-lg md:text-xl max-w-2xl mb-8 drop-shadow-md">
+          </span>
+          <p className="text-lg md:text-lg max-w-2xl mb-1 drop-shadow-md">
             {activeCollection.description}
           </p>
           <Link href={`/${activeCollection.slug}`}>
