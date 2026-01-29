@@ -81,25 +81,17 @@ export default function MainNav() {
   // Check if user has admin role
   const isAdmin = user?.publicMetadata?.role === 'admin'
   const menuPrimaryItems = [
-    "La Familia Collection",
-    "Handbags",
-    "Women",
-    "Men",
-    "New In",
-    "Children",
-    "Travel",
-    "Jewelry & Watches",
-    "Decor & Lifestyle",
-    "Fragrances & Make-Up",
-    "Gifts",
+    "Gafas",
+    "Cubanas",
+    "Pulseras",
+    "Relojes"
   ]
-  const menuSecondaryItems = ["Gucci Services", "World of Gucci", "Store Locator"]
   const contactItems = ["WhatsApp", "Email", "Instagram"]
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="sticky top-0 z-50 w-full bg-white">
       {/* Main Header */}
-      <div className="relative flex items-center h-15 px-4 md:px-6">
+      <div className="relative flex items-center h-12 px-4 md:px-6">
         <div className="flex items-center gap-3 lg:w-1/3">
           <Button
             variant="ghost"
@@ -113,7 +105,13 @@ export default function MainNav() {
         {/* Center Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
           <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
-            <span className="text-4xl font-extrabold tracking-tight hidden md:block font-display">RIDMO</span>
+            <span className="text-4xl font-extrabold hidden md:block"
+              style={{
+                fontFamily: 'Canela'
+              }}
+            >
+              RIDMO
+            </span>
           </Link>
         </div>
         {/* Right Icons */}
@@ -204,19 +202,6 @@ export default function MainNav() {
               <nav className="mt-10 space-y-6">
                 <ul className="space-y-4 text-lg font-medium text-black">
                   {menuPrimaryItems.map((item) => (
-                    <li key={item}>
-                      <button
-                        type="button"
-                        className="transition-opacity hover:opacity-60"
-                        onClick={closeModal}
-                      >
-                        {item}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <ul className="space-y-3 text-sm font-medium text-black/70">
-                  {menuSecondaryItems.map((item) => (
                     <li key={item}>
                       <button
                         type="button"
