@@ -50,3 +50,172 @@ model Item {
 
   @@map("items")
 }
+
+// ---------------------------------------------------------------------------
+// Orders (bank-transfer checkout)
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  TRANSFER
+}
+
+type OrderCustomer {
+  fullName String
+  phone    String
+  email    String?
+}
+
+type OrderShippingAddress {
+  street     String
+  reference  String // house number / apartment / landmark
+  city       String
+  department String // department / state / province
+  country    String
+  notes      String?
+}
+
+// Immutable snapshot of a purchased item: later catalog edits never alter past orders.
+type OrderLine {
+  itemId    String @db.ObjectId
+  name      String
+  slug      String
+  image     String?
+  unitPrice Float
+  quantity  Int
+  lineTotal Float
+}
+
+model Order {
+  id              String               @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber     String               @unique // human friendly, e.g. RID-000123
+  publicToken     String // unguessable secret that gates the public confirmation page
+  status          OrderStatus          @default(PENDING_PAYMENT)
+  paymentMethod   PaymentMethod        @default(TRANSFER)
+  currency        String // always the base currency the prices are stored in (PYG)
+  subtotal        Float
+  total           Float
+  customer        OrderCustomer
+  shippingAddress OrderShippingAddress
+  items           OrderLine[]
+  // Informational only: what the customer was shown in the storefront.
+  displayCountry  String?
+  displayCurrency String?
+  // Owner when a logged-in user checked out; null for guest orders.
+  userId          String?              @db.ObjectId
+  user            User?                @relation(fields: [userId], references: [id])
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+// Atomic sequence generator (one document per named sequence, e.g. "order").
+model Counter {
+  id  String @id @map("_id")
+  seq Int    @default(0)
+
+  @@map("counters")
+}
+
+// Web Push subscription of an admin browser.
+model PushSubscription {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String // id of the admin user that subscribed
+  createdAt DateTime @default(now())
+
+  @@map("push_subscriptions")
+}
+
+// ---------------------------------------------------------------------------
+// Authentication (Auth.js)
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Registered customer or administrator. Guests have no row.
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  // Always stored trimmed + lowercased (see modules/users/domain/email.ts).
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  // argon2id hash; null for Google-only accounts. Never selected into DTOs/JWT.
+  passwordHash  String?
+  role          Role      @default(USER)
+  // Set to block a user: authorization and sign-in both refuse disabled users.
+  disabledAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  orders   Order[]
+
+  @@map("users")
+}
+
+// OAuth account linked to a user (Auth.js adapter model). Only identifiers are kept:
+// provider tokens are intentionally not persisted.
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+// Database-backed rate limiter state. `key` is "<scope>:<sha256(identifier)>" so no raw
+// emails or IP addresses are stored.
+model LoginAttempt {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  key         String    @unique
+  count       Int
+  windowStart DateTime
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([updatedAt])
+  @@map("login_attempts")
+}
+
+// Audit trail of role changes. actorId is a user id, or "cli:promote-admin" for the CLI.
+model RoleChange {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  actorId   String
+  targetId  String   @db.ObjectId
+  fromRole  Role
+  toRole    Role
+  createdAt DateTime @default(now())
+
+  @@index([targetId, createdAt])
+  @@map("role_changes")
+}

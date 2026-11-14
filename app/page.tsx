@@ -1,6 +1,5 @@
-import ProductsGrid from "@/components/products/home-grid/products-grid";
-import { getCollections } from "@/lib/actions/collections.actions";
-import CollectionHero from "@/components/collection-hero";
+import { ProductsGrid, CollectionHero } from "@/modules/catalog";
+import { getActiveCollectionsWithProducts } from "@/modules/catalog/server";
 import { Suspense } from "react";
 import { Metadata } from "next";
 
@@ -58,7 +57,7 @@ export const metadata: Metadata = {
       "Descubre la mejor joyería y cadenas cubanas en Paraguay. Colecciones exclusivas de joyas, cadenas cubanas, collares y accesorios de alta calidad.",
     images: [
       {
-        url: "/images/milo-logo.png",
+        url: "/images/ridmo-logo.png",
         width: 1200,
         height: 630,
         alt: "RIDMO - Joyería y Cadenas Cubanas Paraguay",
@@ -70,7 +69,7 @@ export const metadata: Metadata = {
     title: "RIDMO - Joyería y Cadenas Cubanas en Paraguay",
     description:
       "Descubre la mejor joyería y cadenas cubanas en Paraguay. Colecciones exclusivas de joyas, cadenas cubanas, collares y accesorios de alta calidad.",
-    images: ["/images/milo-logo.png"],
+    images: ["/images/ridmo-logo.png"],
     creator: "@milowearcompany",
   },
   alternates: {
@@ -120,33 +119,21 @@ function CarouselSkeleton() {
 
 // Async component for collections content
 async function CollectionsContent() {
-  const collectionsResult = await getCollections({ isActive: true });
-
-  const collections =
-    collectionsResult.success && collectionsResult.data
-      ? collectionsResult.data.data
-      : [];
+  const collections = await getActiveCollectionsWithProducts();
 
   return (
     <>
       <CollectionHero collections={collections} />
 
       {/* Map through collections and show ProductCarousel for each */}
-      {collections.map((collection: any) => {
-        // Get items with first image for each collection
-        const itemsWithFirstImage =
-          collection.items?.map((item: any) => ({
-            ...item,
-            image: item.images?.[0] || null, // Get first image or null
-          })) || [];
-
-        // Only show carousel if collection has items
-        if (itemsWithFirstImage.length > 0) {
+      {collections.map((collection) => {
+        // Only show the grid if the collection has products
+        if (collection.products.length > 0) {
           return (
             <div key={collection.id} className="mt-10">
               <ProductsGrid
                 title={collection.name}
-                products={itemsWithFirstImage}
+                products={collection.products}
                 collectionSlug={collection.slug}
               />
             </div>

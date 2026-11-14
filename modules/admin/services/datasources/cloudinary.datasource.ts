@@ -1,5 +1,6 @@
+import "server-only"
 import { v2 as cloudinary } from 'cloudinary';
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '../settings';
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '@/shared/lib/settings';
 
 // Configure Cloudinary
 cloudinary.config({

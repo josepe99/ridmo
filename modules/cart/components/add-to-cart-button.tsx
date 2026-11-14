@@ -1,16 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from "@/shared/ui/button"
+import { cn } from "@/shared/lib/utils"
+import type { AddToCartProduct } from "../types"
 
 type AddToCartButtonProps = {
-  product: {
-    id: string
-    name: string
-    price: number
-    image?: string
-    slug: string
-  }
+  product: AddToCartProduct
   className?: string
   variant?: "default" | "outline" | "secondary" | "destructive" | "ghost" | "link"
   size?: "default" | "sm" | "lg" | "icon"

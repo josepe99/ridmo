@@ -1,4 +1,4 @@
-import { getItemBySlug } from "@/lib/actions/items"
+import { getProductBySlug } from "@/modules/catalog/server"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import Image from "next/image"
@@ -15,8 +15,8 @@ import {
   Truck,
   User,
 } from "lucide-react"
-import AddToCartButton from "@/components/add-to-cart-button"
-import Price from "@/components/price"
+import { AddToCartButton } from "@/modules/cart"
+import { Price } from "@/modules/catalog"
 
 export async function generateMetadata({
   params,
@@ -25,13 +25,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { productSlug } = await params
   try {
-    const item = await getItemBySlug(productSlug)
+    const item = await getProductBySlug(productSlug)
     if (!item) return {}
     const title = `${item.name} | RIDMO`
     const description =
       item.description?.slice(0, 160) || "Descubre la mejor moda urbana en RIDMO."
     const imageUrl = item.images?.[0] || "/placeholder.jpg"
-    const url = `https://www.milocompany.store/${item.collection?.slug || params.collectionSlug}/${item.slug}`
+    const url = `https://www.milocompany.store/${item.collectionSlug || params.collectionSlug}/${item.slug}`
     return {
       title,
       description,
@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productSlug } = await params
 
   try {
-    const item = await getItemBySlug(productSlug)
+    const item = await getProductBySlug(productSlug)
     if (!item) {
       notFound()
     }

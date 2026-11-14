@@ -1,18 +1,27 @@
-import { CountryProvider } from "@/context/country-context";
-import { ClerkProvider } from "@clerk/nextjs";
-import MainNav from "@/components/main-nav";
-import Footer from "@/components/footer";
+import { AuthSessionProvider } from "@/modules/users";
+import MainNav from "@/shared/layout/main-nav";
+import Footer from "@/shared/layout/footer";
 import type React from "react";
 import Script from "next/script";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
-import {
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
-  NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
-  NEXT_PUBLIC_CLERK_SIGN_IN_URL,
-  NEXT_PUBLIC_CLERK_SIGN_UP_URL,
-} from "@/lib/settings";
+
+const fontSans = localFont({
+  src: "../public/fonts/NeueHaasDisplay.woff2",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  variable: "--font-neue-haas",
+});
+
+const fontSerif = localFont({
+  src: "../public/fonts/Canela-Regular.woff2",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  variable: "--font-canela",
+});
 
 export default function RootLayout({
   children,
@@ -20,36 +29,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      publishableKey={NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      afterSignInUrl={NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL}
-      afterSignUpUrl={NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL}
-      signInUrl={NEXT_PUBLIC_CLERK_SIGN_IN_URL}
-      signUpUrl={NEXT_PUBLIC_CLERK_SIGN_UP_URL}
+    <html
+      lang="es"
+      data-scroll-behavior="smooth"
+      className={`${fontSans.variable} ${fontSerif.variable}`}
     >
-      <html lang="es">
-        <head>
-          <Script id="clarity-script" strategy="afterInteractive">
-            {`
-              (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, "clarity", "script", "t9d6rci8oo");
-            `}
-          </Script>
-        </head>
-        <body className="font-sans" suppressHydrationWarning>
-          <CountryProvider>
-            <div className="flex flex-col min-h-screen">
-              <MainNav />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </CountryProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+      <head>
+        <Script id="clarity-script" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "t9d6rci8oo");
+          `}
+        </Script>
+      </head>
+      <body className="font-sans" suppressHydrationWarning>
+        <AuthSessionProvider>
+          <div className="flex flex-col min-h-screen">
+            <MainNav />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <Toaster />
+        </AuthSessionProvider>
+      </body>
+    </html>
   );
 }

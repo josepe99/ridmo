@@ -1,0 +1,34 @@
+# Local development database for Ridmo.
+#
+# Prisma requires MongoDB to run as a replica set (it uses transactions), so this
+# runs a single-node replica set and initiates it automatically via the healthcheck.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   DATABASE_URL="mongodb://localhost:27017/RIDMO?replicaSet=rs0&directConnection=true"
+#   pnpm exec prisma db push   # create collections/indexes from the schema
+services:
+  mongo:
+    image: mongo:7
+    container_name: ridmo-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    volumes:
+      - ridmo-mongo-data:/data/db
+    healthcheck:
+      # Initiates the replica set on first run; afterwards it just reports healthy.
+      test: |
+        mongosh --quiet --port 27017 --eval "
+          try { rs.status().ok } catch (e) {
+            rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }).ok
+          }
+        " | grep -q 1
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  ridmo-mongo-data:

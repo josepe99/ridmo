@@ -3,25 +3,31 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/Canela-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/*
+ * Fonts are loaded with next/font/local in app/layout.tsx, which exposes the
+ * raw families as --font-neue-haas and --font-canela. They are mapped to the
+ * semantic --font-sans / --font-serif tokens below.
+ */
+@theme static {
+  --font-sans: var(--font-neue-haas), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-canela), ui-serif, Georgia, serif;
 
-@font-face {
-  font-family: "Neue Haas Grotesk";
-  src: url("/fonts/NeueHaasDisplay.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  /* Strict monochrome palette: black, white and three subtle greys. */
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-grey-100: #f5f5f5; /* hover surfaces */
+  --color-grey-200: #e5e5e5; /* borders, dividers */
+  --color-grey-400: #a3a3a3; /* muted text, hover borders */
+
+  /* Tracking scale (named so it does not override Tailwind's defaults). */
+  --tracking-display: -0.02em; /* large serif headlines */
+  --tracking-label: 0.08em; /* buttons, small caps labels */
+  --tracking-eyebrow: 0.2em; /* eyebrows, nav items */
 }
 
 :root {
-  --font-display: "Neue Haas Grotesk", serif;
-  --font-sans: "Neue Haas Grotesk", sans-serif;
+  /* Headings keep using the sans family until the visual redesign. */
+  --font-display: var(--font-sans);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -132,6 +138,11 @@
 }
 
 @layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -179,4 +190,26 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Checkout step change: a quiet fade, switched off for reduced motion. */
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-step-in {
+  animation: step-in 250ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-in {
+    animation: none;
+  }
 }

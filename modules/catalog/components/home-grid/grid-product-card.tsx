@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import type { Item } from "@/lib/data";
-import Price from "@/components/price";
+import type { ProductSummary } from "../../types";
+import Price from "../price";
 
 type GridProductCardProps = {
-  product: Item;
+  product: ProductSummary;
   collectionSlug?: string;
 };
 

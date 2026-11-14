@@ -3,19 +3,12 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/ui/button"
+import type { CollectionSummary } from "../types"
 import { ChevronLeft, ChevronRight, Pause } from "lucide-react"
 
-type Collection = {
-  id: string
-  name: string
-  slug: string
-  description: string
-  imageUrl?: string
-}
-
 type CollectionHeroProps = {
-  collections: Collection[]
+  collections: CollectionSummary[]
 }
 
 export default function CollectionHero({ collections }: CollectionHeroProps) {
@@ -30,6 +23,8 @@ export default function CollectionHero({ collections }: CollectionHeroProps) {
   }
 
   const activeCollection = collections[currentCollectionIndex]
+
+  if (!activeCollection) return null
 
   return (
     <section className="relative w-full h-[400px] md:h-[500px] overflow-hidden">

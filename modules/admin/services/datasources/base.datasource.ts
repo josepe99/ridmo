@@ -1,5 +1,6 @@
+import "server-only"
 import { PrismaClient } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/shared/lib/prisma';
 
 export interface QueryOptions {
   include?: Record<string, any>;

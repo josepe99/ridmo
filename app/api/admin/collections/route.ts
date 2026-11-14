@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/modules/users/server'
+import { authorizationErrorResponse } from '@/modules/users/errors'
+import { prisma } from '@/shared/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +34,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(collection)
   } catch (error) {
+    const denied = authorizationErrorResponse(error)
+    if (denied) return denied
     console.error('Error creating collection:', error)
     return NextResponse.json(
       { error: 'Failed to create collection' },
@@ -60,6 +63,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(collections)
   } catch (error) {
+    const denied = authorizationErrorResponse(error)
+    if (denied) return denied
     console.error('Error fetching collections:', error)
     return NextResponse.json(
       { error: 'Failed to fetch collections' },

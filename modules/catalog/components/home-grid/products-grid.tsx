@@ -1,9 +1,9 @@
-import { cn } from "@/lib/utils";
-import type { Item } from "@/lib/data";
-import GridProductCard from "@/components/products/home-grid/grid-product-card";
+import { cn } from "@/shared/lib/utils";
+import type { ProductSummary } from "../../types";
+import GridProductCard from "./grid-product-card";
 
 type ProductsGridProps = {
-  products: Item[];
+  products: ProductSummary[];
   collectionSlug?: string;
   title?: string;
   className?: string;

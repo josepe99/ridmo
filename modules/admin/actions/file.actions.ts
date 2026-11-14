@@ -1,7 +1,8 @@
 'use server'
 
-import { CloudinaryListOptions, CloudinaryUploadOptions } from '@/lib/datasources/cloudinary.datasource'
-import { FileController } from '@/lib/controllers/file.controller'
+import { requireAdmin } from '@/modules/users/server'
+import { CloudinaryListOptions, CloudinaryUploadOptions } from '../services/datasources/cloudinary.datasource'
+import { FileController } from '../services/controllers/file.controller'
 
 const fileController = new FileController()
 
@@ -9,6 +10,7 @@ export async function uploadImage(
   file: File | Buffer | string,
   options: CloudinaryUploadOptions = {}
 ) {
+  await requireAdmin()
   try {
     const data = await fileController.uploadImage(file, options)
     return { success: true, data }
@@ -19,6 +21,7 @@ export async function uploadImage(
 }
 
 export async function getImage(publicId: string) {
+  await requireAdmin()
   try {
     const data = await fileController.getImage(publicId)
     return { success: true, data }
@@ -29,6 +32,7 @@ export async function getImage(publicId: string) {
 }
 
 export async function getImages(options: CloudinaryListOptions = {}) {
+  await requireAdmin()
   try {
     const data = await fileController.getImages(options)
     return { success: true, data }
@@ -39,6 +43,7 @@ export async function getImages(options: CloudinaryListOptions = {}) {
 }
 
 export async function removeImage(publicId: string) {
+  await requireAdmin()
   try {
     await fileController.removeImage(publicId)
     return { success: true }

@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getByAdminAction } from '@/lib/actions/collections.actions';
-import { EditItemModal } from '@/components/admin/edit-item-modal';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { getByAdminAction } from '@/modules/admin/server';
+import { EditItemModal } from '@/modules/admin';
 import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
 import { notFound } from 'next/navigation';
-import { requireAdmin } from '@/lib/auth';
-import Price from '@/components/price';
+import { requireAdmin } from '@/modules/users/server';
+import { Price } from '@/modules/catalog';
 import Image from 'next/image';
 import Link from 'next/link';
 

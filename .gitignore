@@ -26,3 +26,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /lib/generated/prisma
+
+# keep the template tracked
+!.env.example
+
+# test coverage output
+/coverage

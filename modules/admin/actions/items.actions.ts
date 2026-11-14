@@ -1,6 +1,7 @@
 'use server'
 
-import { ItemController } from '@/lib/controllers/item.controller'
+import { requireAdmin } from '@/modules/users/server'
+import { ItemController } from '../services/controllers/item.controller'
 
 const itemController = new ItemController()
 
@@ -11,6 +12,7 @@ export async function getItems(options?: {
   search?: string
   isActive?: boolean
 }) {
+  await requireAdmin()
   try {
     const result = await itemController.getItems({
       page: options?.page || 1,
@@ -27,6 +29,7 @@ export async function getItems(options?: {
 }
 
 export async function getItemById(id: string) {
+  await requireAdmin()
   try {
     const result = await itemController.getItemById(id)
     return { success: true, data: result }
@@ -37,6 +40,7 @@ export async function getItemById(id: string) {
 }
 
 export async function getItemsByCollectionId(collectionId: string) {
+  await requireAdmin()
   try {
     const result = await itemController.getItems({
       page: 1,
@@ -49,27 +53,4 @@ export async function getItemsByCollectionId(collectionId: string) {
     console.error('Error fetching items by collection:', error)
     return { success: false, error: 'Failed to fetch items by collection' }
   }
-}
-
-export async function getItemBySlug(slug: string) {
-  const result = await itemController.getItemBySlug(slug)
-  if (!result) {
-    throw new Error('Item not found')
-  }
-  return result
-}
-
-export async function getItemsByCollectionSlug(collectionSlug: string) {
-  // Import collections action to get collection by slug
-  const { getCollectionBySlug } = await import('./collections.actions')
-  const collection = await getCollectionBySlug(collectionSlug)
-
-  const result = await itemController.getItems({
-    page: 1,
-    limit: 100,
-    collectionId: collection.id,
-    isActive: true
-  })
-  
-  return result.data
 }

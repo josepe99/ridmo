@@ -1,18 +1,17 @@
 "use client"
 
-import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
-import { Search, ShoppingBag, X, User, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Search, ShoppingBag, X } from "lucide-react"
+import { Button } from "@/shared/ui/button"
+import { Input } from "@/shared/ui/input"
 import { useState, useEffect } from "react"
 import type React from "react"
 import Link from "next/link"
+import { UserMenu } from "@/modules/users"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<"menu" | "contact" | null>(null)
   const [cartItemCount, setCartItemCount] = useState(0)
-  const { user } = useUser()
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen)
@@ -78,15 +77,13 @@ export default function MainNav() {
     }
   }, [activeModal])
 
-  // Check if user has admin role
-  const isAdmin = user?.publicMetadata?.role === 'admin'
   const menuPrimaryItems = [
     "Gafas",
     "Cubanas",
     "Pulseras",
     "Relojes"
   ]
-  const contactItems = ["WhatsApp", "Email", "Instagram"]
+  const contactItems = ["WhatsApp", "Instagram"]
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white">
@@ -130,36 +127,8 @@ export default function MainNav() {
             </Button>
           </Link>
 
-          {/* Admin Link - Only show for admin users */}
-          {isAdmin && (
-            <Link href="/admin/collections">
-              <Button variant="ghost" size="icon" className="rounded-full" title="Admin Panel">
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Admin</span>
-              </Button>
-            </Link>
-          )}
-
-          {/* User Authentication */}
-          <SignedOut>
-            <Link href="/sign-in">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Iniciar sesión</span>
-              </Button>
-            </Link>
-          </SignedOut>
-
-          <SignedIn>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: 'w-8 h-8',
-                }
-              }}
-              afterSignOutUrl="/"
-            />
-          </SignedIn>
+          {/* Account: sign-in link for guests, profile / admin / sign-out for users */}
+          <UserMenu />
 
           <Button
             variant="ghost"

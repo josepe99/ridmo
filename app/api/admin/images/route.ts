@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/auth';
-import { ImageController } from '@/lib/controllers/image.controller';
+import { requireAdmin } from '@/modules/users/server';
+import { authorizationErrorResponse } from '@/modules/users/errors'
+import { ImageController } from '@/modules/admin/server';
 
 const imageController = new ImageController();
 
@@ -9,10 +10,12 @@ export async function POST(request: NextRequest) {
     await requireAdmin();
     return await imageController.POST(request);
   } catch (error) {
+    const denied = authorizationErrorResponse(error)
+    if (denied) return denied
     console.error('Error in image upload API:', error);
     return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
+      { error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }
@@ -22,10 +25,12 @@ export async function DELETE(request: NextRequest) {
     await requireAdmin();
     return await imageController.DELETE(request);
   } catch (error) {
+    const denied = authorizationErrorResponse(error)
+    if (denied) return denied
     console.error('Error in image delete API:', error);
     return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
+      { error: 'Internal server error' },
+      { status: 500 }
     );
   }
 }

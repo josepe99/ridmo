@@ -1,15 +1,17 @@
 import type React from "react"
-import { requireAdmin } from '@/lib/auth'
+import { requireAdminPage } from '@/modules/users/server'
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Settings, Package, Users, BarChart3 } from "lucide-react"
+import { Button } from "@/shared/ui/button"
+import { ArrowLeft, Settings, Package, ShoppingBag, Users } from "lucide-react"
+import { EnableNotificationsButton } from "@/modules/notifications"
+import { getVapidPublicKey } from "@/modules/notifications/server"
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  await requireAdmin()
+  await requireAdminPage()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -29,6 +31,7 @@ export default async function AdminLayout({
                 <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
               </div>
             </div>
+            <EnableNotificationsButton vapidPublicKey={getVapidPublicKey()} />
           </div>
         </div>
       </div>
@@ -43,6 +46,20 @@ export default async function AdminLayout({
             >
               <Package className="h-4 w-4" />
               Collections
+            </Link>
+            <Link
+              href="/admin/orders"
+              className="flex items-center gap-2 px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              Pedidos
+            </Link>
+            <Link
+              href="/admin/users"
+              className="flex items-center gap-2 px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+            >
+              <Users className="h-4 w-4" />
+              Usuarios
             </Link>
             {/* Add more admin navigation items here as needed */}
           </nav>

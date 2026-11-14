@@ -1,12 +1,12 @@
-import { requireAdmin } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { requireAdmin } from '@/modules/users/server'
+import { prisma } from '@/shared/lib/prisma'
+import { Button } from '@/shared/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Plus, Eye } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-import { EditCollectionModal } from '@/components/admin/edit-collection-modal'
+import { EditCollectionModal } from '@/modules/admin'
 
 export default async function AdminCollectionsPage() {
   await requireAdmin()

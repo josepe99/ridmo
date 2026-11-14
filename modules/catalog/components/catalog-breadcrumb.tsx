@@ -7,8 +7,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { cn } from "@/lib/utils"
+} from "@/shared/ui/breadcrumb"
+import { cn } from "@/shared/lib/utils"
 
 type CatalogBreadcrumbProps = {
   collectionLabel?: string

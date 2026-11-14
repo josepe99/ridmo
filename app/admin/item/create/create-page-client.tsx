@@ -4,9 +4,9 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Plus } from "lucide-react"
 
-import { ItemForm } from "@/app/admin/item/components/ItemForm"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ItemForm } from "@/modules/admin"
+import { Button } from "@/shared/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 
 interface CreateItemPageClientProps {
   collections: { id: string; name: string }[]

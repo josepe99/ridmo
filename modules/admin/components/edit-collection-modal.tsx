@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -10,11 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/shared/ui/dialog"
 import { Edit } from "lucide-react"
 import { toast } from "sonner"
 import { ImageUploadComponent, ImageUpload } from "./image-upload"
-import { CollectionForm, CollectionFormValues } from "@/app/admin/collections/components/CollectionForm"
+import { CollectionForm, CollectionFormValues } from "./collection-form"
 
 interface Collection {
   id: string

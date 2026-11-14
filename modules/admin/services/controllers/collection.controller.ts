@@ -17,7 +17,8 @@ const updateCollectionSchema = createCollectionSchema.partial();
 const querySchema = z.object({
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),
   limit: z.string().optional().transform(val => val ? parseInt(val) : 10),
-  isActive: z.string().optional().transform(val => val === 'true'),
+  // Absent param means "no filter"; only an explicit value filters.
+  isActive: z.string().optional().transform(val => (val === undefined ? undefined : val === 'true')),
 });
 
 export class CollectionController extends BaseController {

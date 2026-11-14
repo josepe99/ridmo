@@ -1,12 +1,7 @@
 // Environment variables configuration - Direct exports
 
-// Clerk Configuration
-export const NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-export const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY!;
-export const NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/';
-export const NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/';
-export const NEXT_PUBLIC_CLERK_SIGN_IN_URL = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/sign-in';
-export const NEXT_PUBLIC_CLERK_SIGN_UP_URL = process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/sign-up';
+// Authentication (Auth.js): AUTH_SECRET, AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are read by
+// Auth.js itself from the environment and are intentionally not re-exported here.
 
 // Database Configuration
 export const DATABASE_URL = process.env.DATABASE_URL!;
@@ -27,8 +22,7 @@ export const NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER = process.env.NEXT_PUBLIC_WHATSAP
 // Validation function to ensure all required environment variables are set
 export function validateEnvironmentVariables() {
   const requiredVars = [
-    'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
-    'CLERK_SECRET_KEY',
+    'AUTH_SECRET',
     'DATABASE_URL',
     'CLOUDINARY_CLOUD_NAME',
     'CLOUDINARY_API_KEY',

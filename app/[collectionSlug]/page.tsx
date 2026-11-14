@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { getCollectionBySlug, getProductsByCollectionSlug } from "@/modules/catalog/server"
 
 type CollectionParams = {
   collectionSlug: string
@@ -15,7 +16,7 @@ export async function generateMetadata(
     if (!collection) return {};
     const title = `${collection.name} | RIDMO`;
     const description = collection.description?.slice(0, 160) || `Descubre la colección ${collection.name} en RIDMO.`;
-    const imageUrl = collection.image || "/images/milo-logo.png";
+    const imageUrl = collection.imageUrl || "/images/ridmo-logo.png";
     const url = `https://www.milocompany.store/${collection.slug}`;
     return {
       title,
@@ -53,10 +54,7 @@ export async function generateMetadata(
 }
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import CatalogBreadcrumb from "@/components/catalog-breadcrumb"
-import { getCollectionBySlug } from "@/lib/actions/collections.actions"
-import { getItemsByCollectionSlug } from "@/lib/actions/items"
-import ProductsGrid from "@/components/products/home-grid/products-grid"
+import { CatalogBreadcrumb, ProductsGrid } from "@/modules/catalog"
 
 type CollectionPageProps = {
   params: {
@@ -70,24 +68,14 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   
   try {
     // Get the collection and its items in parallel using Promise.all
-    const [collection, items] = await Promise.all([
+    const [collection, products] = await Promise.all([
       getCollectionBySlug(collectionSlug),
-      getItemsByCollectionSlug(collectionSlug)
+      getProductsByCollectionSlug(collectionSlug)
     ])
 
     if (!collection) {
       notFound()
     }
-
-    const products = items.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      slug: item.slug,
-      description: item.description ?? "",
-      price: item.price,
-      image: item.images?.[0] || "",
-      collectionSlug,
-    }))
 
     return (
       <section className="pb-6 md:pb-24 lg:pb-5">

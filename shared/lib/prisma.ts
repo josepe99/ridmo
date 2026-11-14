@@ -1,3 +1,5 @@
+import "server-only"
+
 import { PrismaClient } from '@prisma/client'
 
 declare global {
@@ -6,7 +8,7 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-const prisma = globalThis.prisma ?? new PrismaClient({
+export const prisma = globalThis.prisma ?? new PrismaClient({
   log: ['error'],
 })
 
@@ -19,5 +21,3 @@ if (process.env.NODE_ENV !== 'production') {
 export async function disconnectPrisma() {
   await prisma.$disconnect();
 }
-
-export default prisma

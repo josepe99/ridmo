@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { CollectionForm, CollectionFormValues } from "@/app/admin/collections/components/CollectionForm"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
+import { Button } from "@/shared/ui/button"
+import { CollectionForm, CollectionFormValues } from "@/modules/admin"
 
 interface CreateCollectionPageClientProps {
   onUploadImage: (formData: FormData) => Promise<{

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/utils';
 
 export interface ImageUpload {
   file?: File;
@@ -240,6 +240,7 @@ export function ImageUploadComponent({
             <Label>Image Previews ({images.length}/{maxImages})</Label>
             {images.some(img => img.file && !img.url) && (
               <Button
+                type="button"
                 onClick={uploadImages}
                 disabled={uploading}
                 size="sm"
@@ -284,6 +285,7 @@ export function ImageUploadComponent({
 
                 {/* Remove Button */}
                 <Button
+                  type="button"
                   variant="destructive"
                   size="sm"
                   className="absolute top-2 right-2 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
