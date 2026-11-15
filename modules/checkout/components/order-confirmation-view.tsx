@@ -1,6 +1,11 @@
 import Image from "next/image"
 import Link from "next/link"
-import { OrderStatusBadge, formatOrderMoney, type OrderConfirmation } from "@/modules/orders"
+import {
+  InternationalShippingNotice,
+  OrderStatusBadge,
+  formatOrderMoney,
+  type OrderConfirmation,
+} from "@/modules/orders"
 import type { BankTransferDetails } from "../services/bank-details"
 import { BankTransferDetailsList } from "./bank-transfer-details"
 import { EYEBROW } from "./step-heading"
@@ -70,6 +75,9 @@ export function OrderConfirmationView({ order, bank, whatsappNumber }: Props) {
             <span>Confirmaremos tu pago y coordinaremos el envío con vos.</span>
           </li>
         </ol>
+        <div className="mt-8">
+          <InternationalShippingNotice country={order.shippingCountry} showCountry />
+        </div>
         {whatsappDigits ? (
           <a
             href={`https://wa.me/${whatsappDigits}?text=${encodeURIComponent(proofMessage)}`}

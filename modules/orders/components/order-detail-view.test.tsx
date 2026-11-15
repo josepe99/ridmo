@@ -5,11 +5,13 @@ vi.mock("next/image", async () => await import("@/tests/mocks/next-image"))
 vi.mock("next/navigation", async () => await import("@/tests/mocks/next-navigation"))
 vi.mock("../actions/update-order-status.action", () => ({ updateOrderStatusAction: vi.fn() }))
 
+import { INTERNATIONAL_SHIPPING_ADMIN_NOTICE } from "../domain/shipping-countries"
 import type { OrderDetail } from "../types"
 import { OrderDetailView } from "./order-detail-view"
 
 const order: OrderDetail = {
   id: "o1",
+  shippingCountry: "Paraguay",
   orderNumber: "RID-000009",
   status: "PENDING_PAYMENT",
   paymentMethod: "TRANSFER",
@@ -25,6 +27,7 @@ const order: OrderDetail = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    postalCode: null,
     notes: "Tocar timbre",
   },
   items: [
@@ -76,6 +79,32 @@ describe("OrderDetailView", () => {
 
     rerender(<OrderDetailView order={{ ...order, shippingAddress: { ...order.shippingAddress, notes: null } }} />)
     expect(screen.queryByText(/Notas:/)).not.toBeInTheDocument()
+  })
+
+  it("shows the country and no notice or postal code for a Paraguay order without one", () => {
+    render(<OrderDetailView order={order} />)
+
+    const address = screen.getByText("Calle Palma 123").closest("address") as HTMLElement
+    expect(within(address).getByText("Paraguay")).toBeInTheDocument()
+    expect(screen.queryByText(/Código postal/)).not.toBeInTheDocument()
+    expect(screen.queryByText(INTERNATIONAL_SHIPPING_ADMIN_NOTICE)).not.toBeInTheDocument()
+  })
+
+  it("shows the country, the postal code and the coordination notice for an international order", () => {
+    render(
+      <OrderDetailView
+        order={{
+          ...order,
+          shippingCountry: "Argentina",
+          shippingAddress: { ...order.shippingAddress, country: "Argentina", postalCode: "C1425" },
+        }}
+      />
+    )
+
+    const address = screen.getByText("Calle Palma 123").closest("address") as HTMLElement
+    expect(within(address).getByText("Argentina")).toBeInTheDocument()
+    expect(within(address).getByText("Código postal: C1425")).toBeInTheDocument()
+    expect(screen.getByText(INTERNATIONAL_SHIPPING_ADMIN_NOTICE)).toBeInTheDocument()
   })
 
   it("lists products with quantity x unit price and the total", () => {

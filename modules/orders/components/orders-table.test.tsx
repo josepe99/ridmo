@@ -8,6 +8,7 @@ import { OrdersTable } from "./orders-table"
 
 const order = (overrides: Partial<OrderSummary> = {}): OrderSummary => ({
   id: "o1",
+  shippingCountry: "Paraguay",
   orderNumber: "RID-000001",
   status: "PENDING_PAYMENT",
   total: 6_800_000,
@@ -38,6 +39,14 @@ describe("OrdersTable", () => {
     expect(first.getByText("Gs. 6.800.000")).toBeInTheDocument()
   })
 
+  it("shows the destination country of each order", () => {
+    render(<OrdersTable orders={[order(), order({ id: "o2", orderNumber: "RID-000002", shippingCountry: "Argentina" })]} />)
+
+    const rows = screen.getAllByRole("row")
+    expect(within(rows[1]).getByText("Paraguay")).toBeInTheDocument()
+    expect(within(rows[2]).getByText("Argentina")).toBeInTheDocument()
+  })
+
   it("pluralises the unit count", () => {
     render(<OrdersTable orders={[order({ itemCount: 1 }), order({ id: "o2", itemCount: 3 })]} />)
 
@@ -52,6 +61,7 @@ describe("OrdersTable", () => {
     expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
       "Pedido",
       "Cliente",
+      "País",
       "Fecha",
       "Estado",
       "Total",

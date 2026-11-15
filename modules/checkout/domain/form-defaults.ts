@@ -1,8 +1,10 @@
-import type { CheckoutDefaults } from "@/modules/orders"
+import { DOMESTIC_COUNTRY, isShippingCountry, type CheckoutDefaults } from "@/modules/orders"
 import type { CheckoutFormValues } from "../schemas/checkout.schema"
 
-/** The store ships inside Paraguay only: the country is fixed, never chosen by the shopper. */
-export const SHIPPING_COUNTRY = "Paraguay"
+/** A saved country is reused only while it is still an allowed destination; otherwise Paraguay. */
+function resolveCountry(saved: string | undefined): string {
+  return isShippingCountry(saved) ? saved : DOMESTIC_COUNTRY
+}
 
 /** Initial form values: empty for guests, prefilled contact and address for signed-in customers. */
 export function buildFormDefaults(defaults?: CheckoutDefaults): CheckoutFormValues {
@@ -17,7 +19,8 @@ export function buildFormDefaults(defaults?: CheckoutDefaults): CheckoutFormValu
       reference: defaults?.shippingAddress?.reference ?? "",
       city: defaults?.shippingAddress?.city ?? "",
       department: defaults?.shippingAddress?.department ?? "",
-      country: SHIPPING_COUNTRY,
+      country: resolveCountry(defaults?.shippingAddress?.country),
+      postalCode: defaults?.shippingAddress?.postalCode ?? "",
       notes: defaults?.shippingAddress?.notes ?? "",
     },
   }

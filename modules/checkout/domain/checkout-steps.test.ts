@@ -109,6 +109,7 @@ describe("isShippingFieldPath", () => {
     "shippingAddress.city",
     "shippingAddress.department",
     "shippingAddress.country",
+    "shippingAddress.postalCode",
     "shippingAddress.notes",
   ])("maps %s to the shipping step", (path) => {
     expect(isShippingFieldPath(path)).toBe(true)
@@ -128,6 +129,21 @@ describe("stepForServerFailure", () => {
       stepForServerFailure({
         code: "VALIDATION",
         fieldErrors: { "customer.phone": "x", "shippingAddress.city": "y" },
+      })
+    ).toBe("shipping")
+  })
+
+  it("routes a rejected country or postal code back to the shipping step", () => {
+    expect(
+      stepForServerFailure({
+        code: "VALIDATION",
+        fieldErrors: { "shippingAddress.country": "Elegí un país de la lista" },
+      })
+    ).toBe("shipping")
+    expect(
+      stepForServerFailure({
+        code: "VALIDATION",
+        fieldErrors: { "shippingAddress.postalCode": "x" },
       })
     ).toBe("shipping")
   })

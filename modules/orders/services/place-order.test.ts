@@ -197,6 +197,31 @@ describe("placeOrder: successful order", () => {
     expect(data.shippingAddress.notes).toBe("Tocar timbre")
   })
 
+  it("stores the country and the postal code of an international order", async () => {
+    const result = await placeOrder({
+      ...input,
+      shippingAddress: { ...input.shippingAddress, country: "Argentina", postalCode: "C1425" },
+    })
+
+    const data = txMock.order.create.mock.calls[0][0].data
+    expect(data.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
+    expect(result).toMatchObject({ ok: true, order: { shippingCountry: "Argentina" } })
+  })
+
+  it("stores a null postal code for the legacy shape and for an empty value", async () => {
+    await placeOrder(input)
+    await placeOrder({ ...input, shippingAddress: { ...input.shippingAddress, postalCode: "" } })
+
+    for (const [call] of txMock.order.create.mock.calls) {
+      expect(call.data.shippingAddress.postalCode).toBeNull()
+      expect(call.data.shippingAddress.country).toBe("Paraguay")
+    }
+  })
+
+  it("reports Paraguay as the shipping country of a domestic order", async () => {
+    await expect(placeOrder(input)).resolves.toMatchObject({ ok: true, order: { shippingCountry: "Paraguay" } })
+  })
+
   it("stores the order in guaranies and no longer records any display country or currency", async () => {
     await placeOrder(input)
 

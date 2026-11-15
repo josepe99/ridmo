@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { formatOrderDate, formatOrderMoney } from "../domain/format"
 import type { OrderDetail } from "../types"
+import { InternationalShippingNotice } from "./international-shipping-notice"
 import { OrderStatusActions } from "./order-status-actions"
 import { OrderStatusBadge } from "./order-status-badge"
 
@@ -57,11 +58,15 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
             <p>
               {shippingAddress.city}, {shippingAddress.department}
             </p>
+            {shippingAddress.postalCode ? <p>Código postal: {shippingAddress.postalCode}</p> : null}
             <p>{shippingAddress.country}</p>
             {shippingAddress.notes ? (
               <p className="pt-2 text-neutral-500">Notas: {shippingAddress.notes}</p>
             ) : null}
           </address>
+          <div className="mt-4">
+            <InternationalShippingNotice country={shippingAddress.country} audience="admin" />
+          </div>
         </Section>
       </div>
 

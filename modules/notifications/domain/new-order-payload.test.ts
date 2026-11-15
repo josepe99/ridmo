@@ -27,6 +27,23 @@ describe("buildNewOrderPayload", () => {
   })
 })
 
+describe("buildNewOrderPayload shipping country", () => {
+  const base = { id: "o1", orderNumber: "RID-000001", total: 1500, currency: "PYG" }
+
+  it.each([undefined, "Paraguay", "paraguay"])("does not mention a domestic destination (%j)", (shippingCountry) => {
+    const payload = buildNewOrderPayload({ ...base, shippingCountry })
+
+    expect(payload.body).toBe("RID-000001 · Gs. 1.500")
+    expect(payload.body).not.toContain("Envío a")
+  })
+
+  it("appends the country when the order ships abroad", () => {
+    const payload = buildNewOrderPayload({ ...base, shippingCountry: "Argentina" })
+
+    expect(payload.body).toBe("RID-000001 · Gs. 1.500 · Envío a Argentina")
+  })
+})
+
 describe("buildNewOrderPayload with other currencies", () => {
   it("shows the currency code instead of the Gs. symbol", () => {
     const payload = buildNewOrderPayload({ id: "o1", orderNumber: "RID-000001", total: 1500, currency: "USD" })

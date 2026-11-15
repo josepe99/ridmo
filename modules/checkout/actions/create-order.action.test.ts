@@ -34,6 +34,7 @@ const placed = {
   order: {
     id: "o1",
     orderNumber: "RID-000001",
+    shippingCountry: "Paraguay",
     accessToken: "secret-token-1234567890",
     total: 2000,
     currency: "PYG",
@@ -92,6 +93,56 @@ describe("createOrder: validation", () => {
     const sent = vi.mocked(placeOrder).mock.calls[0][0]
     expect(sent.lines).toEqual([{ itemId: "64b7f0a0a0a0a0a0a0a0a0a0", quantity: 2 }])
     expect(sent).not.toHaveProperty("total")
+  })
+})
+
+describe("createOrder: shipping country", () => {
+  const withAddress = (overrides: Record<string, unknown>) => ({
+    ...validInput,
+    shippingAddress: { ...validInput.shippingAddress, ...overrides },
+  })
+
+  it.each(["Narnia", "", "argentina", "<script>alert(1)</script>", "Paraguay; DROP TABLE orders", "__proto__"])(
+    "rejects the country %j on the server and never places the order",
+    async (country) => {
+      const result = await createOrder(withAddress({ country }))
+
+      expect(result).toMatchObject({ ok: false, code: "VALIDATION" })
+      if (result.ok || result.code !== "VALIDATION") throw new Error("unreachable")
+      expect(Object.keys(result.fieldErrors)).toContain("shippingAddress.country")
+      expect(placeOrder).not.toHaveBeenCalled()
+    }
+  )
+
+  it("rejects a postal code with disallowed characters", async () => {
+    const result = await createOrder(withAddress({ country: "Argentina", postalCode: "<b>1</b>" }))
+
+    if (result.ok || result.code !== "VALIDATION") throw new Error("unreachable")
+    expect(result.fieldErrors["shippingAddress.postalCode"]).toBeDefined()
+    expect(placeOrder).not.toHaveBeenCalled()
+  })
+
+  it("places an international order with its country and postal code, still without prices from the client", async () => {
+    vi.mocked(placeOrder).mockResolvedValue({
+      ok: true,
+      order: { ...placed.order, shippingCountry: "Argentina" },
+    })
+
+    await expect(
+      createOrder({ ...withAddress({ country: " Argentina ", postalCode: " C1425 " }), total: 1 })
+    ).resolves.toMatchObject({ ok: true })
+
+    const sent = vi.mocked(placeOrder).mock.calls[0][0]
+    expect(sent.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
+    expect(sent).not.toHaveProperty("total")
+    expect(notifyNewOrder).toHaveBeenCalledWith(expect.objectContaining({ shippingCountry: "Argentina" }))
+  })
+
+  it("keeps accepting the legacy Paraguay payload without postal code", async () => {
+    vi.mocked(placeOrder).mockResolvedValue(placed)
+
+    await expect(createOrder(validInput)).resolves.toMatchObject({ ok: true })
+    expect(vi.mocked(placeOrder).mock.calls[0][0].shippingAddress.postalCode).toBeUndefined()
   })
 })
 

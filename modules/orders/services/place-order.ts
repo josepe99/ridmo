@@ -86,6 +86,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
               city: input.shippingAddress.city,
               department: input.shippingAddress.department,
               country: input.shippingAddress.country,
+              postalCode: input.shippingAddress.postalCode || null,
               notes: input.shippingAddress.notes || null,
             },
             items: priced.lines,
@@ -101,6 +102,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         order: {
           id: created.id,
           orderNumber: created.orderNumber,
+          shippingCountry: input.shippingAddress.country,
           accessToken,
           total: created.total,
           currency: created.currency,

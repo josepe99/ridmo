@@ -17,12 +17,13 @@ export function OrdersTable({ orders }: { orders: OrderSummary[] }) {
 
   return (
     <div className="overflow-x-auto border border-neutral-200 bg-white">
-      <table className="w-full min-w-[640px] text-left text-sm">
+      <table className="w-full min-w-[720px] text-left text-sm">
         <caption className="sr-only">Pedidos, del más reciente al más antiguo</caption>
         <thead>
           <tr className="border-b border-neutral-200 text-[10px] uppercase tracking-eyebrow text-neutral-500">
             <th scope="col" className="px-4 py-3 font-semibold">Pedido</th>
             <th scope="col" className="px-4 py-3 font-semibold">Cliente</th>
+            <th scope="col" className="px-4 py-3 font-semibold">País</th>
             <th scope="col" className="px-4 py-3 font-semibold">Fecha</th>
             <th scope="col" className="px-4 py-3 font-semibold">Estado</th>
             <th scope="col" className="px-4 py-3 text-right font-semibold">Total</th>
@@ -46,6 +47,7 @@ export function OrdersTable({ orders }: { orders: OrderSummary[] }) {
                 </p>
               </td>
               <td className="px-4 py-4 text-neutral-700">{order.customerName}</td>
+              <td className="px-4 py-4 text-neutral-700">{order.shippingCountry}</td>
               <td className="px-4 py-4 whitespace-nowrap text-neutral-500">{formatOrderDate(order.createdAt)}</td>
               <td className="px-4 py-4">
                 <OrderStatusBadge status={order.status} />

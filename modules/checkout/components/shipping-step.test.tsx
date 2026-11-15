@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { describe, expect, it, vi } from "vitest"
+import { SHIPPING_COUNTRY_NAMES } from "@/modules/orders"
 import { buildFormDefaults } from "../domain/form-defaults"
 import { checkoutFormSchema, type CheckoutFormValues } from "../schemas/checkout.schema"
 import { ShippingStep } from "./shipping-step"
@@ -42,6 +43,7 @@ const valid: CheckoutFormValues = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    postalCode: "",
     notes: "",
   },
 }
@@ -52,24 +54,82 @@ describe("ShippingStep", () => {
 
     expect(screen.getByRole("heading", { level: 2, name: "Datos de envío" })).toBeInTheDocument()
     expect(screen.getByText("Paso 2 de 3")).toBeInTheDocument()
-    for (const label of ["Nombre completo", "Teléfono", "Calle", "Número o referencia", "Ciudad", "Departamento"]) {
+    for (const label of [
+      "Nombre completo",
+      "Teléfono",
+      "Calle",
+      "Número o referencia",
+      "Ciudad",
+      "Departamento / estado / provincia",
+      "País",
+    ]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument()
     }
     expect(screen.getByLabelText(/^Email/)).toBeInTheDocument()
     expect(screen.getByLabelText(/^Notas de entrega/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Código postal/)).toBeInTheDocument()
   })
 
-  it("shows Paraguay as a fixed country, not as an editable field", () => {
+  it("offers a country selector with Paraguay preselected and first", () => {
     render(<Harness />)
 
-    expect(screen.getByText("Paraguay")).toBeInTheDocument()
-    expect(screen.queryByLabelText("País")).not.toBeInTheDocument()
+    const country = screen.getByLabelText("País")
+    expect(country.tagName).toBe("SELECT")
+    expect(country).toHaveValue("Paraguay")
+    const options = screen.getAllByRole("option").map((option) => option.textContent)
+    expect(options[0]).toBe("Paraguay")
+    expect(options).toEqual(SHIPPING_COUNTRY_NAMES)
+    expect(options).toContain("Argentina")
   })
 
-  it("marks email and notes as optional", () => {
+  it("marks email, postal code and notes as optional", () => {
     render(<Harness />)
 
-    expect(screen.getAllByText("Opcional")).toHaveLength(2)
+    expect(screen.getAllByText("Opcional")).toHaveLength(3)
+  })
+
+  it("continues with another country and a postal code", async () => {
+    const onValid = vi.fn()
+    const user = userEvent.setup()
+    render(<Harness defaults={valid} onValid={onValid} />)
+
+    await user.selectOptions(screen.getByLabelText("País"), "Argentina")
+    await user.type(screen.getByLabelText(/^Código postal/), "C1425")
+    await user.click(screen.getByRole("button", { name: "Continuar" }))
+
+    await waitFor(() => expect(onValid).toHaveBeenCalledTimes(1))
+    expect(onValid.mock.calls[0][0].shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
+  })
+
+  it("blocks a country outside the list and reports it on the field", async () => {
+    const onValid = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <Harness
+        defaults={{ ...valid, shippingAddress: { ...valid.shippingAddress, country: "Narnia" } }}
+        onValid={onValid}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "Continuar" }))
+
+    expect(await screen.findByText("Elegí un país de la lista")).toBeInTheDocument()
+    const country = screen.getByLabelText("País")
+    expect(country).toHaveAttribute("aria-invalid", "true")
+    expect(country).toHaveAccessibleDescription("Elegí un país de la lista")
+    expect(onValid).not.toHaveBeenCalled()
+  })
+
+  it("rejects a postal code with unsupported characters", async () => {
+    const onValid = vi.fn()
+    const user = userEvent.setup()
+    render(<Harness defaults={valid} onValid={onValid} />)
+
+    await user.type(screen.getByLabelText(/^Código postal/), "12<3>")
+    await user.click(screen.getByRole("button", { name: "Continuar" }))
+
+    expect(await screen.findByText("Usá solo letras, números, espacios o guiones")).toBeInTheDocument()
+    expect(onValid).not.toHaveBeenCalled()
   })
 
   it("shows a message per required field and does not continue with an empty form", async () => {

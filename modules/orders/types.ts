@@ -7,6 +7,8 @@ export const ORDER_CURRENCY = "PYG"
 /** Row of the admin orders list. */
 export type OrderSummary = {
   id: string
+  /** Destination country name, as stored in the order. */
+  shippingCountry: string
   orderNumber: string
   status: OrderStatus
   total: number
@@ -27,6 +29,8 @@ export type OrderDetail = OrderSummary & {
     city: string
     department: string
     country: string
+    /** Absent in orders placed before international shipping. */
+    postalCode: string | null
     notes: string | null
   }
   items: OrderLineSnapshot[]
@@ -38,6 +42,8 @@ export type OrderDetail = OrderSummary & {
 
 /** Minimal data shown to the customer on the public confirmation page (no contact or address data). */
 export type OrderConfirmation = {
+  /** Destination country only (no street or contact data). */
+  shippingCountry: string
   orderNumber: string
   status: OrderStatus
   currency: string
@@ -57,6 +63,7 @@ export type PlaceOrderInput = {
     city: string
     department: string
     country: string
+    postalCode?: string
     notes?: string
   }
   lines: ReadonlyArray<{ itemId: string; quantity: number }>
@@ -67,6 +74,7 @@ export type PlaceOrderInput = {
 export type PlacedOrder = {
   id: string
   orderNumber: string
+  shippingCountry: string
   /** Secret that unlocks the public confirmation page of this order. */
   accessToken: string
   total: number
@@ -93,6 +101,7 @@ export type CheckoutDefaults = {
     city: string
     department: string
     country: string
+    postalCode: string
     notes: string
   }
 }

@@ -17,6 +17,8 @@ const securityHeaders = [
 const nextConfig = {
   // Native argon2 binding: must be required at runtime, not bundled.
   serverExternalPackages: ['@node-rs/argon2'],
+  // Dev-only: origins allowed to request dev server resources (HMR, /_next/*).
+  allowedDevOrigins: ['127.0.0.1', 'localhost'],
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },

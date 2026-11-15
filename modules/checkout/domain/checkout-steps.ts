@@ -68,6 +68,7 @@ const SHIPPING_FIELD_PATHS: ReadonlySet<string> = new Set([
   "shippingAddress.city",
   "shippingAddress.department",
   "shippingAddress.country",
+  "shippingAddress.postalCode",
   "shippingAddress.notes",
 ])
 

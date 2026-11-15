@@ -79,6 +79,7 @@ type OrderShippingAddress {
   city       String
   department String // department / state / province
   country    String
+  postalCode String? // optional so documents created before international shipping stay valid
   notes      String?
 }
 

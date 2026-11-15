@@ -30,6 +30,7 @@ describe("listOrders", () => {
     currency: "PYG",
     createdAt,
     customer: { fullName: "Ana Perez" },
+    shippingAddress: { country: "Argentina" },
     items: [{ quantity: 2 }, { quantity: 1 }],
   }
 
@@ -44,10 +45,19 @@ describe("listOrders", () => {
         total: 300,
         currency: "PYG",
         customerName: "Ana Perez",
+        shippingCountry: "Argentina",
         itemCount: 3,
         createdAt: "2026-01-15T12:00:00.000Z",
       },
     ])
+  })
+
+  it("selects only the country of the shipping address, never the street or notes", async () => {
+    prismaMock.order.findMany.mockResolvedValue([])
+
+    await listOrders()
+
+    expect(prismaMock.order.findMany.mock.calls[0][0].select.shippingAddress).toEqual({ select: { country: true } })
   })
 
   it("asks for newest first and applies the limit (100 by default)", async () => {
@@ -127,7 +137,28 @@ describe("getOrderDetail", () => {
       updatedAt: "2026-01-16T12:00:00.000Z",
     })
     expect(detail?.shippingAddress.notes).toBeNull()
+    expect(detail?.shippingAddress.postalCode).toBeNull()
     expect(detail?.items.map((item) => item.image)).toEqual([null, "x.jpg"])
+  })
+
+  it("exposes the country and the postal code of an international order", async () => {
+    prismaMock.order.findUnique.mockResolvedValue({
+      ...order,
+      shippingAddress: { ...order.shippingAddress, country: "Argentina", postalCode: "C1425" },
+    })
+
+    const detail = await getOrderDetail(OBJECT_ID)
+
+    expect(detail?.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
+  })
+
+  it("reads a legacy document stored without a postal code", async () => {
+    expect(order.shippingAddress).not.toHaveProperty("postalCode")
+    prismaMock.order.findUnique.mockResolvedValue(order)
+
+    const detail = await getOrderDetail(OBJECT_ID)
+
+    expect(detail?.shippingAddress).toMatchObject({ country: "Paraguay", postalCode: null })
   })
 
   it("keeps display currency data when the shopper saw converted prices", async () => {
@@ -153,6 +184,7 @@ describe("getOrderConfirmation", () => {
     total: 200,
     createdAt,
     customer: { fullName: "Ana Perez" },
+    shippingAddress: { country: "Argentina" },
     items: [line],
   }
 
@@ -188,6 +220,7 @@ describe("getOrderConfirmation", () => {
     const result = await getOrderConfirmation("RID-000003", token)
 
     expect(result).toEqual({
+      shippingCountry: "Argentina",
       orderNumber: "RID-000003",
       status: "PENDING_PAYMENT",
       currency: "PYG",
@@ -198,5 +231,13 @@ describe("getOrderConfirmation", () => {
       createdAt: "2026-01-15T12:00:00.000Z",
     })
     expect(JSON.stringify(result)).not.toContain(token)
+  })
+
+  it("selects only the country of the shipping address", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(confirmation)
+
+    await getOrderConfirmation("RID-000003", token)
+
+    expect(prismaMock.order.findFirst.mock.calls[0][0].select.shippingAddress).toEqual({ select: { country: true } })
   })
 })

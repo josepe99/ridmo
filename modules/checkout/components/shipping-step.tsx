@@ -1,8 +1,9 @@
 import type { FormEvent, ReactNode } from "react"
 import type { UseFormReturn } from "react-hook-form"
-import { SHIPPING_COUNTRY } from "../domain/form-defaults"
+import { SHIPPING_COUNTRY_NAMES } from "@/modules/orders"
 import type { CheckoutFormValues } from "../schemas/checkout.schema"
 import { StepActions } from "./step-actions"
+import { SelectField } from "./select-field"
 import { EYEBROW, StepHeading } from "./step-heading"
 import { TextField } from "./text-field"
 
@@ -102,15 +103,27 @@ export function ShippingStep({ form, message, onBack, onContinue, summary }: Shi
           />
           <TextField
             id="department"
-            label="Departamento"
+            label="Departamento / estado / provincia"
             autoComplete="address-level1"
             registration={register("shippingAddress.department")}
             error={errors.shippingAddress?.department?.message}
           />
-          <div className="pb-3 sm:col-span-2">
-            <p className={EYEBROW}>País</p>
-            <p className="py-3 text-base text-neutral-900">{SHIPPING_COUNTRY}</p>
-          </div>
+          <SelectField
+            id="country"
+            label="País"
+            autoComplete="country-name"
+            options={SHIPPING_COUNTRY_NAMES}
+            registration={register("shippingAddress.country")}
+            error={errors.shippingAddress?.country?.message}
+          />
+          <TextField
+            id="postalCode"
+            label="Código postal"
+            autoComplete="postal-code"
+            optional
+            registration={register("shippingAddress.postalCode")}
+            error={errors.shippingAddress?.postalCode?.message}
+          />
           <TextField
             id="notes"
             label="Notas de entrega"

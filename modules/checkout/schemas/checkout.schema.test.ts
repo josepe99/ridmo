@@ -84,6 +84,93 @@ describe("createOrderInputSchema", () => {
     }
   )
 
+  describe("shipping country", () => {
+    const withCountry = (country: unknown) =>
+      createOrderInputSchema.safeParse({
+        ...validInput,
+        shippingAddress: { ...validInput.shippingAddress, country },
+      })
+
+    it.each(["Paraguay", "Argentina", "Estados Unidos", "España", "Brasil"])("accepts %j", (country) => {
+      expect(withCountry(country).success).toBe(true)
+    })
+
+    it("accepts the legacy Paraguay payload with no postal code", () => {
+      const parsed = createOrderInputSchema.safeParse(validInput)
+
+      expect(parsed.success).toBe(true)
+      if (parsed.success) expect(parsed.data.shippingAddress.postalCode).toBeUndefined()
+    })
+
+    it("trims the country before checking it against the list", () => {
+      const parsed = withCountry("  Argentina ")
+
+      expect(parsed.success).toBe(true)
+      if (parsed.success) expect(parsed.data.shippingAddress.country).toBe("Argentina")
+    })
+
+    it.each([
+      ["unknown country", "Narnia"],
+      ["different casing", "argentina"],
+      ["ISO code instead of the name", "AR"],
+      ["empty", ""],
+      ["blank", "   "],
+      ["script injection", "<script>alert(1)</script>"],
+      ["SQL injection", "Argentina'; DROP TABLE orders;--"],
+      ["NoSQL operator string", '{"$ne":null}'],
+      ["country plus suffix", "Paraguay, Asuncion"],
+      ["null byte", "Paraguay\u0000"],
+      ["prototype key", "__proto__"],
+      ["too long", "A".repeat(61)],
+    ])("rejects %s", (_label, country) => {
+      expect(withCountry(country).success).toBe(false)
+    })
+
+    it.each([null, undefined, 1, {}, ["Paraguay"], { $ne: "x" }])("rejects the non-string %j", (country) => {
+      expect(withCountry(country).success).toBe(false)
+    })
+
+    it("reports the failure on the country field with a Spanish message", () => {
+      const parsed = withCountry("Narnia")
+
+      expect(parsed.success).toBe(false)
+      if (!parsed.success) {
+        const issue = parsed.error.issues.find((i) => i.path.join(".") === "shippingAddress.country")
+        expect(issue?.message).toBe("Elegí un país de la lista")
+      }
+    })
+  })
+
+  describe("postal code", () => {
+    const withPostalCode = (postalCode: unknown) =>
+      createOrderInputSchema.safeParse({
+        ...validInput,
+        shippingAddress: { ...validInput.shippingAddress, country: "Argentina", postalCode },
+      })
+
+    it.each([undefined, "", "   ", "C1425", "SW1A 1AA", "12345-678", "1000"])("accepts %j", (postalCode) => {
+      expect(withPostalCode(postalCode).success).toBe(true)
+    })
+
+    it("trims the postal code", () => {
+      const parsed = withPostalCode("  C1425 ")
+
+      expect(parsed.success).toBe(true)
+      if (parsed.success) expect(parsed.data.shippingAddress.postalCode).toBe("C1425")
+    })
+
+    it.each(["<b>1</b>", "1000; DROP", "12_34", "12.34", "ñandú", "1".repeat(13), "{$ne:1}"])(
+      "rejects %j",
+      (postalCode) => {
+        expect(withPostalCode(postalCode).success).toBe(false)
+      }
+    )
+
+    it("accepts a code of exactly 12 characters", () => {
+      expect(withPostalCode("A".repeat(12)).success).toBe(true)
+    })
+  })
+
   describe("lines", () => {
     it(`accepts quantities from 1 to ${MAX_QUANTITY_PER_ITEM}`, () => {
       for (const quantity of [1, MAX_QUANTITY_PER_ITEM]) {

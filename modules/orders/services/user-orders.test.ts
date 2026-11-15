@@ -83,8 +83,18 @@ describe("getCheckoutDefaults", () => {
     })
     expect(defaults).toEqual({
       customer: { fullName: "Ana Perez", phone: "+595981000000", email: "ana@example.com" },
-      shippingAddress: { street: "Calle 1", reference: "Casa 2", city: "Asuncion", department: "Central", country: "Paraguay", notes: "" },
+      shippingAddress: { street: "Calle 1", reference: "Casa 2", city: "Asuncion", department: "Central", country: "Paraguay", postalCode: "", notes: "" },
     })
+  })
+
+  it("prefills the saved country and postal code of an international order", async () => {
+    authPrismaMock.order.findFirst.mockResolvedValue({
+      customer: { fullName: "Ana Perez", phone: "+595981000000", email: null },
+      shippingAddress: { street: "Calle 1", reference: "Casa 2", city: "Buenos Aires", department: "CABA", country: "Argentina", postalCode: "C1425", notes: null },
+    })
+    const defaults = await getCheckoutDefaults({ id: ME, name: "Ana", email: "ana@example.com" })
+
+    expect(defaults.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
   })
 
   it("falls back to the account name and email when the user has no orders yet", async () => {

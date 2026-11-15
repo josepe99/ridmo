@@ -4,11 +4,12 @@ import { describe, expect, it, vi } from "vitest"
 vi.mock("next/image", async () => await import("@/tests/mocks/next-image"))
 vi.mock("next/link", async () => await import("@/tests/mocks/next-link"))
 
-import type { OrderConfirmation } from "@/modules/orders"
+import { INTERNATIONAL_SHIPPING_NOTICE, type OrderConfirmation } from "@/modules/orders"
 import type { BankTransferDetails } from "../services/bank-details"
 import { OrderConfirmationView } from "./order-confirmation-view"
 
 const order: OrderConfirmation = {
+  shippingCountry: "Paraguay",
   orderNumber: "RID-000042",
   status: "PENDING_PAYMENT",
   currency: "PYG",
@@ -123,6 +124,19 @@ describe("OrderConfirmationView", () => {
     render(<OrderConfirmationView order={order} bank={bank} whatsappNumber={number} />)
 
     expect(screen.queryByRole("link", { name: /WhatsApp/ })).not.toBeInTheDocument()
+  })
+
+  it("shows no international shipping notice for a Paraguay order", () => {
+    render(<OrderConfirmationView order={order} bank={bank} />)
+
+    expect(screen.queryByText(INTERNATIONAL_SHIPPING_NOTICE)).not.toBeInTheDocument()
+  })
+
+  it("explains that cost and delivery time are coordinated for an international order", () => {
+    render(<OrderConfirmationView order={{ ...order, shippingCountry: "Argentina" }} bank={bank} />)
+
+    expect(screen.getByText(INTERNATIONAL_SHIPPING_NOTICE)).toBeInTheDocument()
+    expect(screen.getByText(/Argentina/)).toBeInTheDocument()
   })
 
   it("links back to the store", () => {

@@ -26,6 +26,7 @@ import { getOrderConfirmation } from "@/modules/orders/server"
 import OrderPage, { metadata } from "./page"
 
 const order = {
+  shippingCountry: "Paraguay",
   orderNumber: "RID-000042",
   status: "PENDING_PAYMENT" as const,
   currency: "PYG",

@@ -28,7 +28,7 @@ const validInput = {
 
 const placed = {
   ok: true as const,
-  order: { id: "o1", orderNumber: "RID-000001", accessToken: "secret-token-1234567890", total: 2000, currency: "PYG" },
+  order: { id: "o1", orderNumber: "RID-000001", shippingCountry: "Paraguay", accessToken: "secret-token-1234567890", total: 2000, currency: "PYG" },
 }
 
 beforeEach(() => {

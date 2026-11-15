@@ -2,6 +2,7 @@ import type { ComponentProps } from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
+import { INTERNATIONAL_SHIPPING_NOTICE } from "@/modules/orders"
 import type { CheckoutFormValues } from "../schemas/checkout.schema"
 import type { BankTransferDetails } from "../services/bank-details"
 import { PaymentStep } from "./payment-step"
@@ -14,6 +15,7 @@ const values: CheckoutFormValues = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    postalCode: "",
     notes: "Portón negro",
   },
 }
@@ -76,6 +78,38 @@ describe("PaymentStep", () => {
     expect(screen.getByText(/Asuncion, Central/)).toBeInTheDocument()
     expect(screen.getByText(/Paraguay/)).toBeInTheDocument()
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
+  })
+
+  it("shows the postal code row only when provided", () => {
+    const { unmount } = render(
+      <PaymentStep
+        values={{ ...values, shippingAddress: { ...values.shippingAddress, postalCode: "C1425" } }}
+        bank={bank}
+        isPending={false}
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        onConfirm={vi.fn()}
+      />
+    )
+    expect(screen.getByText("Código postal")).toBeInTheDocument()
+    expect(screen.getByText("C1425")).toBeInTheDocument()
+    unmount()
+
+    setup()
+    expect(screen.queryByText("Código postal")).not.toBeInTheDocument()
+  })
+
+  it("shows no international shipping notice for a Paraguay address", () => {
+    setup()
+
+    expect(screen.queryByText(INTERNATIONAL_SHIPPING_NOTICE)).not.toBeInTheDocument()
+  })
+
+  it("shows the country and the international shipping notice for another country", () => {
+    setup({ values: { ...values, shippingAddress: { ...values.shippingAddress, country: "Argentina" } } })
+
+    expect(screen.getByText(/Argentina/)).toBeInTheDocument()
+    expect(screen.getByText(INTERNATIONAL_SHIPPING_NOTICE)).toBeInTheDocument()
   })
 
   it("omits email and notes from the recap when empty", () => {

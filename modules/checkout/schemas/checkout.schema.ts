@@ -1,11 +1,13 @@
 import { z } from "zod"
-import { MAX_QUANTITY_PER_ITEM } from "@/modules/orders"
+import { MAX_QUANTITY_PER_ITEM, isShippingCountry } from "@/modules/orders"
 
 export { MAX_QUANTITY_PER_ITEM }
 
 /** Mongo ObjectId as a 24 char hex string. */
 const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i
 const PHONE_PATTERN = /^\+?[\d\s().-]{6,30}$/
+/** Postal / ZIP codes worldwide: letters, digits, spaces and hyphens only (empty allowed). */
+const POSTAL_CODE_PATTERN = /^[A-Za-z0-9 -]*$/
 
 const REQUIRED_MESSAGE = "Completá este campo"
 
@@ -37,7 +39,14 @@ const shippingAddressSchema = z.object({
   reference: text(1, 100),
   city: text(2, 80),
   department: text(2, 80),
-  country: text(2, 60),
+  // Server-side allow list: the name (not a code) is what orders store, so legacy "Paraguay" stays valid.
+  country: text(2, 60).refine(isShippingCountry, "Elegí un país de la lista"),
+  postalCode: z
+    .string()
+    .trim()
+    .max(12, "Máximo 12 caracteres")
+    .regex(POSTAL_CODE_PATTERN, "Usá solo letras, números, espacios o guiones")
+    .optional(),
   notes: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
 })
 

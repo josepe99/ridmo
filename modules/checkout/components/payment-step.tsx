@@ -1,4 +1,5 @@
 import type { FormEvent, ReactNode } from "react"
+import { InternationalShippingNotice } from "@/modules/orders"
 import type { CheckoutFormValues } from "../schemas/checkout.schema"
 import type { BankTransferDetails } from "../services/bank-details"
 import { BankTransferDetailsList } from "./bank-transfer-details"
@@ -90,8 +91,14 @@ export function PaymentStep({ values, bank, isPending, message, onBack, onEdit, 
             <br />
             {shippingAddress.country}
           </RecapRow>
+          {shippingAddress.postalCode ? (
+            <RecapRow label="Código postal">{shippingAddress.postalCode}</RecapRow>
+          ) : null}
           {shippingAddress.notes ? <RecapRow label="Notas">{shippingAddress.notes}</RecapRow> : null}
         </dl>
+        <div className="mt-4">
+          <InternationalShippingNotice country={shippingAddress.country} />
+        </div>
       </section>
 
       <p

@@ -84,6 +84,7 @@ export async function getCheckoutDefaults(user: {
       city: latest.shippingAddress.city,
       department: latest.shippingAddress.department,
       country: latest.shippingAddress.country,
+      postalCode: latest.shippingAddress.postalCode ?? "",
       notes: latest.shippingAddress.notes ?? "",
     },
   }

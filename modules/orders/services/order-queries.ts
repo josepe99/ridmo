@@ -25,6 +25,7 @@ export async function listOrders(limit = 100): Promise<OrderSummary[]> {
       currency: true,
       createdAt: true,
       customer: { select: { fullName: true } },
+      shippingAddress: { select: { country: true } },
       items: { select: { quantity: true } },
     },
   })
@@ -36,6 +37,7 @@ export async function listOrders(limit = 100): Promise<OrderSummary[]> {
     total: order.total,
     currency: order.currency,
     customerName: order.customer.fullName,
+    shippingCountry: order.shippingAddress.country,
     itemCount: order.items.reduce((sum, line) => sum + line.quantity, 0),
     createdAt: order.createdAt.toISOString(),
   }))
@@ -57,6 +59,7 @@ export async function getOrderDetail(id: string): Promise<OrderDetail | null> {
     total: order.total,
     currency: order.currency,
     customerName: order.customer.fullName,
+    shippingCountry: order.shippingAddress.country,
     itemCount: order.items.reduce((sum, line) => sum + line.quantity, 0),
     customer: {
       fullName: order.customer.fullName,
@@ -69,6 +72,7 @@ export async function getOrderDetail(id: string): Promise<OrderDetail | null> {
       city: order.shippingAddress.city,
       department: order.shippingAddress.department,
       country: order.shippingAddress.country,
+      postalCode: order.shippingAddress.postalCode ?? null,
       notes: order.shippingAddress.notes ?? null,
     },
     items: order.items.map((line) => ({
@@ -109,12 +113,14 @@ export async function getOrderConfirmation(
       total: true,
       createdAt: true,
       customer: { select: { fullName: true } },
+      shippingAddress: { select: { country: true } },
       items: true,
     },
   })
   if (!order) return null
 
   return {
+    shippingCountry: order.shippingAddress.country,
     orderNumber: order.orderNumber,
     status: toStatus(order.status),
     currency: order.currency,

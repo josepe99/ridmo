@@ -76,7 +76,7 @@ async function fillShipping(user: User) {
   await user.type(screen.getByLabelText("Calle"), "Calle Palma 123")
   await user.type(screen.getByLabelText("Número o referencia"), "Casa 12")
   await user.type(screen.getByLabelText("Ciudad"), "Asuncion")
-  await user.type(screen.getByLabelText("Departamento"), "Central")
+  await user.type(screen.getByLabelText("Departamento / estado / provincia"), "Central")
 }
 
 async function goToShipping(user: User) {
@@ -298,13 +298,13 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     expect(currentStep()).toHaveTextContent("Datos de envío")
   })
 
-  it("has no country selector: shipping is fixed to Paraguay", async () => {
+  it("offers a country selector that defaults to Paraguay", async () => {
     seedCart([line()])
     const { user } = await renderCheckout()
     await goToShipping(user)
 
-    expect(screen.queryByLabelText("País")).not.toBeInTheDocument()
-    expect(screen.getByText("Paraguay")).toBeInTheDocument()
+    expect(screen.getByLabelText("País")).toHaveValue("Paraguay")
+    expect(screen.getByRole("option", { name: "Argentina" })).toBeInTheDocument()
   })
 
   it("keeps the typed values when going back to the products step and forward again", async () => {
@@ -320,7 +320,7 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     expect(screen.getByLabelText("Nombre completo")).toHaveValue("Ana Perez")
     expect(screen.getByLabelText("Teléfono")).toHaveValue("+595 981 000 000")
     expect(screen.getByLabelText("Calle")).toHaveValue("Calle Palma 123")
-    expect(screen.getByLabelText("Departamento")).toHaveValue("Central")
+    expect(screen.getByLabelText("Departamento / estado / provincia")).toHaveValue("Central")
   })
 
   it("keeps the values when returning from the payment step with Volver and with Editar", async () => {
@@ -351,6 +351,26 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     expect(Object.keys(localStorage)).toEqual(["cart"])
   })
 
+  it("falls back to Paraguay when the saved country is no longer allowed", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout({
+      defaults: {
+        shippingAddress: {
+          street: "x",
+          reference: "x",
+          city: "x",
+          department: "x",
+          country: "Narnia",
+          postalCode: "",
+          notes: "",
+        },
+      },
+    })
+    await goToShipping(user)
+
+    expect(screen.getByLabelText("País")).toHaveValue("Paraguay")
+  })
+
   it("prefills the form for a signed-in customer", async () => {
     seedCart([line()])
     const { user } = await renderCheckout({
@@ -362,11 +382,15 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
           city: "Asuncion",
           department: "Central",
           country: "Argentina",
+          postalCode: "C1425",
           notes: "",
         },
       },
     })
     await goToShipping(user)
+
+    expect(screen.getByLabelText("País")).toHaveValue("Argentina")
+    expect(screen.getByLabelText(/^Código postal/)).toHaveValue("C1425")
 
     expect(screen.getByLabelText("Nombre completo")).toHaveValue("Ana Perez")
     expect(screen.getByLabelText(/^Email/)).toHaveValue("ana@example.com")
@@ -411,11 +435,42 @@ describe("CheckoutFlow: step 3 (payment)", () => {
         city: "Asuncion",
         department: "Central",
         country: "Paraguay",
+        postalCode: "",
         notes: "",
       },
       lines: [{ itemId: ID_A, quantity: 2 }],
     })
     await waitFor(() => expect(routerMock.push).toHaveBeenCalledWith("/order/RID-000007?token=tok%2Fen%2B1"))
+  })
+
+  it("shows no international notice in the payment recap for Paraguay", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout()
+    await goToPayment(user)
+
+    expect(screen.queryByRole("note")).not.toBeInTheDocument()
+  })
+
+  it("ships to another country: shows the notice, keeps the total in guaranies and sends country and postal code", async () => {
+    seedCart([line({ quantity: 2 })])
+    vi.mocked(createOrder).mockResolvedValue({ ok: true, orderNumber: "RID-000010", accessToken: "tok" })
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    await fillShipping(user)
+    await user.selectOptions(screen.getByLabelText("País"), "Argentina")
+    await user.type(screen.getByLabelText(/^Código postal/), "C1425")
+    await cont(user)
+    await stepHeading("Datos de pago")
+
+    expect(screen.getByRole("note")).toHaveTextContent(/costo y el plazo de entrega se coordinan/)
+    expect(screen.getByRole("complementary", { name: "Resumen del pedido" })).toHaveTextContent("Gs. 7.800.000")
+
+    await confirm(user)
+
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1))
+    const payload = vi.mocked(createOrder).mock.calls[0][0] as { shippingAddress: Record<string, string> }
+    expect(payload.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
+    expect(JSON.stringify(payload)).not.toMatch(/price|total|currency/i)
   })
 
   it("clears the cart and shows the redirecting status after a successful order", async () => {
@@ -500,6 +555,25 @@ describe("CheckoutFlow: server errors route back to the right step", () => {
     expect(phone).toHaveAccessibleDescription("Ingresá un teléfono válido")
     expect(screen.getByText("Revisá los datos ingresados.")).toBeInTheDocument()
     expect(screen.getByLabelText("Nombre completo")).toHaveValue("Ana Perez")
+  })
+
+  it("sends a rejected country back to step 2 and marks the country field", async () => {
+    seedCart([line()])
+    vi.mocked(createOrder).mockResolvedValue({
+      ok: false,
+      code: "VALIDATION",
+      message: "Revisá los datos ingresados.",
+      fieldErrors: { "shippingAddress.country": "Elegí un país de la lista" },
+    })
+    const { user } = await renderCheckout()
+    await goToPayment(user)
+
+    await confirm(user)
+
+    expect(await stepHeading("Datos de envío")).toBeInTheDocument()
+    const country = screen.getByLabelText("País")
+    expect(country).toHaveAttribute("aria-invalid", "true")
+    expect(country).toHaveAccessibleDescription("Elegí un país de la lista")
   })
 
   it("lets the shopper fix the field and reach the payment step again", async () => {

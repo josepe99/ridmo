@@ -130,4 +130,15 @@ describe("notifyNewOrder", () => {
       tag: "order-RID-000001",
     })
   })
+
+  it("mentions the destination country only for international orders", async () => {
+    vi.mocked(listSubscriptions).mockResolvedValue([sub(1)])
+    const order = { id: "o1", orderNumber: "RID-000001", total: 6_800_000, currency: "PYG" }
+
+    await notifyNewOrder({ ...order, shippingCountry: "Argentina" })
+    await notifyNewOrder({ ...order, shippingCountry: "Paraguay" })
+
+    const bodies = vi.mocked(sendNotification).mock.calls.map((call) => JSON.parse(call[1] as string).body)
+    expect(bodies).toEqual(["RID-000001 · Gs. 6.800.000 · Envío a Argentina", "RID-000001 · Gs. 6.800.000"])
+  })
 })
