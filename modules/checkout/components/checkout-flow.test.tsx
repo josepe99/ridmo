@@ -75,7 +75,7 @@ async function fillShipping(user: User) {
   await user.type(screen.getByLabelText("Teléfono"), "+595 981 000 000")
   await user.type(screen.getByLabelText("Calle"), "Calle Palma 123")
   await user.type(screen.getByLabelText("Número o referencia"), "Casa 12")
-  await user.type(screen.getByLabelText("Ciudad"), "Asuncion")
+  await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "asuncion")
   await user.type(screen.getByLabelText("Departamento / estado / provincia"), "Central")
 }
 
@@ -298,6 +298,39 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     expect(currentStep()).toHaveTextContent("Datos de envío")
   })
 
+  it("asks for a zone in the summary and prices the shipping live as the shopper chooses", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    const summary = screen.getByRole("complementary", { name: "Resumen del pedido" })
+    expect(within(summary).getByText("Elegí una zona")).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "lambare")
+    expect(within(summary).getByText("Gs. 15.000")).toBeInTheDocument()
+    expect(within(summary).getByText("Gs. 3.915.000")).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "interior-door")
+    expect(within(summary).getByText("Gs. 35.000")).toBeInTheDocument()
+    expect(within(summary).getByText("Gs. 3.935.000")).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText("País"), "Argentina")
+    expect(within(summary).getByText("A coordinar")).toBeInTheDocument()
+    expect(within(summary).queryByText("Gs. 3.935.000")).not.toBeInTheDocument()
+  })
+
+  it("cannot advance without choosing a shipping zone", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    await fillShipping(user)
+    await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "")
+
+    await cont(user)
+
+    expect(await screen.findByText("Elegí una zona de envío")).toBeInTheDocument()
+    expect(currentStep()).toHaveTextContent("Datos de envío")
+  })
+
   it("offers a country selector that defaults to Paraguay", async () => {
     seedCart([line()])
     const { user } = await renderCheckout()
@@ -330,7 +363,8 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
 
     await user.click(screen.getByRole("button", { name: "Volver" }))
     await stepHeading("Datos de envío")
-    expect(screen.getByLabelText("Ciudad")).toHaveValue("Asuncion")
+    expect(screen.getByLabelText("Ciudad")).toHaveValue("Asunción")
+    expect(screen.getByLabelText("Ciudad / zona de envío")).toHaveValue("asuncion")
 
     await cont(user)
     await stepHeading("Datos de pago")
@@ -418,6 +452,20 @@ describe("CheckoutFlow: step 3 (payment)", () => {
     expect(screen.getByRole("button", { name: "Confirmar pedido" })).toBeEnabled()
   })
 
+  it("shows the shipping in the recap and the summary, with the total including it", async () => {
+    seedCart([line({ quantity: 2 })])
+    const { user } = await renderCheckout()
+
+    await goToPayment(user)
+
+    expect(screen.getByText("Asunción · Gs. 20.000")).toBeInTheDocument()
+    const summary = screen.getByRole("complementary", { name: "Resumen del pedido" })
+    expect(within(summary).getByText("Envío").nextSibling).toHaveTextContent("Gs. 20.000")
+    expect(within(summary).getByText("Gs. 7.820.000")).toBeInTheDocument()
+    // The compact summary above the button carries the same total.
+    expect(screen.getAllByText("Gs. 7.820.000").length).toBeGreaterThanOrEqual(2)
+  })
+
   it("sends only ids, quantities, contact and address, then redirects to the confirmation", async () => {
     seedCart([line({ quantity: 2 })])
     vi.mocked(createOrder).mockResolvedValue({ ok: true, orderNumber: "RID-000007", accessToken: "tok/en+1" })
@@ -432,9 +480,10 @@ describe("CheckoutFlow: step 3 (payment)", () => {
       shippingAddress: {
         street: "Calle Palma 123",
         reference: "Casa 12",
-        city: "Asuncion",
+        city: "Asunción",
         department: "Central",
         country: "Paraguay",
+        shippingOptionId: "asuncion",
         postalCode: "",
         notes: "",
       },
@@ -458,19 +507,23 @@ describe("CheckoutFlow: step 3 (payment)", () => {
     await goToShipping(user)
     await fillShipping(user)
     await user.selectOptions(screen.getByLabelText("País"), "Argentina")
+    await user.type(screen.getByLabelText("Ciudad"), "Buenos Aires")
     await user.type(screen.getByLabelText(/^Código postal/), "C1425")
     await cont(user)
     await stepHeading("Datos de pago")
 
     expect(screen.getByRole("note")).toHaveTextContent(/costo y el plazo de entrega se coordinan/)
-    expect(screen.getByRole("complementary", { name: "Resumen del pedido" })).toHaveTextContent("Gs. 7.800.000")
+    const summary = screen.getByRole("complementary", { name: "Resumen del pedido" })
+    expect(summary).toHaveTextContent("Gs. 7.800.000")
+    expect(within(summary).getByText("A coordinar")).toBeInTheDocument()
+    expect(screen.queryByText(/Gs\. 7\.8[1-9]/)).not.toBeInTheDocument()
 
     await confirm(user)
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1))
     const payload = vi.mocked(createOrder).mock.calls[0][0] as { shippingAddress: Record<string, string> }
-    expect(payload.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
-    expect(JSON.stringify(payload)).not.toMatch(/price|total|currency/i)
+    expect(payload.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425", shippingOptionId: "" })
+    expect(JSON.stringify(payload)).not.toMatch(/price|total|currency|cost/i)
   })
 
   it("clears the cart and shows the redirecting status after a successful order", async () => {
@@ -574,6 +627,24 @@ describe("CheckoutFlow: server errors route back to the right step", () => {
     const country = screen.getByLabelText("País")
     expect(country).toHaveAttribute("aria-invalid", "true")
     expect(country).toHaveAccessibleDescription("Elegí un país de la lista")
+  })
+
+  it("sends a rejected shipping option back to step 2 and marks the zone field", async () => {
+    seedCart([line()])
+    vi.mocked(createOrder).mockResolvedValue({
+      ok: false,
+      code: "INVALID_SHIPPING_OPTION",
+      message: "Elegí una zona de envío válida para continuar.",
+    })
+    const { user } = await renderCheckout()
+    await goToPayment(user)
+
+    await confirm(user)
+
+    expect(await stepHeading("Datos de envío")).toBeInTheDocument()
+    const zone = screen.getByLabelText("Ciudad / zona de envío")
+    expect(zone).toHaveAttribute("aria-invalid", "true")
+    expect(zone).toHaveAccessibleDescription("Elegí una zona de envío válida para continuar.")
   })
 
   it("lets the shopper fix the field and reach the payment step again", async () => {

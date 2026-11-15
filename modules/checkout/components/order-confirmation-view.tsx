@@ -4,6 +4,7 @@ import {
   InternationalShippingNotice,
   OrderStatusBadge,
   formatOrderMoney,
+  isDomesticShipment,
   type OrderConfirmation,
 } from "@/modules/orders"
 import type { BankTransferDetails } from "../services/bank-details"
@@ -21,6 +22,8 @@ export function OrderConfirmationView({ order, bank, whatsappNumber }: Props) {
   const firstName = order.customerName.split(" ")[0]
   const proofMessage = `Hola! Te envío el comprobante de mi pedido ${order.orderNumber}.`
   const whatsappDigits = whatsappNumber?.replace(/\D/g, "") ?? ""
+  // International and legacy orders carry no priced option: their shipping is coordinated afterwards.
+  const hasShippingCharge = Boolean(order.shippingOptionLabel) && isDomesticShipment(order.shippingCountry)
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 md:px-8 md:py-24">
@@ -119,10 +122,25 @@ export function OrderConfirmationView({ order, bank, whatsappNumber }: Props) {
             </li>
           ))}
         </ul>
-        <div className="mt-6 flex items-baseline justify-between">
-          <span className={EYEBROW}>Total</span>
-          <span className="font-serif text-3xl text-neutral-900">{formatOrderMoney(order.total, order.currency)}</span>
-        </div>
+        <dl className="mt-6 space-y-3 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-neutral-500">Subtotal</dt>
+            <dd className="text-neutral-900">{formatOrderMoney(order.subtotal, order.currency)}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-neutral-500">
+              Envío
+              {hasShippingCharge ? <span className="block text-xs">{order.shippingOptionLabel}</span> : null}
+            </dt>
+            <dd className="text-neutral-900">
+              {hasShippingCharge ? formatOrderMoney(order.shippingCost, order.currency) : "A coordinar"}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between border-t border-neutral-200 pt-4">
+            <dt className={EYEBROW}>Total</dt>
+            <dd className="font-serif text-3xl text-neutral-900">{formatOrderMoney(order.total, order.currency)}</dd>
+          </div>
+        </dl>
       </section>
 
       <div className="mt-16 text-center">

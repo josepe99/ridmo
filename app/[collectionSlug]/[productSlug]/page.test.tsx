@@ -38,6 +38,24 @@ describe("product page", () => {
     expect(screen.getByText("Oro de 18k")).toBeInTheDocument()
   })
 
+  it("lists the shipping costs from the shared Paraguay shipping model", async () => {
+    render(await ProductPage(props))
+
+    const list = screen.getByText("Costos de envío").closest("details") as HTMLElement
+    const rows = within(list).getAllByRole("listitem")
+    expect(rows).toHaveLength(10)
+    expect(within(rows[0]).getByText("Asunción, Villa Elisa, Fernando de la Mora")).toBeInTheDocument()
+    expect(within(rows[0]).getByText("Gs. 20.000")).toBeInTheDocument()
+    expect(within(rows[1]).getByText("Lambaré")).toBeInTheDocument()
+    expect(within(rows[1]).getByText("Gs. 15.000")).toBeInTheDocument()
+    expect(within(rows[7]).getByText("Gs. 30.000")).toBeInTheDocument()
+    expect(within(rows[8]).getByText("Interior del país, entrega en puerta")).toBeInTheDocument()
+    expect(within(rows[8]).getByText("Gs. 35.000")).toBeInTheDocument()
+    expect(within(rows[9]).getByText("Internacional (DHL)")).toBeInTheDocument()
+    expect(within(rows[9]).getByText("A cotizar")).toBeInTheDocument()
+    expect(within(rows[9]).getByText("Según país y peso. Llega en 5 días aproximadamente")).toBeInTheDocument()
+  })
+
   it("uses the first two images for the hero and falls back to the first when there is only one", async () => {
     vi.mocked(getProductBySlug).mockResolvedValue({ ...product, images: [product.images[0]] })
 
@@ -78,7 +96,7 @@ describe("product page", () => {
   it("adds the product to the cart from the page", async () => {
     render(await ProductPage(props))
 
-    const addButton = screen.getByRole("button", { name: /Add to Bag/ })
+    const addButton = screen.getByRole("button", { name: /Agregar al carrito/ })
     addButton.click()
 
     const cart = JSON.parse(localStorage.getItem("cart") ?? "[]")

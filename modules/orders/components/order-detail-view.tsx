@@ -1,5 +1,6 @@
 import Image from "next/image"
 import { formatOrderDate, formatOrderMoney } from "../domain/format"
+import { isDomesticShipment } from "../domain/shipping-countries"
 import type { OrderDetail } from "../types"
 import { InternationalShippingNotice } from "./international-shipping-notice"
 import { OrderStatusActions } from "./order-status-actions"
@@ -16,6 +17,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function OrderDetailView({ order }: { order: OrderDetail }) {
   const { customer, shippingAddress } = order
+  // International and legacy orders carry no priced option: their shipping is coordinated afterwards.
+  const hasShippingCharge = Boolean(shippingAddress.shippingOptionLabel) && isDomesticShipment(shippingAddress.country)
 
   return (
     <div className="space-y-6">
@@ -95,10 +98,25 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
             </li>
           ))}
         </ul>
-        <div className="mt-6 flex items-baseline justify-between border-t border-neutral-200 pt-4">
-          <span className="text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-500">Total</span>
-          <span className="font-serif text-3xl text-neutral-900">{formatOrderMoney(order.total, order.currency)}</span>
-        </div>
+        <dl className="mt-6 space-y-3 border-t border-neutral-200 pt-4 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-neutral-500">Subtotal</dt>
+            <dd className="text-neutral-900">{formatOrderMoney(order.subtotal, order.currency)}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-neutral-500">
+              Envío
+              {hasShippingCharge ? <span className="block text-xs">{shippingAddress.shippingOptionLabel}</span> : null}
+            </dt>
+            <dd className="text-neutral-900">
+              {hasShippingCharge ? formatOrderMoney(order.shippingCost, order.currency) : "A coordinar"}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between pt-1">
+            <dt className="text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-500">Total</dt>
+            <dd className="font-serif text-3xl text-neutral-900">{formatOrderMoney(order.total, order.currency)}</dd>
+          </div>
+        </dl>
       </Section>
 
       <Section title="Pago">

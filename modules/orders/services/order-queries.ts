@@ -56,6 +56,8 @@ export async function getOrderDetail(id: string): Promise<OrderDetail | null> {
     status: toStatus(order.status),
     paymentMethod: "TRANSFER",
     subtotal: order.subtotal,
+    // Legacy orders have no stored shipping cost.
+    shippingCost: order.shippingCost ?? 0,
     total: order.total,
     currency: order.currency,
     customerName: order.customer.fullName,
@@ -74,6 +76,8 @@ export async function getOrderDetail(id: string): Promise<OrderDetail | null> {
       country: order.shippingAddress.country,
       postalCode: order.shippingAddress.postalCode ?? null,
       notes: order.shippingAddress.notes ?? null,
+      shippingOptionId: order.shippingAddress.shippingOptionId ?? null,
+      shippingOptionLabel: order.shippingAddress.shippingOptionLabel ?? null,
     },
     items: order.items.map((line) => ({
       itemId: line.itemId,
@@ -110,10 +114,11 @@ export async function getOrderConfirmation(
       status: true,
       currency: true,
       subtotal: true,
+      shippingCost: true,
       total: true,
       createdAt: true,
       customer: { select: { fullName: true } },
-      shippingAddress: { select: { country: true } },
+      shippingAddress: { select: { country: true, shippingOptionLabel: true } },
       items: true,
     },
   })
@@ -125,6 +130,8 @@ export async function getOrderConfirmation(
     status: toStatus(order.status),
     currency: order.currency,
     subtotal: order.subtotal,
+    shippingCost: order.shippingCost ?? 0,
+    shippingOptionLabel: order.shippingAddress.shippingOptionLabel ?? null,
     total: order.total,
     customerName: order.customer.fullName,
     items: order.items.map((line) => ({

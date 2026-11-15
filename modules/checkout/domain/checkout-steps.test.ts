@@ -109,6 +109,7 @@ describe("isShippingFieldPath", () => {
     "shippingAddress.city",
     "shippingAddress.department",
     "shippingAddress.country",
+    "shippingAddress.shippingOptionId",
     "shippingAddress.postalCode",
     "shippingAddress.notes",
   ])("maps %s to the shipping step", (path) => {
@@ -169,6 +170,16 @@ describe("stepForServerFailure", () => {
       expect(stepForServerFailure({ code })).toBe("items")
     }
   )
+
+  it("routes a missing or tampered shipping option back to the shipping step", () => {
+    expect(stepForServerFailure({ code: "INVALID_SHIPPING_OPTION" })).toBe("shipping")
+    expect(
+      stepForServerFailure({
+        code: "VALIDATION",
+        fieldErrors: { "shippingAddress.shippingOptionId": "Elegí una zona de envío" },
+      })
+    ).toBe("shipping")
+  })
 
   it("keeps the shopper on payment for an unexpected failure", () => {
     expect(stepForServerFailure({ code: "INTERNAL" })).toBe("payment")

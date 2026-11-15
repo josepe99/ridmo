@@ -22,6 +22,8 @@ type TextFieldProps = {
   inputMode?: "text" | "tel" | "email" | "numeric"
   placeholder?: string
   multiline?: boolean
+  /** Shows a value the shopper cannot edit (e.g. a city fixed by the chosen shipping zone). */
+  readOnly?: boolean
   className?: string
 }
 
@@ -37,6 +39,7 @@ export function TextField({
   inputMode,
   placeholder,
   multiline,
+  readOnly,
   className,
 }: TextFieldProps) {
   const errorId = `${id}-error`
@@ -46,7 +49,8 @@ export function TextField({
     "aria-describedby": error ? errorId : undefined,
     autoComplete,
     placeholder,
-    className: CONTROL_CLASSES,
+    readOnly,
+    className: cn(CONTROL_CLASSES, readOnly && "cursor-default text-neutral-500 hover:border-neutral-300"),
     ...registration,
   }
 

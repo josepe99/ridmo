@@ -1,5 +1,7 @@
 import type { FormEvent, ReactNode } from "react"
 import { InternationalShippingNotice } from "@/modules/orders"
+import { formatGuaranies } from "@/shared/lib/currency"
+import { resolveShippingDisplay } from "../domain/shipping-display"
 import type { CheckoutFormValues } from "../schemas/checkout.schema"
 import type { BankTransferDetails } from "../services/bank-details"
 import { BankTransferDetailsList } from "./bank-transfer-details"
@@ -32,6 +34,7 @@ function RecapRow({ label, children }: { label: string; children: ReactNode }) {
 /** Step 3: payment method (bank transfer), read-only recap, transfer details and the final confirmation. */
 export function PaymentStep({ values, bank, isPending, message, onBack, onEdit, onConfirm, summary }: PaymentStepProps) {
   const { customer, shippingAddress } = values
+  const shipping = resolveShippingDisplay(shippingAddress.country, shippingAddress.shippingOptionId)
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -91,6 +94,11 @@ export function PaymentStep({ values, bank, isPending, message, onBack, onEdit, 
             <br />
             {shippingAddress.country}
           </RecapRow>
+          {shipping.state === "priced" ? (
+            <RecapRow label="Envío">
+              {shipping.label} · {formatGuaranies(shipping.cost)}
+            </RecapRow>
+          ) : null}
           {shippingAddress.postalCode ? (
             <RecapRow label="Código postal">{shippingAddress.postalCode}</RecapRow>
           ) : null}

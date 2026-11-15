@@ -161,6 +161,34 @@ describe("getOrderDetail", () => {
     expect(detail?.shippingAddress).toMatchObject({ country: "Paraguay", postalCode: null })
   })
 
+  it("reads a legacy document stored without shipping cost or shipping option", async () => {
+    expect(order).not.toHaveProperty("shippingCost")
+    prismaMock.order.findUnique.mockResolvedValue({ ...order, shippingCost: null })
+
+    const detail = await getOrderDetail(OBJECT_ID)
+
+    expect(detail?.shippingCost).toBe(0)
+    expect(detail?.shippingAddress).toMatchObject({ shippingOptionId: null, shippingOptionLabel: null })
+  })
+
+  it("exposes the stored shipping cost and the chosen shipping option", async () => {
+    prismaMock.order.findUnique.mockResolvedValue({
+      ...order,
+      shippingCost: 20_000,
+      total: 20_200,
+      shippingAddress: {
+        ...order.shippingAddress,
+        shippingOptionId: "asuncion",
+        shippingOptionLabel: "Asunción",
+      },
+    })
+
+    const detail = await getOrderDetail(OBJECT_ID)
+
+    expect(detail).toMatchObject({ shippingCost: 20_000, subtotal: 200, total: 20_200 })
+    expect(detail?.shippingAddress).toMatchObject({ shippingOptionId: "asuncion", shippingOptionLabel: "Asunción" })
+  })
+
   it("keeps display currency data when the shopper saw converted prices", async () => {
     prismaMock.order.findUnique.mockResolvedValue({
       ...order,
@@ -225,6 +253,8 @@ describe("getOrderConfirmation", () => {
       status: "PENDING_PAYMENT",
       currency: "PYG",
       subtotal: 200,
+      shippingCost: 0,
+      shippingOptionLabel: null,
       total: 200,
       customerName: "Ana Perez",
       items: [line],
@@ -233,11 +263,30 @@ describe("getOrderConfirmation", () => {
     expect(JSON.stringify(result)).not.toContain(token)
   })
 
-  it("selects only the country of the shipping address", async () => {
+  it("exposes the stored shipping cost and the label of the chosen option", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      ...confirmation,
+      shippingCost: 35_000,
+      total: 235,
+      shippingAddress: { country: "Paraguay", shippingOptionLabel: "Interior del país, entrega en puerta" },
+    })
+
+    const result = await getOrderConfirmation("RID-000003", token)
+
+    expect(result).toMatchObject({
+      shippingCost: 35_000,
+      shippingOptionLabel: "Interior del país, entrega en puerta",
+    })
+  })
+
+  it("selects only the country and the shipping option label of the shipping address", async () => {
     prismaMock.order.findFirst.mockResolvedValue(confirmation)
 
     await getOrderConfirmation("RID-000003", token)
 
-    expect(prismaMock.order.findFirst.mock.calls[0][0].select.shippingAddress).toEqual({ select: { country: true } })
+    expect(prismaMock.order.findFirst.mock.calls[0][0].select.shippingAddress).toEqual({
+      select: { country: true, shippingOptionLabel: true },
+    })
+    expect(prismaMock.order.findFirst.mock.calls[0][0].select.shippingCost).toBe(true)
   })
 })

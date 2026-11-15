@@ -25,6 +25,7 @@ const validInput = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    shippingOptionId: "asuncion",
   },
   lines: [{ itemId: "64b7f0a0a0a0a0a0a0a0a0a0", quantity: 2 }],
 }
@@ -36,7 +37,8 @@ const placed = {
     orderNumber: "RID-000001",
     shippingCountry: "Paraguay",
     accessToken: "secret-token-1234567890",
-    total: 2000,
+    shippingCost: 20_000,
+    total: 22_000,
     currency: "PYG",
   },
 }
@@ -143,6 +145,59 @@ describe("createOrder: shipping country", () => {
 
     await expect(createOrder(validInput)).resolves.toMatchObject({ ok: true })
     expect(vi.mocked(placeOrder).mock.calls[0][0].shippingAddress.postalCode).toBeUndefined()
+  })
+})
+
+describe("createOrder: shipping option", () => {
+  const withAddress = (overrides: Record<string, unknown>) => ({
+    ...validInput,
+    shippingAddress: { ...validInput.shippingAddress, ...overrides },
+  })
+
+  it.each([undefined, "", "nope"])(
+    "rejects a Paraguay order with the shipping option %j and never places it",
+    async (shippingOptionId) => {
+      const result = await createOrder(withAddress({ shippingOptionId }))
+
+      expect(result).toMatchObject({ ok: false, code: "VALIDATION" })
+      if (result.ok || result.code !== "VALIDATION") throw new Error("unreachable")
+      expect(result.fieldErrors["shippingAddress.shippingOptionId"]).toBe("Elegí una zona de envío")
+      expect(placeOrder).not.toHaveBeenCalled()
+    }
+  )
+
+  it("forwards only the option id: any cost sent by the client is dropped", async () => {
+    vi.mocked(placeOrder).mockResolvedValue(placed)
+
+    await createOrder({
+      ...withAddress({ shippingOptionId: "luque-2", shippingCost: 1 }),
+      shippingCost: 1,
+      total: 1,
+    })
+
+    const sent = vi.mocked(placeOrder).mock.calls[0][0]
+    expect(sent.shippingAddress.shippingOptionId).toBe("luque-2")
+    expect(JSON.stringify(sent)).not.toContain("shippingCost")
+    expect(sent).not.toHaveProperty("total")
+  })
+
+  it("accepts an international order without any shipping option", async () => {
+    vi.mocked(placeOrder).mockResolvedValue({ ok: true, order: { ...placed.order, shippingCountry: "Argentina", shippingCost: 0 } })
+
+    await expect(createOrder(withAddress({ country: "Argentina", shippingOptionId: undefined }))).resolves.toMatchObject({
+      ok: true,
+    })
+  })
+
+  it("maps INVALID_SHIPPING_OPTION from the order service to a clear message", async () => {
+    vi.mocked(placeOrder).mockResolvedValue({ ok: false, code: "INVALID_SHIPPING_OPTION" })
+
+    await expect(createOrder(validInput)).resolves.toEqual({
+      ok: false,
+      code: "INVALID_SHIPPING_OPTION",
+      message: "Elegí una zona de envío válida para continuar.",
+    })
+    expect(notifyNewOrder).not.toHaveBeenCalled()
   })
 })
 

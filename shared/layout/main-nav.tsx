@@ -92,11 +92,12 @@ export default function MainNav() {
         <div className="flex items-center gap-3 lg:w-1/3">
           <Button
             variant="ghost"
-            className="gap-2 text-xs font-semibold uppercase tracking-[0.2em]"
+            className="gap-2 px-2 text-xs font-semibold uppercase tracking-[0.2em] sm:px-4"
             onClick={openContact}
           >
             <span className="text-sm leading-none">+</span>
-            Contactanos
+            {/* Below 340px the label would push the header past the viewport; it stays for screen readers. */}
+            <span className="sr-only min-[340px]:not-sr-only">Contactanos</span>
           </Button>
         </div>
         {/* Center Logo */}
@@ -112,7 +113,7 @@ export default function MainNav() {
           </Link>
         </div>
         {/* Right Icons */}
-        <div className="ml-auto flex items-center gap-4 lg:w-1/3 justify-end">
+        <div className="ml-auto flex items-center gap-1 sm:gap-4 lg:w-1/3 justify-end">
           {/* Botón de búsqueda eliminado, solo logo y RIDMO quedan en el centro */}
 
           <Link href="/cart">
@@ -132,7 +133,7 @@ export default function MainNav() {
 
           <Button
             variant="ghost"
-            className="gap-2 text-xs font-semibold uppercase tracking-[0.2em]"
+            className="gap-2 px-2 text-xs font-semibold uppercase tracking-[0.2em] sm:px-4"
             onClick={openMenu}
           >
             <MenuIcon className="h-4 w-4" />

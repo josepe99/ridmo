@@ -59,7 +59,47 @@ describe("priceOrder", () => {
         },
       ],
       subtotal: 17_500_000,
+      shippingCost: 0,
       total: 17_500_000,
+    })
+  })
+
+  describe("shipping", () => {
+    it("adds the shipping cost on top of the subtotal", () => {
+      const result = priceOrder([{ itemId: watch.id, quantity: 2 }], [watch], 20_000)
+
+      expect(result).toMatchObject({ ok: true, subtotal: 13_600_000, shippingCost: 20_000, total: 13_620_000 })
+    })
+
+    it("leaves the subtotal and the lines untouched by shipping", () => {
+      const free = priceOrder([{ itemId: watch.id, quantity: 1 }], [watch])
+      const shipped = priceOrder([{ itemId: watch.id, quantity: 1 }], [watch], 35_000)
+
+      if (!free.ok || !shipped.ok) throw new Error("unreachable")
+      expect(shipped.lines).toEqual(free.lines)
+      expect(shipped.subtotal).toBe(free.subtotal)
+      expect(shipped.total).toBe(free.total + 35_000)
+    })
+
+    it("rounds the total to two decimals", () => {
+      const odd: CatalogItem = { ...chain, price: 33.333, inventory: 10 }
+      const result = priceOrder([{ itemId: odd.id, quantity: 3 }], [odd], 0.1)
+
+      expect(result).toMatchObject({ ok: true, subtotal: 100, shippingCost: 0.1, total: 100.1 })
+    })
+
+    it("charges no shipping when none is given (international orders are quoted later)", () => {
+      const result = priceOrder([{ itemId: watch.id, quantity: 1 }], [watch])
+
+      expect(result).toMatchObject({ ok: true, shippingCost: 0, total: 6_800_000 })
+    })
+
+    it.each([-1, Number.NaN, Number.POSITIVE_INFINITY])("refuses the invalid shipping cost %s", (cost) => {
+      expect(() => priceOrder([{ itemId: watch.id, quantity: 1 }], [watch], cost)).toThrow(/shipping cost/i)
+    })
+
+    it("still reports cart failures regardless of shipping", () => {
+      expect(priceOrder([], [watch], 20_000)).toEqual({ ok: false, code: "EMPTY_CART" })
     })
   })
 

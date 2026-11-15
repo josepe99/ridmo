@@ -15,6 +15,7 @@ const values: CheckoutFormValues = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    shippingOptionId: "asuncion",
     postalCode: "",
     notes: "Portón negro",
   },
@@ -78,6 +79,38 @@ describe("PaymentStep", () => {
     expect(screen.getByText(/Asuncion, Central/)).toBeInTheDocument()
     expect(screen.getByText(/Paraguay/)).toBeInTheDocument()
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
+  })
+
+  it("recaps the chosen shipping zone with its price", () => {
+    setup()
+
+    expect(screen.getByText("Envío")).toBeInTheDocument()
+    expect(screen.getByText("Asunción · Gs. 20.000")).toBeInTheDocument()
+  })
+
+  it("recaps the interior delivery type with its price", () => {
+    setup({ values: { ...values, shippingAddress: { ...values.shippingAddress, shippingOptionId: "interior-door" } } })
+
+    expect(screen.getByText("Interior del país, entrega en puerta · Gs. 35.000")).toBeInTheDocument()
+  })
+
+  it("shows no shipping price for an international address, only the coordination notice", () => {
+    setup({
+      values: {
+        ...values,
+        shippingAddress: { ...values.shippingAddress, country: "Argentina", shippingOptionId: "asuncion" },
+      },
+    })
+
+    expect(screen.queryByText("Envío")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Gs\./)).not.toBeInTheDocument()
+    expect(screen.getByText(INTERNATIONAL_SHIPPING_NOTICE)).toBeInTheDocument()
+  })
+
+  it("omits the shipping row when no zone was chosen", () => {
+    setup({ values: { ...values, shippingAddress: { ...values.shippingAddress, shippingOptionId: "" } } })
+
+    expect(screen.queryByText("Envío")).not.toBeInTheDocument()
   })
 
   it("shows the postal code row only when provided", () => {

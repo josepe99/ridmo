@@ -28,6 +28,23 @@ describe("TextField", () => {
     expect(onValue).toHaveBeenLastCalledWith("Ana")
   })
 
+  it("can be read only: the value is shown but cannot be typed over", async () => {
+    const onValue = vi.fn()
+    render(<Harness readOnly onValue={onValue} />)
+
+    const input = screen.getByLabelText("Nombre")
+    expect(input).toHaveAttribute("readonly")
+    await userEvent.type(input, "Ana")
+
+    expect(input).toHaveValue("")
+  })
+
+  it("is editable by default", () => {
+    render(<Harness />)
+
+    expect(screen.getByLabelText("Nombre")).not.toHaveAttribute("readonly")
+  })
+
   it("marks the optional fields", () => {
     render(<Harness optional />)
 

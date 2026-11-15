@@ -18,6 +18,7 @@ import {
   type StepGuardContext,
 } from "../domain/checkout-steps"
 import { buildFormDefaults } from "../domain/form-defaults"
+import { resolveShippingDisplay } from "../domain/shipping-display"
 import { checkoutFormSchema, type CheckoutFormValues } from "../schemas/checkout.schema"
 import type { BankTransferDetails } from "../services/bank-details"
 import { CartItemsStep } from "./cart-items-step"
@@ -64,6 +65,12 @@ export function CheckoutFlow({ defaults, bank = EMPTY_BANK }: CheckoutFlowProps 
     mode: "onTouched",
     defaultValues: buildFormDefaults(defaults),
   })
+
+  // Display only: the server recomputes the shipping cost from the option id when the order is placed.
+  const shipping = resolveShippingDisplay(
+    form.watch("shippingAddress.country"),
+    form.watch("shippingAddress.shippingOptionId")
+  )
 
   const guards = (): StepGuardContext => ({
     itemCount: items.length,
@@ -148,6 +155,8 @@ export function CheckoutFlow({ defaults, bank = EMPTY_BANK }: CheckoutFlowProps 
           }
         }
         if (hasUnmapped) message = "Revisá los productos de tu carrito."
+      } else if (result.code === "INVALID_SHIPPING_OPTION") {
+        form.setError("shippingAddress.shippingOptionId", { type: "server", message: result.message })
       } else if (result.itemId) {
         setLineErrors({ [result.itemId]: result.message })
       }
@@ -175,7 +184,9 @@ export function CheckoutFlow({ defaults, bank = EMPTY_BANK }: CheckoutFlowProps 
   if (items.length === 0) return <EmptyCart />
 
   const message = notice?.step === activeStep ? notice.message : null
-  const compactSummary = <OrderSummary variant="compact" totalQuantity={totalQuantity} totalPrice={totalPrice} />
+  const compactSummary = (
+    <OrderSummary variant="compact" totalQuantity={totalQuantity} totalPrice={totalPrice} shipping={shipping} />
+  )
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 md:px-8 md:py-20">
@@ -227,7 +238,7 @@ export function CheckoutFlow({ defaults, bank = EMPTY_BANK }: CheckoutFlowProps 
         </div>
 
         <aside aria-label="Resumen del pedido" className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
-          <OrderSummary totalQuantity={totalQuantity} totalPrice={totalPrice} />
+          <OrderSummary totalQuantity={totalQuantity} totalPrice={totalPrice} shipping={shipping} />
         </aside>
       </div>
     </section>

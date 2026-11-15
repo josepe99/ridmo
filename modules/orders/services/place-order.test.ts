@@ -27,10 +27,14 @@ const input: PlaceOrderInput = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    shippingOptionId: "asuncion",
     notes: "",
   },
   lines: [{ itemId: "i1", quantity: 2 }],
 }
+
+/** Subtotal of `input` (2 x 1000) plus the Asunción rate (Gs. 20.000). */
+const ORDER_TOTAL = 22_000
 
 /** Sequence value 12 -> RID-000012. */
 function stubSequence(value = 12) {
@@ -42,7 +46,7 @@ function stubHappyTransaction() {
   txMock.order.create.mockResolvedValue({
     id: "o1",
     orderNumber: "RID-000012",
-    total: 2000,
+    total: ORDER_TOTAL,
     currency: "PYG",
   })
 }
@@ -98,6 +102,21 @@ describe("placeOrder: pricing and validation (nothing is written)", () => {
     expect(prismaMock.$runCommandRaw).not.toHaveBeenCalled()
   })
 
+  it.each([undefined, "", "nope", "ASUNCION", "__proto__"])(
+    "rejects a Paraguay order with the shipping option %j before touching the database",
+    async (shippingOptionId) => {
+      const tampered = {
+        ...input,
+        shippingAddress: { ...input.shippingAddress, shippingOptionId },
+      } as PlaceOrderInput
+
+      await expect(placeOrder(tampered)).resolves.toEqual({ ok: false, code: "INVALID_SHIPPING_OPTION" })
+      expect(prismaMock.item.findMany).not.toHaveBeenCalled()
+      expect(prismaMock.$runCommandRaw).not.toHaveBeenCalled()
+      expect(prismaMock.$transaction).not.toHaveBeenCalled()
+    }
+  )
+
   it("loads each distinct item once, even when the cart repeats it", async () => {
     prismaMock.item.findMany.mockResolvedValue([catalogItem()])
     stubHappyTransaction()
@@ -125,7 +144,7 @@ describe("placeOrder: successful order", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      order: { id: "o1", orderNumber: "RID-000012", total: 2000, currency: "PYG" },
+      order: { id: "o1", orderNumber: "RID-000012", total: ORDER_TOTAL, shippingCost: 20_000, currency: "PYG" },
     })
     if (!result.ok) throw new Error("unreachable")
     expect(result.order.accessToken).toMatch(/^[A-Za-z0-9_-]{32}$/)
@@ -149,7 +168,8 @@ describe("placeOrder: successful order", () => {
 
     const data = txMock.order.create.mock.calls[0][0].data
     expect(data.subtotal).toBe(2000)
-    expect(data.total).toBe(2000)
+    expect(data.shippingCost).toBe(20_000)
+    expect(data.total).toBe(ORDER_TOTAL)
     expect(data.items).toEqual([
       {
         itemId: "i1",
@@ -161,6 +181,67 @@ describe("placeOrder: successful order", () => {
         lineTotal: 2000,
       },
     ])
+  })
+
+  it("never reads a shipping cost or total from the caller", async () => {
+    const tampered = {
+      ...input,
+      shippingCost: 1,
+      total: 1,
+      shippingAddress: { ...input.shippingAddress, shippingCost: 1 },
+    } as unknown as PlaceOrderInput
+
+    await placeOrder(tampered)
+
+    const data = txMock.order.create.mock.calls[0][0].data
+    expect(data.shippingCost).toBe(20_000)
+    expect(data.total).toBe(ORDER_TOTAL)
+    expect(data.shippingAddress).not.toHaveProperty("shippingCost")
+  })
+
+  it("snapshots the chosen shipping option and takes the city of a city option from the model", async () => {
+    await placeOrder({ ...input, shippingAddress: { ...input.shippingAddress, shippingOptionId: "luque-2", city: "Concepción" } })
+
+    const data = txMock.order.create.mock.calls[0][0].data
+    expect(data.shippingCost).toBe(35_000)
+    expect(data.total).toBe(2000 + 35_000)
+    expect(data.shippingAddress).toMatchObject({
+      city: "Luque",
+      shippingOptionId: "luque-2",
+      shippingOptionLabel: "Luque 2",
+    })
+  })
+
+  it("keeps the city typed by the shopper for interior deliveries", async () => {
+    await placeOrder({
+      ...input,
+      shippingAddress: { ...input.shippingAddress, shippingOptionId: "interior-door", city: "Encarnación" },
+    })
+
+    const data = txMock.order.create.mock.calls[0][0].data
+    expect(data.shippingCost).toBe(35_000)
+    expect(data.shippingAddress).toMatchObject({
+      city: "Encarnación",
+      shippingOptionId: "interior-door",
+      shippingOptionLabel: "Interior del país, entrega en puerta",
+    })
+  })
+
+  it("charges no shipping to an international order and ignores any option sent with it", async () => {
+    const result = await placeOrder({
+      ...input,
+      shippingAddress: { ...input.shippingAddress, country: "Argentina", shippingOptionId: "asuncion", city: "Rosario" },
+    })
+
+    const data = txMock.order.create.mock.calls[0][0].data
+    expect(data.shippingCost).toBe(0)
+    expect(data.total).toBe(2000)
+    expect(data.shippingAddress).toMatchObject({
+      city: "Rosario",
+      shippingOptionId: null,
+      shippingOptionLabel: null,
+    })
+    expect(result).toMatchObject({ ok: true, order: { shippingCountry: "Argentina", shippingCost: 0 } })
   })
 
   it("stores the order number, the public token as hash input and PYG currency", async () => {

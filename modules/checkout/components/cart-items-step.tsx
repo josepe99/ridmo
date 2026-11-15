@@ -52,17 +52,21 @@ export function CartItemsStep({
         {items.map((item) => (
           <li key={item.id} className="py-6 first:pt-0">
             <div className="flex gap-4 sm:gap-6">
-              <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden bg-neutral-100 sm:w-28">
+              <div className="relative aspect-[3/4] w-20 shrink-0 overflow-hidden bg-neutral-100 sm:w-28">
                 <Image src={item.image || "/placeholder.svg"} alt="" fill sizes="112px" className="object-cover" />
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col justify-between">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <h3 className="font-serif text-lg leading-snug text-neutral-900 md:text-xl">{item.name}</h3>
-                    <p className="mt-1 text-sm text-neutral-500">{formatGuaranies(item.price)}</p>
-                  </div>
-                  <p className="whitespace-nowrap text-sm font-medium text-neutral-900">
+                {/* Mobile first: the name takes the full width and both prices share the row below it;
+                    from sm up the line total moves beside the name. */}
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1">
+                  <h3 className="col-span-2 row-start-1 min-w-0 font-serif text-lg leading-snug text-neutral-900 sm:col-span-1 md:text-xl">
+                    {item.name}
+                  </h3>
+                  <p className="col-start-1 row-start-2 whitespace-nowrap text-sm text-neutral-500">
+                    {formatGuaranies(item.price)}
+                  </p>
+                  <p className="col-start-2 row-start-2 whitespace-nowrap text-sm font-medium text-neutral-900 sm:row-start-1">
                     {formatGuaranies(item.price * item.quantity)}
                   </p>
                 </div>

@@ -16,7 +16,8 @@ const order: OrderDetail = {
   status: "PENDING_PAYMENT",
   paymentMethod: "TRANSFER",
   subtotal: 7_000_000,
-  total: 7_000_000,
+  shippingCost: 20_000,
+  total: 7_020_000,
   currency: "PYG",
   customerName: "Ana Perez",
   itemCount: 2,
@@ -29,6 +30,8 @@ const order: OrderDetail = {
     country: "Paraguay",
     postalCode: null,
     notes: "Tocar timbre",
+    shippingOptionId: "asuncion",
+    shippingOptionLabel: "Asunción",
   },
   items: [
     {
@@ -113,6 +116,55 @@ describe("OrderDetailView", () => {
     expect(screen.getByText("Cadena Milan")).toBeInTheDocument()
     expect(screen.getByText("2 × Gs. 3.500.000")).toBeInTheDocument()
     expect(screen.getAllByText("Gs. 7.000.000").length).toBeGreaterThanOrEqual(2)
+  })
+
+  it("breaks the amounts down into subtotal, the stored shipping and a total that includes it", () => {
+    render(<OrderDetailView order={order} />)
+
+    const products = screen.getByRole("heading", { name: "Productos" }).closest("section") as HTMLElement
+    expect(within(products).getByText("Subtotal").nextSibling).toHaveTextContent("Gs. 7.000.000")
+    expect(within(products).getByText("Envío").nextSibling).toHaveTextContent("Gs. 20.000")
+    expect(within(products).getByText("Asunción")).toBeInTheDocument()
+    expect(within(products).getByText("Total").nextSibling).toHaveTextContent("Gs. 7.020.000")
+  })
+
+  it("shows shipping to be coordinated for an international order", () => {
+    render(
+      <OrderDetailView
+        order={{
+          ...order,
+          shippingCountry: "Argentina",
+          shippingCost: 0,
+          total: 7_000_000,
+          shippingAddress: {
+            ...order.shippingAddress,
+            country: "Argentina",
+            shippingOptionId: null,
+            shippingOptionLabel: null,
+          },
+        }}
+      />
+    )
+
+    const products = screen.getByRole("heading", { name: "Productos" }).closest("section") as HTMLElement
+    expect(within(products).getByText("Envío").nextSibling).toHaveTextContent("A coordinar")
+    expect(within(products).getByText("Total").nextSibling).toHaveTextContent("Gs. 7.000.000")
+  })
+
+  it("reads a legacy order (no shipping cost, no option) as shipping to be coordinated", () => {
+    render(
+      <OrderDetailView
+        order={{
+          ...order,
+          shippingCost: 0,
+          total: 7_000_000,
+          shippingAddress: { ...order.shippingAddress, shippingOptionId: null, shippingOptionLabel: null },
+        }}
+      />
+    )
+
+    const products = screen.getByRole("heading", { name: "Productos" }).closest("section") as HTMLElement
+    expect(within(products).getByText("Envío").nextSibling).toHaveTextContent("A coordinar")
   })
 
   it("offers the status actions allowed for the current status", () => {

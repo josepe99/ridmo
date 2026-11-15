@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { MAX_QUANTITY_PER_ITEM, isShippingCountry } from "@/modules/orders"
+import { MAX_QUANTITY_PER_ITEM, getShippingOption, isDomesticShipment, isShippingCountry } from "@/modules/orders"
 
 export { MAX_QUANTITY_PER_ITEM }
 
@@ -10,6 +10,7 @@ const PHONE_PATTERN = /^\+?[\d\s().-]{6,30}$/
 const POSTAL_CODE_PATTERN = /^[A-Za-z0-9 -]*$/
 
 const REQUIRED_MESSAGE = "Completá este campo"
+export const SHIPPING_OPTION_MESSAGE = "Elegí una zona de envío"
 
 const text = (min: number, max: number) => {
   const base = z.string({ required_error: REQUIRED_MESSAGE }).trim().min(1, REQUIRED_MESSAGE)
@@ -34,21 +35,35 @@ const customerSchema = z.object({
     .optional(),
 })
 
-const shippingAddressSchema = z.object({
-  street: text(3, 150),
-  reference: text(1, 100),
-  city: text(2, 80),
-  department: text(2, 80),
-  // Server-side allow list: the name (not a code) is what orders store, so legacy "Paraguay" stays valid.
-  country: text(2, 60).refine(isShippingCountry, "Elegí un país de la lista"),
-  postalCode: z
-    .string()
-    .trim()
-    .max(12, "Máximo 12 caracteres")
-    .regex(POSTAL_CODE_PATTERN, "Usá solo letras, números, espacios o guiones")
-    .optional(),
-  notes: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
-})
+const shippingAddressSchema = z
+  .object({
+    street: text(3, 150),
+    reference: text(1, 100),
+    city: text(2, 80),
+    department: text(2, 80),
+    // Server-side allow list: the name (not a code) is what orders store, so legacy "Paraguay" stays valid.
+    country: text(2, 60).refine(isShippingCountry, "Elegí un país de la lista"),
+    // Only an id: the server derives the price from it. Required for Paraguay (checked below), ignored abroad.
+    shippingOptionId: z.string().trim().max(40, "Zona de envío inválida").optional(),
+    postalCode: z
+      .string()
+      .trim()
+      .max(12, "Máximo 12 caracteres")
+      .regex(POSTAL_CODE_PATTERN, "Usá solo letras, números, espacios o guiones")
+      .optional(),
+    notes: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
+  })
+  .superRefine((address, ctx) => {
+    // An unknown country is already reported on its own field; do not pile a second error on top.
+    const countryIsKnown = isShippingCountry(address.country) || address.country === ""
+    if (countryIsKnown && isDomesticShipment(address.country) && !getShippingOption(address.shippingOptionId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["shippingOptionId"],
+        message: SHIPPING_OPTION_MESSAGE,
+      })
+    }
+  })
 
 /** Fields the shopper fills in the checkout form. */
 export const checkoutFormSchema = z.object({

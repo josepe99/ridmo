@@ -2,21 +2,11 @@ import { getProductBySlug } from "@/modules/catalog/server"
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import Image from "next/image"
-import Link from "next/link"
-import {
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Menu,
-  Phone,
-  Plus,
-  Search,
-  ShoppingBag,
-  Truck,
-  User,
-} from "lucide-react"
+import { Plus, ShoppingBag, Truck } from "lucide-react"
 import { AddToCartButton } from "@/modules/cart"
-import { Price } from "@/modules/catalog"
+import { Price, ProductGallery } from "@/modules/catalog"
+import { getShippingRateRows } from "@/modules/orders"
+import { formatGuaranies } from "@/shared/lib/currency"
 
 export async function generateMetadata({
   params,
@@ -67,6 +57,11 @@ export async function generateMetadata({
   }
 }
 
+const SHIPPING_RATES = getShippingRateRows()
+
+/** Public price list text: "Gs. 20.000", or "A cotizar" for rows the shop quotes case by case. */
+const rateCost = (cost: number | null) => (cost === null ? "A cotizar" : formatGuaranies(cost))
+
 type ProductPageProps = {
   params: {
     collectionSlug: string
@@ -89,94 +84,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
       ? item.images.filter((img: string) => Boolean(img))
       : []
     const heroLeft = images[0] || fallbackImage
-    const heroRight = images[1] || heroLeft
-    const thumbnailImages = images.length > 0 ? images.slice(0, 5) : [heroLeft]
-    const extraThumbnails = Math.max(0, images.length - 5)
+    const galleryImages = images.length > 0 ? images : [fallbackImage]
     const swatchImages = images.length > 0 ? images.slice(0, 4) : [heroLeft]
 
     return (
       <div className="bg-white">
         <section className="bg-gradient-to-b from-[#f5f4f2] via-[#f3f2f0] to-[#efeeec]">
-          <div className="mx-auto pb-12">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-0">
-              <div className="relative">
-                <div className="relative h-[62vh] w-full overflow-hidden bg-[#ecebea] shadow-[0_24px_60px_rgba(0,0,0,0.08)] lg:h-[92vh]">
-                  <Image
-                    src={heroLeft}
-                    alt={`${item.name} view 1`}
-                    fill
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </div>
-              <div className="relative">
-                <div className="relative h-[62vh] w-full overflow-hidden bg-[#ecebea] shadow-[0_24px_60px_rgba(0,0,0,0.08)] lg:h-[92vh]">
-                  <Image
-                    src={heroRight}
-                    alt={`${item.name} view 2`}
-                    fill
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="absolute bottom-5 right-5 flex flex-col items-end gap-3">
-                  <div className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 shadow">
-                    {thumbnailImages.map((img, idx) => (
-                      <button
-                        key={`${img}-${idx}`}
-                        type="button"
-                        className={`h-10 w-10 overflow-hidden rounded-[10px] border ${
-                          idx === 0 ? "border-neutral-900" : "border-neutral-200"
-                        } bg-white`}
-                        aria-label={`Thumbnail ${idx + 1}`}
-                      >
-                        <Image
-                          src={img}
-                          alt={`${item.name} thumbnail ${idx + 1}`}
-                          width={40}
-                          height={40}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))}
-                    {extraThumbnails > 0 ? (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-neutral-200 text-xs font-semibold text-neutral-600">
-                        +{extraThumbnails}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-700 shadow hover:bg-white"
-                      aria-label="Previous"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-700 shadow hover:bg-white"
-                      aria-label="Next"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="mx-auto lg:pb-12">
+            <ProductGallery name={item.name} images={galleryImages} />
           </div>
         </section>
 
         <section className="bg-white">
-          <div className="mx-auto max-w-[1200px] px-6 py-16">
-            <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 lg:py-16">
+            <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-x-12 lg:gap-y-0">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
                   Personalize with initials
                 </p>
-                <h1 className="mt-4 text-3xl font-medium text-neutral-900 md:text-4xl">
+                <h1 className="mt-4 text-2xl font-medium text-neutral-900 sm:text-3xl md:text-4xl">
                   {item.name}
                 </h1>
                 <div className="mt-4">
@@ -217,57 +143,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <Plus className="h-4 w-4" />
                 </button>
 
-                <div className="mt-12">
-                  <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
-                    Product Description
-                  </p>
-                  <p className="mt-4 text-sm leading-7 text-neutral-600">
-                    {item.description ||
-                      "A refined silhouette designed for everyday carry, finished with soft leather and polished hardware."}
-                  </p>
-                </div>
-
-                <div className="mt-8 border-t border-neutral-200">
-                  <details className="border-b border-neutral-200 py-4">
-                    <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden">
-                      Product Details
-                      <Plus className="h-4 w-4 text-neutral-500" />
-                    </summary>
-                    <div className="mt-3 text-sm text-neutral-600">
-                      <ul className="space-y-2">
-                        <li>Adjustable strap with polished hardware.</li>
-                        <li>Interior pocket with magnetic closure.</li>
-                        <li>Made in Italy.</li>
-                      </ul>
-                    </div>
-                  </details>
-                  <details className="border-b border-neutral-200 py-4">
-                    <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden">
-                      Materials & Care
-                      <Plus className="h-4 w-4 text-neutral-500" />
-                    </summary>
-                    <div className="mt-3 text-sm text-neutral-600">
-                      <ul className="space-y-2">
-                        <li>Soft-grain leather exterior.</li>
-                        <li>Microfiber lining.</li>
-                        <li>Protect from direct light, heat, and rain.</li>
-                      </ul>
-                    </div>
-                  </details>
-                  <details className="py-4">
-                    <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden">
-                      Our Commitment
-                      <Plus className="h-4 w-4 text-neutral-500" />
-                    </summary>
-                    <div className="mt-3 text-sm text-neutral-600">
-                      <p>Responsibly sourced materials and artisan production.</p>
-                    </div>
-                  </details>
-                </div>
               </div>
 
-              <div className="lg:pl-10">
-                <div className="sticky top-24 space-y-6">
+              {/* Second in the DOM so the buy box follows the price on mobile; pinned to the right column from lg up. */}
+              <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pl-10">
+                <div className="space-y-6 lg:sticky lg:top-24">
                   <AddToCartButton
                     product={{
                       id: item.id,
@@ -281,36 +161,67 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   >
                     <span className="flex items-center justify-center gap-3">
                       <ShoppingBag className="h-4 w-4" />
-                      Add to Bag
+                      Agregar al carrito
                     </span>
                   </AddToCartButton>
                   <div className="flex items-start gap-3 text-xs text-neutral-500">
                     <Truck className="mt-0.5 h-4 w-4" />
                     <span>
-                      Estimated complimentary express delivery or collect in store:
-                      Wed, Jan 21 - Thu, Jan 22
+                      Envíos a todo el país y al exterior. El costo depende de
+                      la zona.
                     </span>
                   </div>
-                  <div className="space-y-4 border-t border-neutral-200 pt-6 text-sm text-neutral-800">
-                    <button type="button" className="flex items-center gap-3 underline underline-offset-4">
-                      <Phone className="h-4 w-4" />
-                      Order by phone
-                    </button>
-                    <button type="button" className="flex items-center gap-3 underline underline-offset-4">
-                      <MapPin className="h-4 w-4" />
-                      Find in store and book an appointment
-                    </button>
-                    <div className="pt-4">
+                  <div className="border-t border-neutral-200 pt-6 text-sm text-neutral-800">
+                    <details>
+                      <summary className="flex cursor-pointer items-center gap-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+                        <Plus className="h-4 w-4" />
+                        Costos de envío
+                      </summary>
+                      <ul className="mt-3 space-y-3 text-sm text-neutral-600">
+                        {SHIPPING_RATES.map((rate) => (
+                          <li
+                            key={rate.id}
+                            className="flex items-start justify-between gap-4"
+                          >
+                            <span>
+                              {rate.zone}
+                              {rate.note && (
+                                <span className="block text-xs text-neutral-500">
+                                  {rate.note}
+                                </span>
+                              )}
+                            </span>
+                            <span className="shrink-0 font-medium text-neutral-900">
+                              {rateCost(rate.cost)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                    <div className="mt-6">
                       <div className="flex items-center gap-3 text-sm font-medium">
                         <Plus className="h-4 w-4" />
-                        RIDMO Services
+                        Servicios RIDMO
                       </div>
                       <p className="mt-2 text-sm text-neutral-600">
-                        Complimentary shipping, complimentary exchanges and returns,
-                        secure payments and signature packaging.
+                        Envíos a todo el país y al exterior, cambios y
+                        devoluciones sin costo, pagos seguros y empaque
+                        exclusivo.
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div className="lg:col-start-1 lg:mt-12">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                    Product Description
+                  </p>
+                  <p className="mt-4 text-sm leading-7 text-neutral-600">
+                    {item.description ||
+                      "A refined silhouette designed for everyday carry, finished with soft leather and polished hardware."}
+                  </p>
                 </div>
               </div>
             </div>

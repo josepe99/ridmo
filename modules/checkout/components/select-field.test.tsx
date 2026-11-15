@@ -57,6 +57,33 @@ describe("SelectField", () => {
     expect(screen.getByLabelText("País")).not.toHaveAttribute("aria-invalid")
   })
 
+  it("renders options with a separate value and visible label", async () => {
+    const user = userEvent.setup()
+    render(
+      <Harness
+        options={[
+          { value: "asuncion", label: "Asunción · Gs. 20.000" },
+          { value: "lambare", label: "Lambaré · Gs. 15.000" },
+        ]}
+      />
+    )
+
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Asunción · Gs. 20.000",
+      "Lambaré · Gs. 15.000",
+    ])
+    await user.selectOptions(screen.getByLabelText("País"), "Lambaré · Gs. 15.000")
+    expect(screen.getByLabelText("País")).toHaveValue("lambare")
+  })
+
+  it("shows a placeholder with an empty value first when asked", () => {
+    render(<Harness options={[{ value: "a", label: "A" }]} placeholder="Elegí una zona" />)
+
+    const options = screen.getAllByRole("option")
+    expect(options.map((option) => option.textContent)).toEqual(["Elegí una zona", "A"])
+    expect(options[0]).toHaveAttribute("value", "")
+  })
+
   it("passes the autocomplete token to the browser", () => {
     render(<Harness autoComplete="country-name" />)
 

@@ -81,6 +81,9 @@ type OrderShippingAddress {
   country    String
   postalCode String? // optional so documents created before international shipping stay valid
   notes      String?
+  // Snapshot of the Paraguay shipping option chosen at checkout (null for international and legacy orders).
+  shippingOptionId    String?
+  shippingOptionLabel String?
 }
 
 // Immutable snapshot of a purchased item: later catalog edits never alter past orders.
@@ -102,8 +105,11 @@ model Order {
   paymentMethod   PaymentMethod        @default(TRANSFER)
   currency        String // always the base currency the prices are stored in (PYG)
   subtotal        Float
+  // Computed by the server and already included in `total`. Optional (default 0) because documents
+  // created before shipping costs existed have no such field and a required one would fail to load.
+  shippingCost    Float?               @default(0)
   total           Float
-  customer        OrderCustomer
+  customer       OrderCustomer
   shippingAddress OrderShippingAddress
   items           OrderLine[]
   // Informational only: what the customer was shown in the storefront.

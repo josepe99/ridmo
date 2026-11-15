@@ -21,6 +21,8 @@ export type OrderSummary = {
 /** Everything the admin order detail page shows. */
 export type OrderDetail = OrderSummary & {
   subtotal: number
+  /** Shipping charged (already included in `total`). 0 for international and legacy orders. */
+  shippingCost: number
   paymentMethod: "TRANSFER"
   customer: { fullName: string; phone: string; email: string | null }
   shippingAddress: {
@@ -32,6 +34,10 @@ export type OrderDetail = OrderSummary & {
     /** Absent in orders placed before international shipping. */
     postalCode: string | null
     notes: string | null
+    /** Shipping option chosen at checkout. Null for international and legacy orders. */
+    shippingOptionId: string | null
+    /** Label of that option as it was shown to the shopper. */
+    shippingOptionLabel: string | null
   }
   items: OrderLineSnapshot[]
   /** Legacy: set only on orders placed while the storefront could show converted prices. */
@@ -48,6 +54,10 @@ export type OrderConfirmation = {
   status: OrderStatus
   currency: string
   subtotal: number
+  /** Shipping charged (already included in `total`). 0 for international and legacy orders. */
+  shippingCost: number
+  /** Label of the shipping option chosen at checkout. Null when shipping is coordinated afterwards. */
+  shippingOptionLabel: string | null
   total: number
   customerName: string
   items: OrderLineSnapshot[]
@@ -63,6 +73,8 @@ export type PlaceOrderInput = {
     city: string
     department: string
     country: string
+    /** Id of the chosen Paraguay shipping option. Required for Paraguay, ignored abroad. Never a price. */
+    shippingOptionId?: string
     postalCode?: string
     notes?: string
   }
@@ -77,6 +89,8 @@ export type PlacedOrder = {
   shippingCountry: string
   /** Secret that unlocks the public confirmation page of this order. */
   accessToken: string
+  /** Shipping charged by the server (already included in `total`). */
+  shippingCost: number
   total: number
   currency: string
 }
@@ -101,6 +115,8 @@ export type CheckoutDefaults = {
     city: string
     department: string
     country: string
+    /** Shipping option of the previous order; only reused while it still exists. */
+    shippingOptionId?: string
     postalCode: string
     notes: string
   }

@@ -68,6 +68,7 @@ const SHIPPING_FIELD_PATHS: ReadonlySet<string> = new Set([
   "shippingAddress.city",
   "shippingAddress.department",
   "shippingAddress.country",
+  "shippingAddress.shippingOptionId",
   "shippingAddress.postalCode",
   "shippingAddress.notes",
 ])
@@ -93,6 +94,7 @@ const CART_FAILURE_CODES: ReadonlySet<string> = new Set([
 /** The step the shopper must return to so the failure can be fixed where it originated. */
 export function stepForServerFailure(failure: ServerFailureInfo): CheckoutStep {
   if (CART_FAILURE_CODES.has(failure.code)) return "items"
+  if (failure.code === "INVALID_SHIPPING_OPTION") return "shipping"
 
   if (failure.code === "VALIDATION") {
     const paths = Object.keys(failure.fieldErrors ?? {})

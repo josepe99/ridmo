@@ -9,6 +9,7 @@ const validInput = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    shippingOptionId: "asuncion",
     notes: "Tocar timbre",
   },
   lines: [{ itemId: "665f1c2e8b3a4d0012a1b001", quantity: 2 }],
@@ -137,6 +138,77 @@ describe("createOrderInputSchema", () => {
       if (!parsed.success) {
         const issue = parsed.error.issues.find((i) => i.path.join(".") === "shippingAddress.country")
         expect(issue?.message).toBe("Elegí un país de la lista")
+      }
+    })
+  })
+
+  describe("shipping option", () => {
+    const withOption = (shippingOptionId: unknown, country = "Paraguay") =>
+      createOrderInputSchema.safeParse({
+        ...validInput,
+        shippingAddress: { ...validInput.shippingAddress, country, shippingOptionId },
+      })
+
+    const optionIssue = (result: ReturnType<typeof withOption>) =>
+      result.success
+        ? undefined
+        : result.error.issues.find((issue) => issue.path.join(".") === "shippingAddress.shippingOptionId")
+
+    it.each(["asuncion", "luque-1", "luque-2", "interior", "interior-door"])("accepts %j for Paraguay", (id) => {
+      const parsed = withOption(id)
+
+      expect(parsed.success).toBe(true)
+      if (parsed.success) expect(parsed.data.shippingAddress.shippingOptionId).toBe(id)
+    })
+
+    it.each([undefined, "", "   ", "unknown", "ASUNCION", "__proto__", "asuncion; drop"])(
+      "requires a valid option for Paraguay: rejects %j",
+      (id) => {
+        const parsed = withOption(id)
+
+        expect(parsed.success).toBe(false)
+        expect(optionIssue(parsed)?.message).toBe("Elegí una zona de envío")
+      }
+    )
+
+    it("requires a valid option when the country is empty (legacy payloads are domestic)", () => {
+      const parsed = withOption(undefined, "")
+
+      expect(optionIssue(parsed)?.message).toBe("Elegí una zona de envío")
+    })
+
+    it.each([undefined, "", "asuncion"])("does not need an option abroad: accepts %j", (id) => {
+      expect(withOption(id, "Argentina").success).toBe(true)
+    })
+
+    it("does not flag the option when the country itself is invalid", () => {
+      const parsed = withOption(undefined, "Narnia")
+
+      expect(parsed.success).toBe(false)
+      expect(optionIssue(parsed)).toBeUndefined()
+    })
+
+    it.each([null, 1, {}, ["asuncion"], { $ne: "x" }])("rejects the non-string %j", (id) => {
+      expect(withOption(id).success).toBe(false)
+      expect(withOption(id, "Argentina").success).toBe(false)
+    })
+
+    it("rejects an over-long option id", () => {
+      expect(withOption("a".repeat(41), "Argentina").success).toBe(false)
+    })
+
+    it("never accepts a shipping cost from the client: it is stripped from the payload", () => {
+      const parsed = createOrderInputSchema.safeParse({
+        ...validInput,
+        shippingCost: 1,
+        shippingAddress: { ...validInput.shippingAddress, shippingCost: 1, shippingPrice: 1 },
+      })
+
+      expect(parsed.success).toBe(true)
+      if (parsed.success) {
+        expect(parsed.data).not.toHaveProperty("shippingCost")
+        expect(parsed.data.shippingAddress).not.toHaveProperty("shippingCost")
+        expect(parsed.data.shippingAddress).not.toHaveProperty("shippingPrice")
       }
     })
   })

@@ -37,7 +37,7 @@ export type PricingFailure =
   | { ok: false; code: "INSUFFICIENT_STOCK"; itemId: string; available: number }
 
 export type PricingResult =
-  | { ok: true; lines: OrderLineSnapshot[]; subtotal: number; total: number }
+  | { ok: true; lines: OrderLineSnapshot[]; subtotal: number; shippingCost: number; total: number }
   | PricingFailure
 
 /** Rounds to two decimals so float sums never leak noise like 99.99999999. */
@@ -51,11 +51,18 @@ export function roundMoney(value: number): number {
  * Only `itemId` and `quantity` are read from the requested lines; any other
  * property a tampered client attaches (price, total...) is ignored on purpose.
  * Duplicated item ids are merged. Pure: no database access.
+ *
+ * `shippingCost` is decided by the server (see `calculateShippingCost`), never by the client, and
+ * is added on top of the subtotal: `total = subtotal + shippingCost`. Defaults to 0.
  */
 export function priceOrder(
   requested: ReadonlyArray<RequestedLine>,
-  catalog: ReadonlyArray<CatalogItem>
+  catalog: ReadonlyArray<CatalogItem>,
+  shippingCost = 0
 ): PricingResult {
+  if (!Number.isFinite(shippingCost) || shippingCost < 0) {
+    throw new RangeError(`Invalid shipping cost: ${shippingCost}`)
+  }
   if (requested.length === 0) return { ok: false, code: "EMPTY_CART" }
 
   const quantities = new Map<string, number>()
@@ -95,6 +102,6 @@ export function priceOrder(
   }
 
   const subtotal = roundMoney(lines.reduce((sum, line) => sum + line.lineTotal, 0))
-  // No shipping, tax or discount rules yet: the total equals the subtotal.
-  return { ok: true, lines, subtotal, total: subtotal }
+  // Shipping is the only extra charge; there are no tax or discount rules yet.
+  return { ok: true, lines, subtotal, shippingCost, total: roundMoney(subtotal + shippingCost) }
 }

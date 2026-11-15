@@ -22,13 +22,14 @@ const validInput = {
     city: "Asuncion",
     department: "Central",
     country: "Paraguay",
+    shippingOptionId: "asuncion",
   },
   lines: [{ itemId: "64b7f0a0a0a0a0a0a0a0a0a0", quantity: 2 }],
 }
 
 const placed = {
   ok: true as const,
-  order: { id: "o1", orderNumber: "RID-000001", shippingCountry: "Paraguay", accessToken: "secret-token-1234567890", total: 2000, currency: "PYG" },
+  order: { id: "o1", orderNumber: "RID-000001", shippingCountry: "Paraguay", accessToken: "secret-token-1234567890", shippingCost: 20_000, total: 22_000, currency: "PYG" },
 }
 
 beforeEach(() => {

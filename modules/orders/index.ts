@@ -13,6 +13,21 @@ export {
   isShippingCountry,
 } from "./domain/shipping-countries"
 export type { ShippingCountry } from "./domain/shipping-countries"
+export {
+  CITY_SHIPPING_OPTIONS,
+  INTERIOR_SHIPPING_OPTIONS,
+  INTERNATIONAL_SHIPPING_ETA,
+  SHIPPING_OPTIONS,
+  calculateShippingCost,
+  getShippingOption,
+  getShippingRateRows,
+} from "./domain/paraguay-shipping"
+export type {
+  ShippingCostResult,
+  ShippingFailure,
+  ShippingOption,
+  ShippingRateRow,
+} from "./domain/paraguay-shipping"
 export { formatOrderMoney, formatOrderDate } from "./domain/format"
 export {
   ORDER_STATUSES,

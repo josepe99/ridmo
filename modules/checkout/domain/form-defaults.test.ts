@@ -11,9 +11,46 @@ describe("buildFormDefaults", () => {
         city: "",
         department: "",
         country: "Paraguay",
+        shippingOptionId: "",
         postalCode: "",
         notes: "",
       },
+    })
+  })
+
+  describe("shipping option", () => {
+    const withSaved = (country: string, shippingOptionId: string | undefined) =>
+      buildFormDefaults({
+        shippingAddress: { street: "x", reference: "x", city: "Luque", department: "x", country, shippingOptionId, postalCode: "", notes: "" },
+      }).shippingAddress
+
+    it("keeps a saved option that still exists for a Paraguay address", () => {
+      expect(withSaved("Paraguay", "luque-2").shippingOptionId).toBe("luque-2")
+    })
+
+    it("takes the city from a city option and keeps the typed one for interior deliveries", () => {
+      const city = (id: string, saved: string) =>
+        buildFormDefaults({
+          shippingAddress: { street: "x", reference: "x", city: saved, department: "x", country: "Paraguay", shippingOptionId: id, postalCode: "", notes: "" },
+        }).shippingAddress.city
+
+      expect(city("asuncion", "Otro")).toBe("Asunción")
+      expect(city("interior", "Encarnación")).toBe("Encarnación")
+    })
+
+    it.each([undefined, "", "retired-option", "ASUNCION"])("starts empty for the saved option %j", (id) => {
+      expect(withSaved("Paraguay", id).shippingOptionId).toBe("")
+    })
+
+    it("drops the option when the saved country is not Paraguay", () => {
+      expect(withSaved("Argentina", "asuncion").shippingOptionId).toBe("")
+    })
+
+    it("drops the option when the saved country is no longer allowed and falls back to Paraguay", () => {
+      const address = withSaved("Narnia", "asuncion")
+
+      expect(address.country).toBe("Paraguay")
+      expect(address.shippingOptionId).toBe("")
     })
   })
 

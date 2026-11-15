@@ -10,20 +10,39 @@ const CONTROL_CLASSES = cn(
   "aria-[invalid=true]:border-b-2 aria-[invalid=true]:border-black"
 )
 
+export type SelectOption = string | { value: string; label: string }
+
 type SelectFieldProps = {
   id: string
   label: string
-  /** Visible text and submitted value of each option, in display order. */
-  options: ReadonlyArray<string>
+  /** Each option in display order: a string is both text and value, an object separates them. */
+  options: ReadonlyArray<SelectOption>
   registration: UseFormRegisterReturn
+  /** When set, adds a first option with an empty value that shows this text. */
+  placeholder?: string
   error?: string
+  /** Extra text announced with the control (e.g. a hint), joined with the error id. */
+  describedBy?: string
   autoComplete?: string
   className?: string
 }
 
+const toOption = (option: SelectOption) => (typeof option === "string" ? { value: option, label: option } : option)
+
 /** Underlined, label-on-top native select used by the checkout form. Wired to react-hook-form. */
-export function SelectField({ id, label, options, registration, error, autoComplete, className }: SelectFieldProps) {
+export function SelectField({
+  id,
+  label,
+  options,
+  registration,
+  placeholder,
+  error,
+  describedBy,
+  autoComplete,
+  className,
+}: SelectFieldProps) {
   const errorId = `${id}-error`
+  const describedByIds = [error ? errorId : null, describedBy].filter(Boolean).join(" ") || undefined
 
   return (
     <div className={cn("pb-3", className)}>
@@ -36,16 +55,20 @@ export function SelectField({ id, label, options, registration, error, autoCompl
       <select
         id={id}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
+        aria-describedby={describedByIds}
         autoComplete={autoComplete}
         className={CONTROL_CLASSES}
         {...registration}
       >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
+        {placeholder ? <option value="">{placeholder}</option> : null}
+        {options.map((option) => {
+          const { value, label: text } = toOption(option)
+          return (
+            <option key={value} value={value}>
+              {text}
+            </option>
+          )
+        })}
       </select>
       <p id={errorId} role={error ? "alert" : undefined} className="mt-2 min-h-4 text-xs font-medium text-neutral-900">
         {error}

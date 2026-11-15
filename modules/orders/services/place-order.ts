@@ -4,11 +4,12 @@ import { randomBytes } from "node:crypto"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/shared/lib/prisma"
 import { formatOrderNumber } from "../domain/order-number"
+import { calculateShippingCost, type ShippingFailure } from "../domain/paraguay-shipping"
 import { priceOrder, type PricingFailure } from "../domain/pricing"
 import { ORDER_CURRENCY, type PlaceOrderInput, type PlacedOrder } from "../types"
 import { nextSequence } from "./sequence"
 
-export type PlaceOrderResult = { ok: true; order: PlacedOrder } | PricingFailure
+export type PlaceOrderResult = { ok: true; order: PlacedOrder } | PricingFailure | ShippingFailure
 
 const MAX_TRANSACTION_ATTEMPTS = 8
 
@@ -29,11 +30,21 @@ function isWriteConflict(error: unknown): boolean {
  * Integrity rules:
  *  - prices, names and images are loaded from the database and snapshotted;
  *    nothing monetary is ever read from the caller;
+ *  - the shipping cost is computed here from the destination country and the chosen option id
+ *    (see `calculateShippingCost`) and added to the total; international orders are charged 0
+ *    because their cost is quoted and coordinated afterwards;
  *  - inventory is decremented with a guarded `updateMany` (`inventory >= quantity`)
  *    inside the same transaction that creates the order, so concurrent buyers can
  *    never oversell: the loser gets INSUFFICIENT_STOCK and nothing is written.
  */
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
+  // Cheapest check first: a missing or tampered option never reaches the database.
+  const shipping = calculateShippingCost({
+    country: input.shippingAddress.country,
+    optionId: input.shippingAddress.shippingOptionId,
+  })
+  if (!shipping.ok) return shipping
+
   const itemIds = [...new Set(input.lines.map((line) => line.itemId))]
 
   const catalog = await prisma.item.findMany({
@@ -50,7 +61,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     },
   })
 
-  const priced = priceOrder(input.lines, catalog)
+  const priced = priceOrder(input.lines, catalog, shipping.cost)
   if (!priced.ok) return priced
 
   // Drawn after the cheap validations so rejected carts do not burn numbers.
@@ -74,6 +85,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
             publicToken: accessToken,
             currency: ORDER_CURRENCY,
             subtotal: priced.subtotal,
+            shippingCost: priced.shippingCost,
             total: priced.total,
             customer: {
               fullName: input.customer.fullName,
@@ -83,9 +95,12 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
             shippingAddress: {
               street: input.shippingAddress.street,
               reference: input.shippingAddress.reference,
-              city: input.shippingAddress.city,
+              // A city option fixes the city (and its price) on the server; interior keeps the typed one.
+              city: shipping.option?.city ?? input.shippingAddress.city,
               department: input.shippingAddress.department,
               country: input.shippingAddress.country,
+              shippingOptionId: shipping.option?.id ?? null,
+              shippingOptionLabel: shipping.option?.label ?? null,
               postalCode: input.shippingAddress.postalCode || null,
               notes: input.shippingAddress.notes || null,
             },
@@ -104,6 +119,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
           orderNumber: created.orderNumber,
           shippingCountry: input.shippingAddress.country,
           accessToken,
+          shippingCost: priced.shippingCost,
           total: created.total,
           currency: created.currency,
         },

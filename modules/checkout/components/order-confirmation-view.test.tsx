@@ -14,7 +14,9 @@ const order: OrderConfirmation = {
   status: "PENDING_PAYMENT",
   currency: "PYG",
   subtotal: 7_000_000,
-  total: 7_000_000,
+  shippingCost: 20_000,
+  shippingOptionLabel: "Asunción",
+  total: 7_020_000,
   customerName: "Ana Maria Perez",
   createdAt: "2026-01-15T12:00:00.000Z",
   items: [
@@ -59,7 +61,42 @@ describe("OrderConfirmationView", () => {
     render(<OrderConfirmationView order={order} bank={bank} />)
 
     const transfer = screen.getByRole("region", { name: "Transferencia bancaria" })
-    expect(within(transfer).getByText("Gs. 7.000.000")).toBeInTheDocument()
+    expect(within(transfer).getByText("Gs. 7.020.000")).toBeInTheDocument()
+  })
+
+  it("breaks the summary down into subtotal, shipping and a total that includes it", () => {
+    render(<OrderConfirmationView order={order} bank={bank} />)
+
+    const summary = screen.getByRole("region", { name: "Resumen del pedido" })
+    expect(within(summary).getByText("Subtotal").nextSibling).toHaveTextContent("Gs. 7.000.000")
+    expect(within(summary).getByText("Envío").nextSibling).toHaveTextContent("Gs. 20.000")
+    expect(within(summary).getByText("Asunción")).toBeInTheDocument()
+    expect(within(summary).getByText("Total").nextSibling).toHaveTextContent("Gs. 7.020.000")
+  })
+
+  it("says the shipping is coordinated for an international order", () => {
+    render(
+      <OrderConfirmationView
+        order={{ ...order, shippingCountry: "Argentina", shippingCost: 0, shippingOptionLabel: null, total: 7_000_000 }}
+        bank={bank}
+      />
+    )
+
+    const summary = screen.getByRole("region", { name: "Resumen del pedido" })
+    expect(within(summary).getByText("Envío").nextSibling).toHaveTextContent("A coordinar")
+    expect(within(summary).getByText("Total").nextSibling).toHaveTextContent("Gs. 7.000.000")
+  })
+
+  it("treats a legacy order without a stored shipping option as shipping to be coordinated", () => {
+    render(
+      <OrderConfirmationView
+        order={{ ...order, shippingCost: 0, shippingOptionLabel: null, total: 7_000_000 }}
+        bank={bank}
+      />
+    )
+
+    const summary = screen.getByRole("region", { name: "Resumen del pedido" })
+    expect(within(summary).getByText("Envío").nextSibling).toHaveTextContent("A coordinar")
   })
 
   it("lists the bank details that are configured", () => {

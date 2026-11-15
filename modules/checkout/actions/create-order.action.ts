@@ -11,6 +11,7 @@ export type CreateOrderFailureCode =
   | "INVALID_QUANTITY"
   | "ITEM_UNAVAILABLE"
   | "INSUFFICIENT_STOCK"
+  | "INVALID_SHIPPING_OPTION"
   | "INTERNAL"
 
 export type CreateOrderFailure = {
@@ -37,14 +38,15 @@ const FAILURE_MESSAGES: Record<CreateOrderFailureCode, string> = {
   INVALID_QUANTITY: "La cantidad de uno de tus productos no es válida.",
   ITEM_UNAVAILABLE: "Uno de tus productos ya no está disponible. Quitalo del carrito para continuar.",
   INSUFFICIENT_STOCK: "No hay stock suficiente de uno de tus productos.",
+  INVALID_SHIPPING_OPTION: "Elegí una zona de envío válida para continuar.",
   INTERNAL: "No pudimos registrar tu pedido. Intentá de nuevo en unos minutos.",
 }
 
 /**
  * Creates an order from the checkout form.
  *
- * The client may only say WHICH items and HOW MANY; every price is read from the
- * catalog on the server. Admin notification runs after the response is sent and can
+ * The client may only say WHICH items and HOW MANY (plus which shipping option); every
+ * price, including the shipping cost, is computed on the server. Admin notification runs after the response is sent and can
  * never fail or delay the order.
  */
 export async function createOrder(input: unknown): Promise<CreateOrderResult> {
