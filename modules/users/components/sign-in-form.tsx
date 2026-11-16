@@ -52,6 +52,13 @@ export function SignInForm({ callbackUrl, googleEnabled, errorCode, navigate = h
 
   return (
     <div>
+      {googleEnabled ? (
+        <div className="mb-8">
+          <GoogleButton callbackUrl={callbackUrl} />
+          <p className="mt-8 text-center text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-400">o</p>
+        </div>
+      ) : null}
+
       <form onSubmit={onSubmit} noValidate aria-label="Iniciar sesión">
         <AuthField
           id="sign-in-email"
@@ -80,13 +87,6 @@ export function SignInForm({ callbackUrl, googleEnabled, errorCode, navigate = h
           {isSubmitting ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
-
-      {googleEnabled ? (
-        <div className="mt-6">
-          <p className="mb-6 text-center text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-400">o</p>
-          <GoogleButton callbackUrl={callbackUrl} />
-        </div>
-      ) : null}
 
       <p className="mt-10 text-center text-sm text-neutral-600">
         ¿Todavía no tenés cuenta?{" "}

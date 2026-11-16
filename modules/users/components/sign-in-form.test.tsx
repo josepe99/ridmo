@@ -125,6 +125,13 @@ describe("SignInForm: Google and navigation", () => {
     expect(screen.getByRole("button", { name: "Continuar con Google" })).toBeInTheDocument()
   })
 
+  it("renders the Google button before the credentials form", () => {
+    setup({ googleEnabled: true })
+    const google = screen.getByRole("button", { name: "Continuar con Google" })
+    const form = screen.getByRole("form", { name: "Iniciar sesión" })
+    expect(google.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it("explains an OAuthAccountNotLinked redirect in Spanish", () => {
     setup({ errorCode: "OAuthAccountNotLinked" })
     expect(screen.getByRole("alert")).toHaveTextContent(/ya existe una cuenta/i)

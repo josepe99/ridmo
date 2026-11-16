@@ -137,6 +137,13 @@ describe("SignUpForm: Google and navigation", () => {
     expect(screen.getByRole("button", { name: "Continuar con Google" })).toBeInTheDocument()
   })
 
+  it("renders the Google button before the credentials form", () => {
+    setup({ googleEnabled: true })
+    const google = screen.getByRole("button", { name: "Continuar con Google" })
+    const form = screen.getByRole("form", { name: "Crear cuenta" })
+    expect(google.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it("links back to sign-in", () => {
     setup({ callbackUrl: "/cart" })
     expect(screen.getByRole("link", { name: "Iniciar sesión" })).toHaveAttribute(
