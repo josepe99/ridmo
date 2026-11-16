@@ -2,9 +2,7 @@
 FROM node:22-bookworm-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
-# Shared Corepack cache so the non-root runtime user finds pnpm without network access.
-ENV COREPACK_HOME=/usr/local/share/corepack
-RUN corepack enable && corepack prepare pnpm@12.15.0 --activate && chmod -R a+rX "$COREPACK_HOME"
+RUN corepack enable && corepack prepare pnpm@12.15.0 --activate
 WORKDIR /app
 
 FROM base AS deps
@@ -32,4 +30,5 @@ ENV NODE_ENV=production \
 COPY --from=build --chown=node:node /app ./
 USER node
 EXPOSE 3000
-CMD ["pnpm", "start"]
+# Run next directly: pnpm 12 downloads a native binary at runtime, which fails offline.
+CMD ["./node_modules/.bin/next", "start"]

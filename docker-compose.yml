@@ -79,7 +79,7 @@ services:
   migrate:
     image: ridmo-app:latest
     profiles: [tools]
-    command: ["pnpm", "exec", "prisma", "db", "push"]
+    command: ["./node_modules/.bin/prisma", "db", "push"]
     environment:
       DATABASE_URL: mongodb://mongo:27017/RIDMO?replicaSet=rs0
     depends_on:
