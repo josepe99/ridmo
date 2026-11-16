@@ -2,7 +2,9 @@ import "server-only"
 
 import { unstable_cache } from "next/cache"
 import { prisma } from "@/shared/lib/prisma"
+import { getCollectionItemPreviews, getItemPreviewsByCollection } from "./item-previews"
 import type {
+  CollectionLink,
   CollectionSummary,
   CollectionWithProducts,
   ProductSummary,
@@ -23,25 +25,19 @@ const getCachedActiveCollections = unstable_cache(
         slug: true,
         description: true,
         imageUrl: true,
-        items: {
-          where: { isActive: true },
-          take: PREVIEW_ITEMS_PER_COLLECTION,
-          select: { id: true, name: true, slug: true, price: true, images: true },
-        },
       },
       orderBy: { createdAt: "desc" },
       take: MAX_COLLECTIONS,
     })
 
-    return collections.map(({ items, ...collection }) => ({
+    const previews = await getItemPreviewsByCollection(
+      collections.map((collection) => collection.id),
+      PREVIEW_ITEMS_PER_COLLECTION
+    )
+
+    return collections.map((collection) => ({
       ...collection,
-      products: items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        slug: item.slug,
-        price: item.price,
-        image: item.images?.[0] || null,
-      })),
+      products: previews.get(collection.id) ?? [],
     }))
   },
   ["collections-list"],
@@ -54,6 +50,28 @@ export async function getActiveCollectionsWithProducts(): Promise<CollectionWith
     return await getCachedActiveCollections()
   } catch (error) {
     console.error("Error fetching collections:", error)
+    return []
+  }
+}
+
+const getCachedActiveCollectionLinks = unstable_cache(
+  async (): Promise<CollectionLink[]> =>
+    prisma.collection.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, slug: true },
+      orderBy: { createdAt: "desc" },
+      take: MAX_COLLECTIONS,
+    }),
+  ["collection-links"],
+  { revalidate: 60, tags: ["collections"] }
+)
+
+/** Active collections as navigation links, newest first (empty list on failure). */
+export async function getActiveCollectionLinks(): Promise<CollectionLink[]> {
+  try {
+    return await getCachedActiveCollectionLinks()
+  } catch (error) {
+    console.error("Error fetching collection links:", error)
     return []
   }
 }
@@ -84,19 +102,10 @@ export async function getProductsByCollectionSlug(
 ): Promise<ProductSummary[]> {
   const collection = await getCollectionBySlug(collectionSlug)
 
-  const items = await prisma.item.findMany({
-    where: { collectionId: collection.id, isActive: true },
-    select: { id: true, name: true, slug: true, price: true, images: true },
-    orderBy: { createdAt: "desc" },
-    take: MAX_ITEMS_PER_COLLECTION_PAGE,
-  })
+  const items = await getCollectionItemPreviews(
+    collection.id,
+    MAX_ITEMS_PER_COLLECTION_PAGE
+  )
 
-  return items.map((item) => ({
-    id: item.id,
-    name: item.name,
-    slug: item.slug,
-    price: item.price,
-    image: item.images?.[0] || null,
-    collectionSlug,
-  }))
+  return items.map((item) => ({ ...item, collectionSlug }))
 }

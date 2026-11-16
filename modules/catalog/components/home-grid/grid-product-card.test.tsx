@@ -24,6 +24,34 @@ describe("GridProductCard", () => {
     expect(screen.getByRole("img", { name: "Cadena Milan" })).toHaveAttribute("src", product.image)
   })
 
+  it("makes the image, the name and the price part of the same product link", () => {
+    render(<GridProductCard product={product} collectionSlug="cadenas" />)
+
+    const link = screen.getByRole("link")
+    expect(link).toContainElement(screen.getByRole("img", { name: "Cadena Milan" }))
+    expect(link).toContainElement(screen.getByText("Cadena Milan"))
+    expect(link).toContainElement(screen.getByText("Gs. 3.900.000"))
+  })
+
+  it("renders the second image as a hover layer when the product has one", () => {
+    const { container } = render(
+      <GridProductCard product={{ ...product, hoverImage: "https://res.cloudinary.com/b.jpg" }} />
+    )
+
+    const [main, hover] = Array.from(container.querySelectorAll("img"))
+    expect(main).toHaveAttribute("src", product.image)
+    expect(hover).toHaveAttribute("src", "https://res.cloudinary.com/b.jpg")
+    expect(hover).toHaveAttribute("alt", "")
+    expect(hover.className).toContain("opacity-0")
+    expect(hover.className).toContain("group-hover:opacity-100")
+  })
+
+  it("renders no hover layer when the product has a single image", () => {
+    const { container } = render(<GridProductCard product={{ ...product, hoverImage: null }} />)
+
+    expect(container.querySelectorAll("img")).toHaveLength(1)
+  })
+
   it("links to the product under the collection slug passed by the grid", () => {
     render(<GridProductCard product={product} collectionSlug="cadenas" />)
 

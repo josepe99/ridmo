@@ -1,4 +1,5 @@
 import { AuthSessionProvider } from "@/modules/users";
+import { getActiveCollectionLinks } from "@/modules/catalog/server";
 import MainNav from "@/shared/layout/main-nav";
 import Footer from "@/shared/layout/footer";
 import type React from "react";
@@ -23,11 +24,13 @@ const fontSerif = localFont({
   variable: "--font-canela",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const collections = await getActiveCollectionLinks();
+
   return (
     <html
       lang="es"
@@ -48,7 +51,7 @@ export default function RootLayout({
       <body className="font-sans" suppressHydrationWarning>
         <AuthSessionProvider>
           <div className="flex flex-col min-h-screen">
-            <MainNav />
+            <MainNav collections={collections} />
             <main className="flex-1">{children}</main>
             <Footer />
           </div>

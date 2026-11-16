@@ -3,6 +3,7 @@ import "server-only"
 // Server-only public API of the catalog module.
 // The client-safe API (components + types) lives in ./index.ts.
 export {
+  getActiveCollectionLinks,
   getActiveCollectionsWithProducts,
   getCollectionBySlug,
   getProductsByCollectionSlug,

@@ -5,6 +5,7 @@ vi.mock("@/shared/lib/prisma", async () => (await import("@/tests/mocks/prisma")
 vi.mock("next/cache", async () => await import("@/tests/mocks/next-cache"))
 
 import {
+  getActiveCollectionLinks,
   getActiveCollectionsWithProducts,
   getCollectionBySlug,
   getProductsByCollectionSlug,
@@ -23,15 +24,19 @@ beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => {})
 })
 
+const rawItem = (id: string, images?: string[]) => ({
+  _id: { $oid: id },
+  name: "Cadena",
+  slug: "cadena",
+  price: 100,
+  images,
+})
+
 describe("getActiveCollectionsWithProducts", () => {
-  it("maps items to product summaries using the first image", async () => {
-    prismaMock.collection.findMany.mockResolvedValue([
-      {
-        ...collectionRow,
-        items: [
-          { id: "i1", name: "Cadena", slug: "cadena", price: 100, images: ["a.jpg", "b.jpg"] },
-        ],
-      },
+  it("attaches each collection's previews with the first two images", async () => {
+    prismaMock.collection.findMany.mockResolvedValue([collectionRow])
+    prismaMock.item.aggregateRaw.mockResolvedValue([
+      { _id: { $oid: "c1" }, items: [rawItem("i1", ["a.jpg", "b.jpg"])] },
     ])
 
     const result = await getActiveCollectionsWithProducts()
@@ -39,35 +44,30 @@ describe("getActiveCollectionsWithProducts", () => {
     expect(result).toEqual([
       {
         ...collectionRow,
-        products: [{ id: "i1", name: "Cadena", slug: "cadena", price: 100, image: "a.jpg" }],
-      },
-    ])
-  })
-
-  it("uses a null image for products that have no pictures", async () => {
-    prismaMock.collection.findMany.mockResolvedValue([
-      {
-        ...collectionRow,
-        items: [
-          { id: "i1", name: "A", slug: "a", price: 1, images: [] },
-          { id: "i2", name: "B", slug: "b", price: 2, images: undefined },
+        products: [
+          { id: "i1", name: "Cadena", slug: "cadena", price: 100, image: "a.jpg", hoverImage: "b.jpg" },
         ],
       },
     ])
+  })
+
+  it("keeps collections that have no active items with an empty product list", async () => {
+    prismaMock.collection.findMany.mockResolvedValue([collectionRow])
+    prismaMock.item.aggregateRaw.mockResolvedValue([])
 
     const [collection] = await getActiveCollectionsWithProducts()
 
-    expect(collection.products.map((product) => product.image)).toEqual([null, null])
+    expect(collection.products).toEqual([])
   })
 
-  it("only queries active collections and previews only active items", async () => {
+  it("only queries active collections, newest first, without loading their items", async () => {
     prismaMock.collection.findMany.mockResolvedValue([])
 
     await getActiveCollectionsWithProducts()
 
     const args = prismaMock.collection.findMany.mock.calls[0][0]
     expect(args.where).toEqual({ isActive: true })
-    expect(args.select.items.where).toEqual({ isActive: true })
+    expect(args.select.items).toBeUndefined()
     expect(args.orderBy).toEqual({ createdAt: "desc" })
   })
 
@@ -75,6 +75,33 @@ describe("getActiveCollectionsWithProducts", () => {
     prismaMock.collection.findMany.mockRejectedValue(new Error("db down"))
 
     await expect(getActiveCollectionsWithProducts()).resolves.toEqual([])
+    expect(console.error).toHaveBeenCalled()
+  })
+})
+
+describe("getActiveCollectionLinks", () => {
+  it("lists active collections newest first, selecting only what a link needs", async () => {
+    prismaMock.collection.findMany.mockResolvedValue([
+      { id: "c2", name: "Nueva", slug: "nueva" },
+      { id: "c1", name: "Vieja", slug: "vieja" },
+    ])
+
+    const links = await getActiveCollectionLinks()
+
+    expect(links).toEqual([
+      { id: "c2", name: "Nueva", slug: "nueva" },
+      { id: "c1", name: "Vieja", slug: "vieja" },
+    ])
+    const args = prismaMock.collection.findMany.mock.calls[0][0]
+    expect(args.where).toEqual({ isActive: true })
+    expect(args.orderBy).toEqual({ createdAt: "desc" })
+    expect(args.select).toEqual({ id: true, name: true, slug: true })
+  })
+
+  it("returns an empty list instead of throwing when the database fails", async () => {
+    prismaMock.collection.findMany.mockRejectedValue(new Error("db down"))
+
+    await expect(getActiveCollectionLinks()).resolves.toEqual([])
     expect(console.error).toHaveBeenCalled()
   })
 })
@@ -97,20 +124,24 @@ describe("getCollectionBySlug", () => {
 describe("getProductsByCollectionSlug", () => {
   it("lists active products of the collection tagged with the collection slug", async () => {
     prismaMock.collection.findUnique.mockResolvedValue(collectionRow)
-    prismaMock.item.findMany.mockResolvedValue([
-      { id: "i1", name: "Cadena", slug: "cadena", price: 100, images: ["a.jpg"] },
-      { id: "i2", name: "Sin foto", slug: "sin-foto", price: 50, images: [] },
+    prismaMock.item.aggregateRaw.mockResolvedValue([
+      rawItem("i1", ["a.jpg", "b.jpg"]),
+      { ...rawItem("i2", []), name: "Sin foto", slug: "sin-foto", price: 50 },
     ])
 
     const products = await getProductsByCollectionSlug("cadenas")
 
-    expect(prismaMock.item.findMany.mock.calls[0][0].where).toEqual({
-      collectionId: "c1",
-      isActive: true,
-    })
+    const { pipeline } = prismaMock.item.aggregateRaw.mock.calls[0][0]
+    expect(pipeline[0]).toEqual({ $match: { collectionId: { $oid: "c1" }, isActive: true } })
     expect(products).toEqual([
-      { id: "i1", name: "Cadena", slug: "cadena", price: 100, image: "a.jpg", collectionSlug: "cadenas" },
-      { id: "i2", name: "Sin foto", slug: "sin-foto", price: 50, image: null, collectionSlug: "cadenas" },
+      {
+        id: "i1", name: "Cadena", slug: "cadena", price: 100,
+        image: "a.jpg", hoverImage: "b.jpg", collectionSlug: "cadenas",
+      },
+      {
+        id: "i2", name: "Sin foto", slug: "sin-foto", price: 50,
+        image: null, hoverImage: null, collectionSlug: "cadenas",
+      },
     ])
   })
 
@@ -118,6 +149,6 @@ describe("getProductsByCollectionSlug", () => {
     prismaMock.collection.findUnique.mockResolvedValue(null)
 
     await expect(getProductsByCollectionSlug("nope")).rejects.toThrow("Collection not found")
-    expect(prismaMock.item.findMany).not.toHaveBeenCalled()
+    expect(prismaMock.item.aggregateRaw).not.toHaveBeenCalled()
   })
 })

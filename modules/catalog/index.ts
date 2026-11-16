@@ -11,5 +11,6 @@ export type {
   ProductSummary,
   ProductDetail,
   CollectionSummary,
+  CollectionLink,
   CollectionWithProducts,
 } from "./types"

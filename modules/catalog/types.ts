@@ -13,6 +13,8 @@ export type ProductSummary = {
   price: number
   /** First image of the product, or null when it has none. */
   image: string | null
+  /** Second image of the product, shown on hover; null when it has only one. */
+  hoverImage?: string | null
   /** Slug of the owning collection, when known by the caller. */
   collectionSlug?: string
 }
@@ -36,6 +38,9 @@ export type CollectionSummary = {
   description: string | null
   imageUrl: string | null
 }
+
+/** Minimal collection data needed to render a navigation link. */
+export type CollectionLink = Pick<CollectionSummary, "id" | "name" | "slug">
 
 /** A collection together with a preview of its active products. */
 export type CollectionWithProducts = CollectionSummary & {

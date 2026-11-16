@@ -7,8 +7,14 @@ import { useState, useEffect } from "react"
 import type React from "react"
 import Link from "next/link"
 import { UserMenu } from "@/modules/users"
+import type { CollectionLink } from "@/modules/catalog"
 
-export default function MainNav() {
+type MainNavProps = {
+  /** Active collections, already ordered newest first. */
+  collections: CollectionLink[]
+}
+
+export default function MainNav({ collections }: MainNavProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<"menu" | "contact" | null>(null)
   const [cartItemCount, setCartItemCount] = useState(0)
@@ -77,12 +83,6 @@ export default function MainNav() {
     }
   }, [activeModal])
 
-  const menuPrimaryItems = [
-    "Gafas",
-    "Cubanas",
-    "Pulseras",
-    "Relojes"
-  ]
   const contactItems = ["WhatsApp", "Instagram"]
 
   return (
@@ -170,19 +170,23 @@ export default function MainNav() {
 
             {activeModal === "menu" ? (
               <nav className="mt-10 space-y-6">
-                <ul className="space-y-4 text-lg font-medium text-black">
-                  {menuPrimaryItems.map((item) => (
-                    <li key={item}>
-                      <button
-                        type="button"
-                        className="transition-opacity hover:opacity-60"
-                        onClick={closeModal}
-                      >
-                        {item}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {collections.length > 0 ? (
+                  <ul className="space-y-4 text-lg font-medium text-black">
+                    {collections.map((collection) => (
+                      <li key={collection.id}>
+                        <Link
+                          href={`/${collection.slug}`}
+                          className="transition-opacity hover:opacity-60"
+                          onClick={closeModal}
+                        >
+                          {collection.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-black/70">No hay colecciones disponibles.</p>
+                )}
               </nav>
             ) : (
               <div className="mt-10 space-y-6">

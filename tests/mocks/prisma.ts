@@ -25,6 +25,7 @@ const MODEL_METHODS = [
   "deleteMany",
   "count",
   "aggregate",
+  "aggregateRaw",
 ] as const
 
 const MODEL_NAMES = ["collection", "item", "order", "pushSubscription"] as const
