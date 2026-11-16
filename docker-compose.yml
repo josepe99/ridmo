@@ -1,14 +1,14 @@
 # Production stack for Ridmo (https://ridmo.com.py), fronted by Cloudflare.
 #
-# Traffic path: Cloudflare edge -> cloudflared (Tunnel, outbound only) -> app / minio.
+# Traffic path: Cloudflare edge -> cloudflared (Tunnel, outbound only) -> app / rustfs.
 # No container publishes a host port, so the server needs no open inbound ports
 # and Cloudflare terminates TLS.
 #
 # Cloudflare Zero Trust > Networks > Tunnels > (your tunnel) > Public hostnames:
 #   ridmo.com.py        -> http://app:3000
 #   www.ridmo.com.py    -> http://app:3000
-#   media.ridmo.com.py  -> http://minio:9000   (public S3 API / media files)
-#   minio.ridmo.com.py  -> http://minio:9001   (admin console, protect with Cloudflare Access)
+#   media.ridmo.com.py  -> http://rustfs:9000  (public S3 API / media files)
+#   minio.ridmo.com.py  -> http://rustfs:9001  (admin console, protect with Cloudflare Access)
 #
 # Usage:
 #   cp .env.production.example .env.production   # then fill it in
@@ -25,7 +25,7 @@ services:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - app
-      - minio
+      - rustfs
     networks: [edge]
 
   app:
@@ -60,18 +60,18 @@ services:
       BANK_TRANSFER_ACCOUNT_NUMBER: ${BANK_TRANSFER_ACCOUNT_NUMBER:-}
       BANK_TRANSFER_ALIAS: ${BANK_TRANSFER_ALIAS:-}
       BANK_TRANSFER_NOTES: ${BANK_TRANSFER_NOTES:-}
-      # S3-compatible storage (MinIO)
-      S3_ENDPOINT: http://minio:9000
+      # S3-compatible storage (RustFS)
+      S3_ENDPOINT: http://rustfs:9000
       S3_REGION: us-east-1
-      S3_BUCKET: ${MINIO_BUCKET:-ridmo-media}
-      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
-      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${RUSTFS_BUCKET:-ridmo-media}
+      S3_ACCESS_KEY_ID: ${RUSTFS_ROOT_USER:?set RUSTFS_ROOT_USER}
+      S3_SECRET_ACCESS_KEY: ${RUSTFS_ROOT_PASSWORD:?set RUSTFS_ROOT_PASSWORD}
       S3_FORCE_PATH_STYLE: "true"
-      S3_PUBLIC_URL: https://media.ridmo.com.py/${MINIO_BUCKET:-ridmo-media}
+      S3_PUBLIC_URL: https://media.ridmo.com.py/${RUSTFS_BUCKET:-ridmo-media}
     depends_on:
       mongo:
         condition: service_healthy
-      minio-init:
+      rustfs-init:
         condition: service_completed_successfully
     networks: [edge, internal]
 
@@ -107,40 +107,47 @@ services:
       start_period: 10s
     networks: [internal]
 
-  minio:
-    image: minio/minio:latest
+  # S3-compatible object storage (RustFS; MinIO no longer publishes community images).
+  rustfs:
+    image: rustfs/rustfs:latest
     restart: unless-stopped
-    command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
-      MINIO_BROWSER_REDIRECT_URL: https://minio.ridmo.com.py
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ROOT_USER:?set RUSTFS_ROOT_USER}
+      RUSTFS_SECRET_KEY: ${RUSTFS_ROOT_PASSWORD:?set RUSTFS_ROOT_PASSWORD}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_BROWSER_REDIRECT_URL: https://minio.ridmo.com.py
     volumes:
-      - minio-data:/data
+      - rustfs-data:/data
+      - rustfs-logs:/logs
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/health >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 10s
     networks: [edge, internal]
 
   # Creates the bucket on first run and makes objects publicly readable (read-only, no listing).
-  minio-init:
-    image: minio/mc:latest
+  rustfs-init:
+    image: amazon/aws-cli:latest
     restart: "no"
     depends_on:
-      minio:
+      rustfs:
         condition: service_healthy
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET:-ridmo-media}
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_ROOT_PASSWORD}
+      AWS_DEFAULT_REGION: us-east-1
+      BUCKET: ${RUSTFS_BUCKET:-ridmo-media}
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
-        mc mb --ignore-existing "local/$$MINIO_BUCKET"
-        mc anonymous set download "local/$$MINIO_BUCKET"
+        set -e
+        S3="aws --endpoint-url http://rustfs:9000 s3api"
+        $$S3 head-bucket --bucket "$$BUCKET" 2>/dev/null || $$S3 create-bucket --bucket "$$BUCKET"
+        $$S3 put-bucket-policy --bucket "$$BUCKET" --policy '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::'"$$BUCKET"'/*"]}]}'
     networks: [internal]
 
 networks:
@@ -152,4 +159,5 @@ networks:
 
 volumes:
   mongo-data:
-  minio-data:
+  rustfs-data:
+  rustfs-logs:
