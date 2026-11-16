@@ -9,3 +9,4 @@ export {
   getProductsByCollectionSlug,
 } from "./services/collections"
 export { getProductBySlug } from "./services/products"
+export { getSeoCatalog } from "./services/seo-catalog"

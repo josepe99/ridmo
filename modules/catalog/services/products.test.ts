@@ -15,7 +15,9 @@ describe("getProductBySlug", () => {
     description: "Oro",
     price: 3_900_000,
     images: ["a.jpg", "b.jpg"],
-    collection: { slug: "cadenas" },
+    tags: ["oro", "cubana"],
+    inventory: 3,
+    collection: { slug: "cadenas", name: "Cadenas" },
   }
 
   it("maps the item and flattens the collection slug", async () => {
@@ -29,7 +31,16 @@ describe("getProductBySlug", () => {
       price: 3_900_000,
       images: ["a.jpg", "b.jpg"],
       collectionSlug: "cadenas",
+      collectionName: "Cadenas",
+      tags: ["oro", "cubana"],
+      inStock: true,
     })
+  })
+
+  it("flags the product as out of stock when there is no inventory", async () => {
+    prismaMock.item.findUnique.mockResolvedValue({ ...row, inventory: 0 })
+
+    await expect(getProductBySlug("cadena-milan")).resolves.toMatchObject({ inStock: false })
   })
 
   it("returns a null collection slug when the item has no collection", async () => {

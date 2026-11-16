@@ -18,6 +18,9 @@ const product = {
   price: 3_900_000,
   images: ["https://res.cloudinary.com/1.jpg", "https://res.cloudinary.com/2.jpg"],
   collectionSlug: "cadenas",
+  collectionName: "Cadenas",
+  tags: ["oro 18k"],
+  inStock: true,
 }
 
 const props = { params: { collectionSlug: "cadenas", productSlug: "cadena-milan" } }
@@ -109,6 +112,19 @@ describe("product page", () => {
     render(await ProductPage(props))
 
     expect(within(document.body).getByRole("button", { name: "Thumbnail 1" })).toBeInTheDocument()
+  })
+
+  it("embeds Product and breadcrumb structured data", async () => {
+    const { container } = render(await ProductPage(props))
+
+    const scripts = container.querySelectorAll('script[type="application/ld+json"]')
+    const [data] = Array.from(scripts).map((s) => JSON.parse(s.textContent ?? "[]"))
+    expect(data[0]).toMatchObject({
+      "@type": "Product",
+      name: "Cadena Milan",
+      offers: { priceCurrency: "PYG", price: 3_900_000, availability: "https://schema.org/InStock" },
+    })
+    expect(data[1]).toMatchObject({ "@type": "BreadcrumbList" })
   })
 
   it("answers not found when the product does not exist", async () => {

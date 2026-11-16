@@ -10,6 +10,8 @@ const product: ProductDetail = {
   price: 3_900_000,
   images: ["https://res.cloudinary.com/1.jpg", "https://res.cloudinary.com/2.jpg"],
   collectionSlug: "cadenas",
+  tags: ["oro 18k", "RIDMO"],
+  inStock: true,
 }
 
 describe("buildProductMetadata", () => {
@@ -19,6 +21,7 @@ describe("buildProductMetadata", () => {
     expect(buildProductMetadata(product, "route-collection")).toEqual({
       title: "Cadena Milan | RIDMO",
       description: "Oro de 18k",
+      keywords: expect.any(Array),
       openGraph: {
         type: "website",
         locale: "es_PY",
@@ -37,6 +40,14 @@ describe("buildProductMetadata", () => {
       },
       alternates: { canonical: url },
     })
+  })
+
+  it("builds keywords from the name, the admin tags and the brand terms without duplicates", () => {
+    const keywords = buildProductMetadata(product, "cadenas").keywords as string[]
+
+    expect(keywords.slice(0, 3)).toEqual(["Cadena Milan", "oro 18k", "RIDMO"])
+    expect(keywords).toEqual(expect.arrayContaining(["collares cubanos", "relojes cubanos", "lentes exclusivos", "Paraguay"]))
+    expect(keywords.filter((k) => k.toLowerCase() === "ridmo")).toHaveLength(1)
   })
 
   it("truncates the description to 160 characters", () => {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { CORE_KEYWORDS, LOCATION_KEYWORDS, buildKeywords } from "@/shared/seo/keywords"
 import {
   DEFAULT_PRODUCT_DESCRIPTION,
   METADATA_DESCRIPTION_MAX_LENGTH,
@@ -10,17 +11,24 @@ import {
 } from "../constants/product"
 import type { ProductDetail } from "../types"
 
+/** Canonical URL of a product; `collectionSlug` is the route's fallback when the product has none. */
+export function buildProductUrl(item: ProductDetail, collectionSlug: string): string {
+  return `${SITE_BASE_URL}/${item.collectionSlug || collectionSlug}/${item.slug}`
+}
+
 /** Page metadata for a product; `collectionSlug` is the route's fallback when the product has none. */
 export function buildProductMetadata(item: ProductDetail, collectionSlug: string): Metadata {
   const title = `${item.name} | ${SITE_NAME}`
   const description =
     item.description?.slice(0, METADATA_DESCRIPTION_MAX_LENGTH) || DEFAULT_PRODUCT_DESCRIPTION
   const imageUrl = item.images?.[0] || METADATA_FALLBACK_IMAGE
-  const url = `${SITE_BASE_URL}/${item.collectionSlug || collectionSlug}/${item.slug}`
+  const url = buildProductUrl(item, collectionSlug)
+  const keywords = buildKeywords([item.name], item.tags, CORE_KEYWORDS, LOCATION_KEYWORDS)
 
   return {
     title,
     description,
+    keywords,
     openGraph: {
       type: "website",
       locale: OPEN_GRAPH_LOCALE,

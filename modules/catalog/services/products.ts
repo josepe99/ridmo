@@ -14,7 +14,9 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail> {
       description: true,
       price: true,
       images: true,
-      collection: { select: { slug: true } },
+      tags: true,
+      inventory: true,
+      collection: { select: { slug: true, name: true } },
     },
   })
 
@@ -30,5 +32,8 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail> {
     price: item.price,
     images: item.images,
     collectionSlug: item.collection?.slug ?? null,
+    collectionName: item.collection?.name ?? null,
+    tags: item.tags ?? [],
+    inStock: (item.inventory ?? 0) > 0,
   }
 }

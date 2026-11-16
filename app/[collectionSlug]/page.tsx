@@ -1,5 +1,9 @@
 import { Metadata } from "next"
 import { getCollectionBySlug, getProductsByCollectionSlug } from "@/modules/catalog/server"
+import { JsonLd } from "@/shared/seo/json-ld"
+import { CORE_KEYWORDS, LOCATION_KEYWORDS, STYLE_KEYWORDS, buildKeywords } from "@/shared/seo/keywords"
+import { breadcrumbSchema, collectionSchema } from "@/shared/seo/schemas"
+import { SITE_LOCALE, SITE_NAME, TWITTER_HANDLE, absoluteUrl } from "@/shared/seo/site"
 
 type CollectionParams = {
   collectionSlug: string
@@ -17,15 +21,16 @@ export async function generateMetadata(
     const title = `${collection.name} | RIDMO`;
     const description = collection.description?.slice(0, 160) || `Descubre la colección ${collection.name} en RIDMO.`;
     const imageUrl = collection.imageUrl || "/images/ridmo-logo.png";
-    const url = `https://www.milocompany.store/${collection.slug}`;
+    const url = absoluteUrl(`/${collection.slug}`);
     return {
       title,
       description,
+      keywords: buildKeywords([collection.name], CORE_KEYWORDS, STYLE_KEYWORDS, LOCATION_KEYWORDS),
       openGraph: {
         type: "website",
-        locale: "es_PY",
+        locale: SITE_LOCALE,
         url,
-        siteName: "RIDMO",
+        siteName: SITE_NAME,
         title,
         description,
         images: [
@@ -42,7 +47,7 @@ export async function generateMetadata(
         title,
         description,
         images: [imageUrl],
-        creator: "@milowearcompany",
+        creator: TWITTER_HANDLE,
       },
       alternates: {
         canonical: url,
@@ -77,8 +82,29 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       notFound()
     }
 
+    const collectionUrl = absoluteUrl(`/${collection.slug}`)
+
     return (
       <section className="pb-6 md:pb-24 lg:pb-5">
+        <JsonLd
+          data={[
+            collectionSchema({
+              name: collection.name,
+              description: collection.description,
+              url: collectionUrl,
+              image: collection.imageUrl,
+              products: products.map((product) => ({
+                name: product.name,
+                url: absoluteUrl(`/${collection.slug}/${product.slug}`),
+                image: product.image,
+              })),
+            }),
+            breadcrumbSchema([
+              { name: "Inicio", url: absoluteUrl("/") },
+              { name: collection.name, url: collectionUrl },
+            ]),
+          ]}
+        />
         {/* Breadcrumb */}
         <CatalogBreadcrumb collectionLabel={collection.name} className="mb-1" />
 

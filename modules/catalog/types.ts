@@ -28,6 +28,28 @@ export type ProductDetail = {
   price: number
   images: string[]
   collectionSlug: string | null
+  collectionName?: string | null
+  /** Admin-managed keywords of the product; they feed SEO keywords and structured data. */
+  tags: string[]
+  inStock: boolean
+}
+
+/** Flat catalog snapshot used by crawler-facing files (sitemap.xml, llms.txt). */
+export type SeoCatalog = {
+  collections: Array<{
+    name: string
+    slug: string
+    description: string | null
+    updatedAt: Date
+  }>
+  products: Array<{
+    name: string
+    slug: string
+    description: string | null
+    price: number
+    collectionSlug: string
+    updatedAt: Date
+  }>
 }
 
 /** Collection data needed by hero banners and collection pages. */
