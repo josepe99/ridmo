@@ -2,7 +2,6 @@
   "name": "ridmo",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@12.15.0",
   "scripts": {
     "build": "prisma generate && next build",
     "dev": "next dev --turbopack --disable-source-maps",
