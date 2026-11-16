@@ -1,6 +1,7 @@
 import "server-only"
 
 import { prisma } from "@/shared/lib/prisma"
+import { hasMapLocation } from "../domain/map-location"
 import { isOrderStatus, type OrderStatus } from "../domain/status"
 import type { CheckoutDefaults, UserOrderSummary } from "../types"
 
@@ -72,6 +73,10 @@ export async function getCheckoutDefaults(user: {
     return { customer: { fullName: user.name ?? "", phone: "", email: user.email } }
   }
 
+  const address = latest.shippingAddress
+  // A map order has no written address: its fixed street label must never land in the street input.
+  const pin = hasMapLocation(address) ? { lat: address.latitude, lng: address.longitude } : null
+
   return {
     customer: {
       fullName: latest.customer.fullName,
@@ -79,14 +84,15 @@ export async function getCheckoutDefaults(user: {
       email: latest.customer.email ?? user.email,
     },
     shippingAddress: {
-      street: latest.shippingAddress.street,
-      reference: latest.shippingAddress.reference,
-      city: latest.shippingAddress.city,
-      department: latest.shippingAddress.department,
-      country: latest.shippingAddress.country,
-      shippingOptionId: latest.shippingAddress.shippingOptionId ?? "",
-      postalCode: latest.shippingAddress.postalCode ?? "",
-      notes: latest.shippingAddress.notes ?? "",
+      street: pin ? "" : address.street,
+      reference: pin ? "" : address.reference,
+      city: address.city,
+      department: pin ? "" : address.department,
+      country: address.country,
+      shippingOptionId: address.shippingOptionId ?? "",
+      postalCode: address.postalCode ?? "",
+      notes: address.notes ?? "",
+      ...(pin ? { location: pin } : {}),
     },
   }
 }

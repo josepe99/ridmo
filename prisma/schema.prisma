@@ -84,6 +84,10 @@ type OrderShippingAddress {
   // Snapshot of the Paraguay shipping option chosen at checkout (null for international and legacy orders).
   shippingOptionId    String?
   shippingOptionLabel String?
+  // Point marked on a map instead of a written address (then `street` is a fixed label). Optional so
+  // written-address and legacy orders stay valid.
+  latitude  Float?
+  longitude Float?
 }
 
 // Immutable snapshot of a purchased item: later catalog edits never alter past orders.

@@ -26,6 +26,7 @@ const validInput = {
     department: "Central",
     country: "Paraguay",
     shippingOptionId: "asuncion",
+    notes: "Tocar timbre",
   },
   lines: [{ itemId: "64b7f0a0a0a0a0a0a0a0a0a0", quantity: 2 }],
 }
@@ -95,6 +96,78 @@ describe("createOrder: validation", () => {
     const sent = vi.mocked(placeOrder).mock.calls[0][0]
     expect(sent.lines).toEqual([{ itemId: "64b7f0a0a0a0a0a0a0a0a0a0", quantity: 2 }])
     expect(sent).not.toHaveProperty("total")
+  })
+})
+
+describe("createOrder: delivery location", () => {
+  const mapAddress = {
+    city: "Asuncion",
+    country: "Paraguay",
+    shippingOptionId: "asuncion",
+    notes: "Portón verde",
+    locationMode: "map",
+    location: { lat: -25.2637, lng: -57.5759 },
+  }
+  const withAddress = (shippingAddress: Record<string, unknown>) => ({ ...validInput, shippingAddress })
+
+  it("accepts a map payload without street, reference or department and forwards the pin", async () => {
+    vi.mocked(placeOrder).mockResolvedValue(placed)
+
+    const result = await createOrder(withAddress(mapAddress))
+
+    expect(result).toMatchObject({ ok: true, orderNumber: "RID-000001" })
+    expect(vi.mocked(placeOrder).mock.calls[0][0].shippingAddress).toMatchObject({
+      locationMode: "map",
+      location: { lat: -25.2637, lng: -57.5759 },
+      shippingOptionId: "asuncion",
+    })
+  })
+
+  it("still accepts the written payload and forwards no pin", async () => {
+    vi.mocked(placeOrder).mockResolvedValue(placed)
+
+    await expect(createOrder(validInput)).resolves.toMatchObject({ ok: true })
+
+    const sent = vi.mocked(placeOrder).mock.calls[0][0].shippingAddress
+    expect(sent.street).toBe("Calle Palma 123")
+    expect(sent.location ?? null).toBeNull()
+  })
+
+  it("rejects map mode without a pin with a field error and never places the order", async () => {
+    const result = await createOrder(withAddress({ ...mapAddress, location: null }))
+
+    if (result.ok || result.code !== "VALIDATION") throw new Error("unreachable")
+    expect(result.fieldErrors["shippingAddress.location"]).toBe("Marcá tu ubicación en el mapa")
+    expect(placeOrder).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { lat: 91, lng: 0 },
+    { lat: 0, lng: -181 },
+    { lat: Number.NaN, lng: 0 },
+  ])("rejects the out-of-range pin %j", async (location) => {
+    const result = await createOrder(withAddress({ ...mapAddress, location }))
+
+    expect(result).toMatchObject({ ok: false, code: "VALIDATION" })
+    expect(placeOrder).not.toHaveBeenCalled()
+  })
+
+  it("requires delivery notes in both modes", async () => {
+    for (const address of [{ ...validInput.shippingAddress, notes: "" }, { ...mapAddress, notes: "  " }]) {
+      const result = await createOrder(withAddress(address))
+
+      if (result.ok || result.code !== "VALIDATION") throw new Error("unreachable")
+      expect(result.fieldErrors["shippingAddress.notes"]).toBe("Completá este campo")
+    }
+    expect(placeOrder).not.toHaveBeenCalled()
+  })
+
+  it("never accepts a price next to a map pin", async () => {
+    vi.mocked(placeOrder).mockResolvedValue(placed)
+
+    await createOrder(withAddress({ ...mapAddress, shippingCost: 1 }))
+
+    expect(vi.mocked(placeOrder).mock.calls[0][0].shippingAddress).not.toHaveProperty("shippingCost")
   })
 })
 

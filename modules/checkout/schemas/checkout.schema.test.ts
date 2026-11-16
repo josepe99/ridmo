@@ -25,21 +25,29 @@ describe("createOrderInputSchema", () => {
     if (parsed.success) expect(parsed.data.customer.fullName).toBe("Maria Gomez")
   })
 
-  it("allows an empty email and empty notes", () => {
+  it("allows an empty email", () => {
     const parsed = createOrderInputSchema.safeParse({
       ...validInput,
       customer: { ...validInput.customer, email: "" },
-      shippingAddress: { ...validInput.shippingAddress, notes: "" },
     })
     expect(parsed.success).toBe(true)
   })
 
-  it("allows omitting email and notes", () => {
+  it("allows omitting the email", () => {
     const { email: _email, ...customer } = validInput.customer
-    const { notes: _notes, ...shippingAddress } = validInput.shippingAddress
-    expect(createOrderInputSchema.safeParse({ ...validInput, customer, shippingAddress }).success).toBe(
-      true
-    )
+    expect(createOrderInputSchema.safeParse({ ...validInput, customer }).success).toBe(true)
+  })
+
+  it.each([undefined, "", "   "])("requires delivery notes: rejects %j", (notes) => {
+    const parsed = createOrderInputSchema.safeParse({
+      ...validInput,
+      shippingAddress: { ...validInput.shippingAddress, notes },
+    })
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      const issue = parsed.error.issues.find((i) => i.path.join(".") === "shippingAddress.notes")
+      expect(issue?.message).toBe("Completá este campo")
+    }
   })
 
   it("rejects a malformed email", () => {
@@ -74,7 +82,7 @@ describe("createOrderInputSchema", () => {
     expect(parsed.success).toBe(false)
   })
 
-  it.each(["street", "reference", "city", "department", "country"] as const)(
+  it.each(["street", "country"] as const)(
     "requires shipping %s",
     (field) => {
       const parsed = createOrderInputSchema.safeParse({
@@ -84,6 +92,158 @@ describe("createOrderInputSchema", () => {
       expect(parsed.success).toBe(false)
     }
   )
+
+  it.each(["reference", "department", "postalCode"] as const)("does not require %s", (field) => {
+    const { [field]: _omitted, ...shippingAddress } = { ...validInput.shippingAddress, [field]: "x" } as Record<
+      string,
+      string
+    >
+    expect(createOrderInputSchema.safeParse({ ...validInput, shippingAddress }).success).toBe(true)
+    expect(
+      createOrderInputSchema.safeParse({
+        ...validInput,
+        shippingAddress: { ...validInput.shippingAddress, [field]: "" },
+      }).success
+    ).toBe(true)
+  })
+
+  describe("city", () => {
+    const withCity = (shippingAddress: Record<string, unknown>) =>
+      createOrderInputSchema.safeParse({
+        ...validInput,
+        shippingAddress: { ...validInput.shippingAddress, ...shippingAddress },
+      })
+    const cityIssue = (result: ReturnType<typeof withCity>) =>
+      result.success ? undefined : result.error.issues.find((i) => i.path.join(".") === "shippingAddress.city")
+
+    it("is derived from a city zone, so the typed one is not required", () => {
+      expect(withCity({ shippingOptionId: "luque-1", city: "" }).success).toBe(true)
+    })
+
+    it.each(["", "  ", "a"])("is required for an interior zone: rejects %j", (city) => {
+      expect(cityIssue(withCity({ shippingOptionId: "interior", city }))).toBeDefined()
+    })
+
+    it("accepts a typed city for an interior zone", () => {
+      expect(withCity({ shippingOptionId: "interior-door", city: "Encarnación" }).success).toBe(true)
+    })
+
+    it.each(["", "  ", "a"])("is required abroad: rejects %j", (city) => {
+      expect(cityIssue(withCity({ country: "Argentina", shippingOptionId: "", city }))).toBeDefined()
+    })
+
+    it("accepts a typed city abroad", () => {
+      expect(withCity({ country: "Argentina", shippingOptionId: "", city: "Rosario" }).success).toBe(true)
+    })
+
+    it("does not pile a city error on top of a missing zone", () => {
+      const result = withCity({ shippingOptionId: "", city: "" })
+      expect(result.success).toBe(false)
+      expect(cityIssue(result)).toBeUndefined()
+    })
+
+    it("rejects an over-long city", () => {
+      expect(withCity({ country: "Argentina", city: "x".repeat(81) }).success).toBe(false)
+    })
+  })
+
+  describe("location mode", () => {
+    const base = { ...validInput.shippingAddress }
+    const { street: _street, reference: _reference, department: _department, ...withoutAddressFields } = base
+    const mapAddress = { ...withoutAddressFields, locationMode: "map", location: { lat: -25.2637, lng: -57.5759 } }
+    const parse = (shippingAddress: Record<string, unknown>) =>
+      createOrderInputSchema.safeParse({ ...validInput, shippingAddress })
+    const issueAt = (result: ReturnType<typeof parse>, path: string) =>
+      result.success ? undefined : result.error.issues.find((i) => i.path.join(".") === path)
+
+    it("treats a payload without a mode as an address payload (legacy clients)", () => {
+      expect(parse({ ...base }).success).toBe(true)
+      expect(issueAt(parse({ ...base, street: "" }), "shippingAddress.street")?.message).toBe("Completá este campo")
+    })
+
+    it("accepts an explicit address mode", () => {
+      expect(parse({ ...base, locationMode: "address" }).success).toBe(true)
+    })
+
+    it("requires at least 3 characters for the street in address mode", () => {
+      expect(issueAt(parse({ ...base, locationMode: "address", street: "ab" }), "shippingAddress.street")?.message).toBe(
+        "Ingresá al menos 3 caracteres"
+      )
+    })
+
+    it("still validates the optional address fields in address mode", () => {
+      expect(parse({ ...base, locationMode: "address", postalCode: "12<3>" }).success).toBe(false)
+      expect(parse({ ...base, locationMode: "address", reference: "x".repeat(101) }).success).toBe(false)
+      expect(parse({ ...base, locationMode: "address", department: "x".repeat(81) }).success).toBe(false)
+      expect(parse({ ...base, locationMode: "address", street: "x".repeat(151) }).success).toBe(false)
+    })
+
+    it("accepts a map payload with a location and no street, reference or department", () => {
+      const parsed = parse(mapAddress)
+
+      expect(parsed.success).toBe(true)
+      if (parsed.success) {
+        expect(parsed.data.shippingAddress.locationMode).toBe("map")
+        expect(parsed.data.shippingAddress.location).toEqual({ lat: -25.2637, lng: -57.5759 })
+      }
+    })
+
+    it("does not validate the hidden address fields in map mode", () => {
+      expect(parse({ ...mapAddress, street: "", postalCode: "12<3>", reference: "x".repeat(500) }).success).toBe(true)
+    })
+
+    it.each([undefined, null])("rejects map mode without a location (%j)", (location) => {
+      const result = parse({ ...mapAddress, location })
+
+      expect(result.success).toBe(false)
+      expect(issueAt(result, "shippingAddress.location")?.message).toBe("Marcá tu ubicación en el mapa")
+    })
+
+    it("keeps requiring country, zone, city rules and notes in map mode", () => {
+      expect(parse({ ...mapAddress, notes: "" }).success).toBe(false)
+      expect(parse({ ...mapAddress, country: "Narnia" }).success).toBe(false)
+      expect(issueAt(parse({ ...mapAddress, shippingOptionId: "" }), "shippingAddress.shippingOptionId")).toBeDefined()
+      expect(parse({ ...mapAddress, country: "Argentina", shippingOptionId: "", city: "" }).success).toBe(false)
+      expect(parse({ ...mapAddress, shippingOptionId: "interior", city: "" }).success).toBe(false)
+      expect(parse({ ...mapAddress, shippingOptionId: "interior", city: "Encarnación" }).success).toBe(true)
+    })
+
+    it("does not need a location in address mode and ignores one if sent", () => {
+      expect(parse({ ...base, location: null }).success).toBe(true)
+      expect(parse({ ...base, location: { lat: 1, lng: 2 } }).success).toBe(true)
+    })
+
+    it("rejects an unknown mode", () => {
+      expect(parse({ ...base, locationMode: "gps" }).success).toBe(false)
+      expect(parse({ ...base, locationMode: 1 }).success).toBe(false)
+    })
+
+    it.each([
+      ["latitude above 90", { lat: 90.0001, lng: 0 }],
+      ["latitude below -90", { lat: -90.0001, lng: 0 }],
+      ["longitude above 180", { lat: 0, lng: 180.0001 }],
+      ["longitude below -180", { lat: 0, lng: -180.0001 }],
+      ["NaN", { lat: Number.NaN, lng: 0 }],
+      ["Infinity", { lat: 0, lng: Number.POSITIVE_INFINITY }],
+      ["numeric strings", { lat: "-25.2", lng: "-57.5" }],
+      ["a missing longitude", { lat: -25.2 }],
+      ["null coordinates", { lat: null, lng: null }],
+    ])("rejects an invalid location: %s", (_label, location) => {
+      expect(parse({ ...mapAddress, location }).success).toBe(false)
+    })
+
+    it.each([
+      { lat: 90, lng: 180 },
+      { lat: -90, lng: -180 },
+      { lat: 0, lng: 0 },
+    ])("accepts the boundary coordinates %j", (location) => {
+      expect(parse({ ...mapAddress, location }).success).toBe(true)
+    })
+
+    it("rejects out-of-range coordinates even in address mode", () => {
+      expect(parse({ ...base, location: { lat: 100, lng: 0 } }).success).toBe(false)
+    })
+  })
 
   describe("shipping country", () => {
     const withCountry = (country: unknown) =>

@@ -7,6 +7,22 @@ vi.mock("next/navigation", async () => await import("@/tests/mocks/next-navigati
 vi.mock("next/image", async () => await import("@/tests/mocks/next-image"))
 vi.mock("next/link", async () => await import("@/tests/mocks/next-link"))
 vi.mock("../actions/create-order.action", () => ({ createOrder: vi.fn() }))
+// Leaflet needs a real browser: a stand-in picker with the same contract marks a fixed point on click.
+vi.mock("./location-picker", () => ({
+  LocationPicker: ({
+    value,
+    onChange,
+  }: {
+    value: { lat: number; lng: number } | null
+    onChange: (next: { lat: number; lng: number } | null) => void
+  }) => (
+    <div data-testid="map-picker" data-value={JSON.stringify(value)}>
+      <button type="button" onClick={() => onChange({ lat: -25.3, lng: -57.6 })}>
+        Marcar punto de prueba
+      </button>
+    </div>
+  ),
+}))
 
 // `useCart` stays real; one test swaps it for a stub to simulate the cart being emptied elsewhere.
 const cartStub = vi.hoisted(() => ({ items: null as unknown[] | null }))
@@ -74,9 +90,20 @@ async function fillShipping(user: User) {
   await user.type(screen.getByLabelText("Nombre completo"), "Ana Perez")
   await user.type(screen.getByLabelText("Teléfono"), "+595 981 000 000")
   await user.type(screen.getByLabelText("Calle"), "Calle Palma 123")
-  await user.type(screen.getByLabelText("Número o referencia"), "Casa 12")
+  await user.type(screen.getByLabelText(/^Número o referencia/), "Casa 12")
   await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "asuncion")
-  await user.type(screen.getByLabelText("Departamento / estado / provincia"), "Central")
+  await user.type(screen.getByLabelText(/^Departamento \/ estado \/ provincia/), "Central")
+  await user.type(screen.getByLabelText("Notas de entrega"), "Tocar timbre")
+}
+
+/** Same as `fillShipping`, but the location is marked on the map instead of written. */
+async function fillShippingOnMap(user: User) {
+  await user.type(screen.getByLabelText("Nombre completo"), "Ana Perez")
+  await user.type(screen.getByLabelText("Teléfono"), "+595 981 000 000")
+  await user.click(screen.getByRole("radio", { name: "Marcar en el mapa" }))
+  await user.click(await screen.findByRole("button", { name: "Marcar punto de prueba" }))
+  await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "asuncion")
+  await user.type(screen.getByLabelText("Notas de entrega"), "Portón verde")
 }
 
 async function goToShipping(user: User) {
@@ -252,7 +279,8 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
 
     await cont(user)
 
-    expect(await screen.findAllByText("Completá este campo")).toHaveLength(6)
+    // Name, phone, street and delivery notes: the city comes from the zone, the rest is optional.
+    expect(await screen.findAllByText("Completá este campo")).toHaveLength(4)
     expect(currentStep()).toHaveTextContent("Datos de envío")
     expect(screen.queryByRole("heading", { level: 2, name: "Datos de pago" })).not.toBeInTheDocument()
     expect(createOrder).not.toHaveBeenCalled()
@@ -353,7 +381,7 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     expect(screen.getByLabelText("Nombre completo")).toHaveValue("Ana Perez")
     expect(screen.getByLabelText("Teléfono")).toHaveValue("+595 981 000 000")
     expect(screen.getByLabelText("Calle")).toHaveValue("Calle Palma 123")
-    expect(screen.getByLabelText("Departamento / estado / provincia")).toHaveValue("Central")
+    expect(screen.getByLabelText(/^Departamento \/ estado \/ provincia/)).toHaveValue("Central")
   })
 
   it("keeps the values when returning from the payment step with Volver and with Editar", async () => {
@@ -417,7 +445,7 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
           department: "Central",
           country: "Argentina",
           postalCode: "C1425",
-          notes: "",
+          notes: "Timbre roto",
         },
       },
     })
@@ -485,7 +513,9 @@ describe("CheckoutFlow: step 3 (payment)", () => {
         country: "Paraguay",
         shippingOptionId: "asuncion",
         postalCode: "",
-        notes: "",
+        notes: "Tocar timbre",
+        locationMode: "address",
+        location: null,
       },
       lines: [{ itemId: ID_A, quantity: 2 }],
     })
@@ -584,6 +614,117 @@ describe("CheckoutFlow: step 3 (payment)", () => {
     expect(currentStep()).toHaveTextContent("Datos de pago")
     expect(routerMock.push).not.toHaveBeenCalled()
     expect(localStorage.getItem("cart")).not.toBeNull()
+  })
+})
+
+describe("CheckoutFlow: delivery location on the map", () => {
+  it("sends the pin and no written street when the location was marked on the map", async () => {
+    seedCart([line({ quantity: 2 })])
+    vi.mocked(createOrder).mockResolvedValue({ ok: true, orderNumber: "RID-000011", accessToken: "tok" })
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    await fillShippingOnMap(user)
+    await cont(user)
+    await stepHeading("Datos de pago")
+
+    expect(screen.getByRole("link", { name: "Ver ubicación en el mapa" })).toHaveAttribute(
+      "href",
+      "https://www.openstreetmap.org/?mlat=-25.3&mlon=-57.6#map=18/-25.3/-57.6"
+    )
+    await confirm(user)
+
+    await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1))
+    const payload = vi.mocked(createOrder).mock.calls[0][0] as { shippingAddress: Record<string, unknown> }
+    expect(payload.shippingAddress).toMatchObject({
+      locationMode: "map",
+      location: { lat: -25.3, lng: -57.6 },
+      country: "Paraguay",
+      shippingOptionId: "asuncion",
+      city: "Asunción",
+      notes: "Portón verde",
+    })
+    expect(JSON.stringify(payload)).not.toMatch(/price|total|currency|cost/i)
+  })
+
+  it("cannot leave the shipping step in map mode without a pin", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    await user.type(screen.getByLabelText("Nombre completo"), "Ana Perez")
+    await user.type(screen.getByLabelText("Teléfono"), "+595 981 000 000")
+    await user.click(screen.getByRole("radio", { name: "Marcar en el mapa" }))
+    await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "asuncion")
+    await user.type(screen.getByLabelText("Notas de entrega"), "Portón verde")
+
+    await cont(user)
+
+    expect(await screen.findByText("Marcá tu ubicación en el mapa")).toBeInTheDocument()
+    expect(currentStep()).toHaveTextContent("Datos de envío")
+  })
+
+  it("keeps the pin and the mode when returning to the shipping step", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    await fillShippingOnMap(user)
+    await cont(user)
+    await stepHeading("Datos de pago")
+
+    await user.click(screen.getByRole("button", { name: "Editar datos de envío" }))
+    await stepHeading("Datos de envío")
+
+    expect(screen.getByRole("radio", { name: "Marcar en el mapa" })).toBeChecked()
+    expect((await screen.findByTestId("map-picker")).dataset.value).toBe(JSON.stringify({ lat: -25.3, lng: -57.6 }))
+  })
+
+  it("opens in map mode with the pin of a previous map order", async () => {
+    seedCart([line()])
+    const { user } = await renderCheckout({
+      defaults: {
+        customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "" },
+        shippingAddress: {
+          street: "",
+          reference: "",
+          city: "Asunción",
+          department: "",
+          country: "Paraguay",
+          shippingOptionId: "asuncion",
+          postalCode: "",
+          notes: "Portón verde",
+          location: { lat: -25.28, lng: -57.63 },
+        },
+      },
+    })
+    await goToShipping(user)
+
+    expect(screen.getByRole("radio", { name: "Marcar en el mapa" })).toBeChecked()
+    expect((await screen.findByTestId("map-picker")).dataset.value).toBe(JSON.stringify({ lat: -25.28, lng: -57.63 }))
+    expect(screen.queryByLabelText("Calle")).not.toBeInTheDocument()
+    // A prefilled, valid map form goes straight to payment.
+    await cont(user)
+    expect(await stepHeading("Datos de pago")).toBeInTheDocument()
+  })
+
+  it("shows a server-side pin rejection on the map field of the shipping step", async () => {
+    seedCart([line()])
+    vi.mocked(createOrder).mockResolvedValue({
+      ok: false,
+      code: "VALIDATION",
+      message: "Revisá los datos ingresados.",
+      fieldErrors: { "shippingAddress.location.lat": "Ubicación inválida" },
+    })
+    const { user } = await renderCheckout()
+    await goToShipping(user)
+    await fillShippingOnMap(user)
+    await cont(user)
+    await stepHeading("Datos de pago")
+
+    await confirm(user)
+
+    expect(await stepHeading("Datos de envío")).toBeInTheDocument()
+    expect(await screen.findByText("Ubicación inválida")).toHaveAttribute("role", "alert")
+    expect(screen.getByText("Revisá los datos ingresados.")).toBeInTheDocument()
+    expect(screen.queryByText("Revisá los productos de tu carrito.")).not.toBeInTheDocument()
   })
 })
 

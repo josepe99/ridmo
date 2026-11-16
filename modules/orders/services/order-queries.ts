@@ -78,6 +78,8 @@ export async function getOrderDetail(id: string): Promise<OrderDetail | null> {
       notes: order.shippingAddress.notes ?? null,
       shippingOptionId: order.shippingAddress.shippingOptionId ?? null,
       shippingOptionLabel: order.shippingAddress.shippingOptionLabel ?? null,
+      latitude: order.shippingAddress.latitude ?? null,
+      longitude: order.shippingAddress.longitude ?? null,
     },
     items: order.items.map((line) => ({
       itemId: line.itemId,

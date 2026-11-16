@@ -71,6 +71,10 @@ const SHIPPING_FIELD_PATHS: ReadonlySet<string> = new Set([
   "shippingAddress.shippingOptionId",
   "shippingAddress.postalCode",
   "shippingAddress.notes",
+  "shippingAddress.locationMode",
+  "shippingAddress.location",
+  "shippingAddress.location.lat",
+  "shippingAddress.location.lng",
 ])
 
 /** Whether a dotted `createOrder` field path belongs to the shipping step form. */

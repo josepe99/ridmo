@@ -14,7 +14,50 @@ describe("buildFormDefaults", () => {
         shippingOptionId: "",
         postalCode: "",
         notes: "",
+        locationMode: "address",
+        location: null,
       },
+    })
+  })
+
+  describe("location mode", () => {
+    it("starts in address mode with no pin", () => {
+      const { shippingAddress } = buildFormDefaults()
+
+      expect(shippingAddress.locationMode).toBe("address")
+      expect(shippingAddress.location).toBeNull()
+    })
+
+    it("starts in address mode when the saved address was a written one", () => {
+      const { shippingAddress } = buildFormDefaults({
+        shippingAddress: { street: "Calle Palma 123", reference: "", city: "x", department: "", country: "Paraguay", postalCode: "", notes: "" },
+      })
+
+      expect(shippingAddress.locationMode).toBe("address")
+      expect(shippingAddress.location).toBeNull()
+    })
+
+    it("reuses the pin of a previous map order and opens in map mode", () => {
+      const { shippingAddress } = buildFormDefaults({
+        shippingAddress: {
+          street: "",
+          reference: "",
+          city: "Asunción",
+          department: "",
+          country: "Paraguay",
+          shippingOptionId: "asuncion",
+          postalCode: "",
+          notes: "Portón verde",
+          location: { lat: -25.28, lng: -57.63 },
+        },
+      })
+
+      expect(shippingAddress).toMatchObject({
+        locationMode: "map",
+        location: { lat: -25.28, lng: -57.63 },
+        street: "",
+        notes: "Portón verde",
+      })
     })
   })
 

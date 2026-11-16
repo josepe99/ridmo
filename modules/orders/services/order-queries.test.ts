@@ -152,6 +152,26 @@ describe("getOrderDetail", () => {
     expect(detail?.shippingAddress).toMatchObject({ country: "Argentina", postalCode: "C1425" })
   })
 
+  it("exposes the pin of an order marked on a map", async () => {
+    prismaMock.order.findUnique.mockResolvedValue({
+      ...order,
+      shippingAddress: { ...order.shippingAddress, latitude: -25.2637, longitude: -57.5759 },
+    })
+
+    const detail = await getOrderDetail(OBJECT_ID)
+
+    expect(detail?.shippingAddress).toMatchObject({ latitude: -25.2637, longitude: -57.5759 })
+  })
+
+  it("reads a legacy document stored without coordinates as null", async () => {
+    expect(order.shippingAddress).not.toHaveProperty("latitude")
+    prismaMock.order.findUnique.mockResolvedValue(order)
+
+    const detail = await getOrderDetail(OBJECT_ID)
+
+    expect(detail?.shippingAddress).toMatchObject({ latitude: null, longitude: null })
+  })
+
   it("reads a legacy document stored without a postal code", async () => {
     expect(order.shippingAddress).not.toHaveProperty("postalCode")
     prismaMock.order.findUnique.mockResolvedValue(order)

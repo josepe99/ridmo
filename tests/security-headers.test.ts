@@ -21,6 +21,40 @@ describe("next.config security headers", () => {
     expect(policy).not.toMatch(/notifications|push/)
   })
 
+  describe("OpenStreetMap tiles (delivery location map)", () => {
+    const OSM_TILES = "https://tile.openstreetmap.org"
+
+    const policyOf = async () => {
+      const rules = await nextConfig.headers?.()
+      return rules?.[0].headers.find((h) => h.key.toLowerCase() === "content-security-policy")?.value
+    }
+
+    it("sets no Content-Security-Policy on purpose, so the tiles are not blocked", async () => {
+      // If a CSP is introduced later it must keep the map working: see the next test.
+      expect(await policyOf()).toBeUndefined()
+    })
+
+    it("allows only the tile host in img-src if a Content-Security-Policy is ever added", async () => {
+      const policy = await policyOf()
+      if (policy === undefined) return
+
+      const imgSrc = policy
+        .split(";")
+        .map((directive) => directive.trim())
+        .find((directive) => directive.startsWith("img-src"))
+      expect(imgSrc).toBeDefined()
+      expect(imgSrc?.split(/\s+/)).toContain(OSM_TILES)
+      expect(imgSrc).not.toMatch(/\s(\*|https:|http:)(\s|$)/)
+    })
+
+    it("does not block the browser geolocation feature the map does not use", async () => {
+      // The picker works from clicks only: geolocation stays disabled and must not be needed.
+      const rules = await nextConfig.headers?.()
+      const policy = rules?.[0].headers.find((h) => h.key === "Permissions-Policy")?.value ?? ""
+      expect(policy).toContain("geolocation=()")
+    })
+  })
+
   it("keeps the native argon2 binding out of the server bundle", () => {
     expect(nextConfig.serverExternalPackages).toContain("@node-rs/argon2")
   })

@@ -3,6 +3,7 @@ import { formatOrderDate, formatOrderMoney } from "../domain/format"
 import { isDomesticShipment } from "../domain/shipping-countries"
 import type { OrderDetail } from "../types"
 import { InternationalShippingNotice } from "./international-shipping-notice"
+import { MapLocationLink } from "./map-location-link"
 import { OrderStatusActions } from "./order-status-actions"
 import { OrderStatusBadge } from "./order-status-badge"
 
@@ -18,6 +19,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function OrderDetailView({ order }: { order: OrderDetail }) {
   const { customer, shippingAddress } = order
   // International and legacy orders carry no priced option: their shipping is coordinated afterwards.
+  // Written address lines that exist: map orders and optional fields leave some of them empty.
+  const cityLine = [shippingAddress.city, shippingAddress.department].filter(Boolean).join(", ")
   const hasShippingCharge = Boolean(shippingAddress.shippingOptionLabel) && isDomesticShipment(shippingAddress.country)
 
   return (
@@ -57,12 +60,15 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
         <Section title="Envío">
           <address className="space-y-1 text-sm not-italic text-neutral-700">
             <p className="text-base font-medium text-neutral-900">{shippingAddress.street}</p>
-            <p>{shippingAddress.reference}</p>
-            <p>
-              {shippingAddress.city}, {shippingAddress.department}
-            </p>
+            {shippingAddress.reference ? <p>{shippingAddress.reference}</p> : null}
+            <p>{cityLine}</p>
             {shippingAddress.postalCode ? <p>Código postal: {shippingAddress.postalCode}</p> : null}
             <p>{shippingAddress.country}</p>
+            <MapLocationLink
+              latitude={shippingAddress.latitude}
+              longitude={shippingAddress.longitude}
+              className="block text-neutral-900"
+            />
             {shippingAddress.notes ? (
               <p className="pt-2 text-neutral-500">Notas: {shippingAddress.notes}</p>
             ) : null}

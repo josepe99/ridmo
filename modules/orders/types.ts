@@ -38,6 +38,9 @@ export type OrderDetail = OrderSummary & {
     shippingOptionId: string | null
     /** Label of that option as it was shown to the shopper. */
     shippingOptionLabel: string | null
+    /** Point marked on a map. Null for written addresses and legacy orders. */
+    latitude: number | null
+    longitude: number | null
   }
   items: OrderLineSnapshot[]
   /** Legacy: set only on orders placed while the storefront could show converted prices. */
@@ -68,15 +71,19 @@ export type OrderConfirmation = {
 export type PlaceOrderInput = {
   customer: { fullName: string; phone: string; email?: string }
   shippingAddress: {
-    street: string
-    reference: string
-    city: string
-    department: string
+    /** Written street. Ignored when `location` is given (map orders store a fixed label instead). */
+    street?: string
+    reference?: string
+    city?: string
+    department?: string
     country: string
     /** Id of the chosen Paraguay shipping option. Required for Paraguay, ignored abroad. Never a price. */
     shippingOptionId?: string
     postalCode?: string
     notes?: string
+    /** `map` orders carry a pin instead of a written street; the pin is stored, the written fields are not. */
+    locationMode?: "address" | "map"
+    location?: { lat: number; lng: number } | null
   }
   lines: ReadonlyArray<{ itemId: string; quantity: number }>
   /** Owner of the order. Set only by the server from the session; absent for guest checkout. */
@@ -119,5 +126,7 @@ export type CheckoutDefaults = {
     shippingOptionId?: string
     postalCode: string
     notes: string
+    /** Pin of the previous order when it was marked on a map (the street fields are then empty). */
+    location?: { lat: number; lng: number }
   }
 }

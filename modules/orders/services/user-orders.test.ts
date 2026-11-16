@@ -97,6 +97,47 @@ describe("getCheckoutDefaults", () => {
     expect(defaults.shippingAddress).toMatchObject({ city: "Luque", shippingOptionId: "luque-2" })
   })
 
+  it("prefills the pin of a map order and never the fixed street label", async () => {
+    authPrismaMock.order.findFirst.mockResolvedValue({
+      customer: { fullName: "Ana Perez", phone: "+595981000000", email: null },
+      shippingAddress: {
+        street: "Ubicación marcada en el mapa",
+        reference: "",
+        city: "Asunción",
+        department: "",
+        country: "Paraguay",
+        shippingOptionId: "asuncion",
+        notes: "Portón verde",
+        latitude: -25.28,
+        longitude: -57.63,
+      },
+    })
+    const defaults = await getCheckoutDefaults({ id: ME, name: "Ana", email: "ana@example.com" })
+
+    expect(defaults.shippingAddress).toEqual({
+      street: "",
+      reference: "",
+      city: "Asunción",
+      department: "",
+      country: "Paraguay",
+      shippingOptionId: "asuncion",
+      postalCode: "",
+      notes: "Portón verde",
+      location: { lat: -25.28, lng: -57.63 },
+    })
+  })
+
+  it("does not prefill a pin for a written address or a half-stored one", async () => {
+    authPrismaMock.order.findFirst.mockResolvedValue({
+      customer: { fullName: "Ana Perez", phone: "+595981000000", email: null },
+      shippingAddress: { street: "Calle 1", reference: "Casa 2", city: "Luque", department: "Central", country: "Paraguay", notes: null, latitude: -25.2, longitude: null },
+    })
+    const defaults = await getCheckoutDefaults({ id: ME, name: "Ana", email: "ana@example.com" })
+
+    expect(defaults.shippingAddress).not.toHaveProperty("location")
+    expect(defaults.shippingAddress?.street).toBe("Calle 1")
+  })
+
   it("prefills the saved country and postal code of an international order", async () => {
     authPrismaMock.order.findFirst.mockResolvedValue({
       customer: { fullName: "Ana Perez", phone: "+595981000000", email: null },

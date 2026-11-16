@@ -35,33 +35,93 @@ const customerSchema = z.object({
     .optional(),
 })
 
+export const LOCATION_REQUIRED_MESSAGE = "Marcá tu ubicación en el mapa"
+
+/** How the shopper gives the delivery location: a written address or a point marked on a map. */
+export const LOCATION_MODES = ["address", "map"] as const
+export type LocationMode = (typeof LOCATION_MODES)[number]
+
+const locationSchema = z.object({
+  lat: z
+    .number({ invalid_type_error: "Ubicación inválida" })
+    .finite()
+    .min(-90, "Ubicación inválida")
+    .max(90, "Ubicación inválida"),
+  lng: z
+    .number({ invalid_type_error: "Ubicación inválida" })
+    .finite()
+    .min(-180, "Ubicación inválida")
+    .max(180, "Ubicación inválida"),
+})
+
+/** Written-address fields: validated only in address mode, ignored (and never stored) in map mode. */
+const addressFieldsSchema = z.object({
+  street: text(3, 150),
+  reference: z.string().trim().max(100, "Máximo 100 caracteres").optional(),
+  department: z.string().trim().max(80, "Máximo 80 caracteres").optional(),
+  postalCode: z
+    .string()
+    .trim()
+    .max(12, "Máximo 12 caracteres")
+    .regex(POSTAL_CODE_PATTERN, "Usá solo letras, números, espacios o guiones")
+    .optional(),
+})
+
+const cityTextSchema = text(2, 80)
+
 const shippingAddressSchema = z
   .object({
-    street: text(3, 150),
-    reference: text(1, 100),
-    city: text(2, 80),
-    department: text(2, 80),
+    // Absent in payloads of older clients: those are always written addresses.
+    locationMode: z.enum(LOCATION_MODES).optional(),
+    // Loose on purpose: the mode-specific rules live in the superRefine below so a hidden field never blocks.
+    street: z.string().trim().optional(),
+    reference: z.string().trim().optional(),
+    department: z.string().trim().optional(),
+    postalCode: z.string().trim().optional(),
+    // `null` is how the form says "no pin yet"; a pin is only required (and stored) in map mode.
+    location: locationSchema.nullish(),
+    city: z.string().trim().max(80, "Máximo 80 caracteres").optional(),
     // Server-side allow list: the name (not a code) is what orders store, so legacy "Paraguay" stays valid.
     country: text(2, 60).refine(isShippingCountry, "Elegí un país de la lista"),
     // Only an id: the server derives the price from it. Required for Paraguay (checked below), ignored abroad.
     shippingOptionId: z.string().trim().max(40, "Zona de envío inválida").optional(),
-    postalCode: z
-      .string()
-      .trim()
-      .max(12, "Máximo 12 caracteres")
-      .regex(POSTAL_CODE_PATTERN, "Usá solo letras, números, espacios o guiones")
-      .optional(),
-    notes: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
+    notes: text(1, 500),
   })
   .superRefine((address, ctx) => {
     // An unknown country is already reported on its own field; do not pile a second error on top.
     const countryIsKnown = isShippingCountry(address.country) || address.country === ""
-    if (countryIsKnown && isDomesticShipment(address.country) && !getShippingOption(address.shippingOptionId)) {
+    const isDomestic = countryIsKnown && isDomesticShipment(address.country)
+    const option = getShippingOption(address.shippingOptionId)
+
+    if (isDomestic && !option) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["shippingOptionId"],
         message: SHIPPING_OPTION_MESSAGE,
       })
+    }
+
+    // A city zone fixes the city on the server; only interior and international orders need a typed one.
+    const needsTypedCity = option ? option.kind === "interior" : countryIsKnown && !isDomestic
+    if (needsTypedCity) {
+      const city = cityTextSchema.safeParse(address.city ?? "")
+      if (!city.success) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["city"], message: city.error.issues[0].message })
+      }
+    }
+
+    if (address.locationMode === "map") {
+      if (!address.location) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["location"], message: LOCATION_REQUIRED_MESSAGE })
+      }
+      return
+    }
+
+    const fields = addressFieldsSchema.safeParse(address)
+    if (!fields.success) {
+      for (const issue of fields.error.issues) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: issue.path, message: issue.message })
+      }
     }
   })
 

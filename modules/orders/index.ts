@@ -28,6 +28,14 @@ export type {
   ShippingOption,
   ShippingRateRow,
 } from "./domain/paraguay-shipping"
+export {
+  DEFAULT_MAP_CENTER,
+  MAP_LOCATION_STREET,
+  buildMapLocationUrl,
+  hasMapLocation,
+  roundCoordinate,
+} from "./domain/map-location"
+export type { MapLocation } from "./domain/map-location"
 export { formatOrderMoney, formatOrderDate } from "./domain/format"
 export {
   ORDER_STATUSES,
@@ -49,3 +57,4 @@ export type {
 } from "./types"
 export { OrderStatusBadge } from "./components/order-status-badge"
 export { InternationalShippingNotice } from "./components/international-shipping-notice"
+export { MapLocationLink } from "./components/map-location-link"

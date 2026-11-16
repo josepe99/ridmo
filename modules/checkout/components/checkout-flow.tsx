@@ -149,7 +149,9 @@ export function CheckoutFlow({ defaults, bank = EMPTY_BANK }: CheckoutFlowProps 
         let hasUnmapped = false
         for (const [path, fieldMessage] of Object.entries(result.fieldErrors)) {
           if (isShippingFieldPath(path)) {
-            form.setError(path as FieldPath<CheckoutFormValues>, { type: "server", message: fieldMessage })
+            // A bad coordinate is shown on the map field, which owns the whole pin.
+            const field = path.startsWith("shippingAddress.location.") ? "shippingAddress.location" : path
+            form.setError(field as FieldPath<CheckoutFormValues>, { type: "server", message: fieldMessage })
           } else {
             hasUnmapped = true
           }

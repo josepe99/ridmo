@@ -112,6 +112,10 @@ describe("isShippingFieldPath", () => {
     "shippingAddress.shippingOptionId",
     "shippingAddress.postalCode",
     "shippingAddress.notes",
+    "shippingAddress.locationMode",
+    "shippingAddress.location",
+    "shippingAddress.location.lat",
+    "shippingAddress.location.lng",
   ])("maps %s to the shipping step", (path) => {
     expect(isShippingFieldPath(path)).toBe(true)
   })

@@ -25,6 +25,8 @@ export function buildFormDefaults(defaults?: CheckoutDefaults): CheckoutFormValu
   )
   // A city option fixes the city; the saved free-text one is only kept for interior deliveries.
   const city = getShippingOption(shippingOptionId)?.city ?? defaults?.shippingAddress?.city ?? ""
+  // A previous map order brings its pin back and reopens the map; everything else starts as a written address.
+  const location = defaults?.shippingAddress?.location ?? null
 
   return {
     customer: {
@@ -41,6 +43,8 @@ export function buildFormDefaults(defaults?: CheckoutDefaults): CheckoutFormValu
       shippingOptionId,
       postalCode: defaults?.shippingAddress?.postalCode ?? "",
       notes: defaults?.shippingAddress?.notes ?? "",
+      locationMode: location ? "map" : "address",
+      location,
     },
   }
 }

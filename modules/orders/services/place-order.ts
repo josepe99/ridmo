@@ -3,6 +3,7 @@ import "server-only"
 import { randomBytes } from "node:crypto"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/shared/lib/prisma"
+import { MAP_LOCATION_STREET } from "../domain/map-location"
 import { formatOrderNumber } from "../domain/order-number"
 import { calculateShippingCost, type ShippingFailure } from "../domain/paraguay-shipping"
 import { priceOrder, type PricingFailure } from "../domain/pricing"
@@ -12,6 +13,30 @@ import { nextSequence } from "./sequence"
 export type PlaceOrderResult = { ok: true; order: PlacedOrder } | PricingFailure | ShippingFailure
 
 const MAX_TRANSACTION_ATTEMPTS = 8
+
+/**
+ * The address document as stored. A map order keeps its pin and a fixed street label, and drops every
+ * written field (they were hidden in the form); a written address keeps its fields and no coordinates.
+ */
+function buildStoredAddress(input: PlaceOrderInput["shippingAddress"]) {
+  const { location } = input
+  if (input.locationMode === "map" && location) {
+    return {
+      street: MAP_LOCATION_STREET,
+      reference: "",
+      department: "",
+      postalCode: null,
+      latitude: location.lat,
+      longitude: location.lng,
+    }
+  }
+  return {
+    street: input.street ?? "",
+    reference: input.reference ?? "",
+    department: input.department ?? "",
+    postalCode: input.postalCode || null,
+  }
+}
 
 /** Thrown inside the transaction to roll everything back when a stock guard fails. */
 class StockConflictError extends Error {
@@ -93,15 +118,12 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
               email: input.customer.email || null,
             },
             shippingAddress: {
-              street: input.shippingAddress.street,
-              reference: input.shippingAddress.reference,
+              ...buildStoredAddress(input.shippingAddress),
               // A city option fixes the city (and its price) on the server; interior keeps the typed one.
-              city: shipping.option?.city ?? input.shippingAddress.city,
-              department: input.shippingAddress.department,
+              city: shipping.option?.city ?? input.shippingAddress.city ?? "",
               country: input.shippingAddress.country,
               shippingOptionId: shipping.option?.id ?? null,
               shippingOptionLabel: shipping.option?.label ?? null,
-              postalCode: input.shippingAddress.postalCode || null,
               notes: input.shippingAddress.notes || null,
             },
             items: priced.lines,

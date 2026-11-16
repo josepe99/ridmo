@@ -1,5 +1,5 @@
 import type { FormEvent, ReactNode } from "react"
-import { InternationalShippingNotice } from "@/modules/orders"
+import { InternationalShippingNotice, MAP_LOCATION_STREET, MapLocationLink } from "@/modules/orders"
 import { formatGuaranies } from "@/shared/lib/currency"
 import { resolveShippingDisplay } from "../domain/shipping-display"
 import type { CheckoutFormValues } from "../schemas/checkout.schema"
@@ -35,6 +35,12 @@ function RecapRow({ label, children }: { label: string; children: ReactNode }) {
 export function PaymentStep({ values, bank, isPending, message, onBack, onEdit, onConfirm, summary }: PaymentStepProps) {
   const { customer, shippingAddress } = values
   const shipping = resolveShippingDisplay(shippingAddress.country, shippingAddress.shippingOptionId)
+  // Only a pin marked in map mode counts: a stale one left from an earlier toggle is ignored.
+  const pin = shippingAddress.locationMode === "map" ? shippingAddress.location : null
+  const addressLine = pin
+    ? MAP_LOCATION_STREET
+    : [shippingAddress.street, shippingAddress.reference].filter(Boolean).join(", ")
+  const cityLine = [shippingAddress.city, pin ? "" : shippingAddress.department].filter(Boolean).join(", ")
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -88,9 +94,15 @@ export function PaymentStep({ values, bank, isPending, message, onBack, onEdit, 
           <RecapRow label="Teléfono">{customer.phone}</RecapRow>
           {customer.email ? <RecapRow label="Email">{customer.email}</RecapRow> : null}
           <RecapRow label="Dirección">
-            {shippingAddress.street}, {shippingAddress.reference}
+            {addressLine}
+            {pin ? (
+              <>
+                {" "}
+                <MapLocationLink latitude={pin.lat} longitude={pin.lng} />
+              </>
+            ) : null}
             <br />
-            {shippingAddress.city}, {shippingAddress.department}
+            {cityLine}
             <br />
             {shippingAddress.country}
           </RecapRow>

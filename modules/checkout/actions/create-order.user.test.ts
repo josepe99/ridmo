@@ -23,6 +23,7 @@ const validInput = {
     department: "Central",
     country: "Paraguay",
     shippingOptionId: "asuncion",
+    notes: "Tocar timbre",
   },
   lines: [{ itemId: "64b7f0a0a0a0a0a0a0a0a0a0", quantity: 2 }],
 }

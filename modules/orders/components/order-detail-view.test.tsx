@@ -32,6 +32,8 @@ const order: OrderDetail = {
     notes: "Tocar timbre",
     shippingOptionId: "asuncion",
     shippingOptionLabel: "Asunción",
+    latitude: null,
+    longitude: null,
   },
   items: [
     {
@@ -82,6 +84,55 @@ describe("OrderDetailView", () => {
 
     rerender(<OrderDetailView order={{ ...order, shippingAddress: { ...order.shippingAddress, notes: null } }} />)
     expect(screen.queryByText(/Notas:/)).not.toBeInTheDocument()
+  })
+
+  describe("map location", () => {
+    const mapOrder: OrderDetail = {
+      ...order,
+      shippingAddress: {
+        ...order.shippingAddress,
+        street: "Ubicación marcada en el mapa",
+        reference: "",
+        department: "",
+        latitude: -25.2637,
+        longitude: -57.5759,
+      },
+    }
+
+    it("links to the marked point on OpenStreetMap", () => {
+      render(<OrderDetailView order={mapOrder} />)
+
+      const address = screen.getByText("Ubicación marcada en el mapa").closest("address") as HTMLElement
+      const link = within(address).getByRole("link", { name: "Ver ubicación en el mapa" })
+      expect(link).toHaveAttribute(
+        "href",
+        "https://www.openstreetmap.org/?mlat=-25.2637&mlon=-57.5759#map=18/-25.2637/-57.5759"
+      )
+      expect(link).toHaveAttribute("target", "_blank")
+    })
+
+    it("prints the city without a dangling comma or an empty line when reference and department are empty", () => {
+      render(<OrderDetailView order={mapOrder} />)
+
+      const address = screen.getByText("Ubicación marcada en el mapa").closest("address") as HTMLElement
+      expect(within(address).getByText("Asuncion")).toBeInTheDocument()
+      expect(address.textContent).not.toMatch(/,\s*$/m)
+      expect(address.querySelectorAll("p:empty")).toHaveLength(0)
+    })
+
+    it("shows no map link for an order without coordinates (legacy and written addresses)", () => {
+      render(<OrderDetailView order={order} />)
+
+      expect(screen.queryByRole("link", { name: "Ver ubicación en el mapa" })).not.toBeInTheDocument()
+    })
+
+    it("shows no map link when only one coordinate is stored", () => {
+      render(
+        <OrderDetailView order={{ ...order, shippingAddress: { ...order.shippingAddress, latitude: -25.2, longitude: null } }} />
+      )
+
+      expect(screen.queryByRole("link", { name: "Ver ubicación en el mapa" })).not.toBeInTheDocument()
+    })
   })
 
   it("shows the country and no notice or postal code for a Paraguay order without one", () => {

@@ -299,6 +299,90 @@ describe("placeOrder: successful order", () => {
     }
   })
 
+  describe("delivery location", () => {
+    const mapInput = (overrides: Record<string, unknown> = {}): PlaceOrderInput => ({
+      ...input,
+      shippingAddress: {
+        country: "Paraguay",
+        city: "Asuncion",
+        shippingOptionId: "asuncion",
+        notes: "Portón verde",
+        locationMode: "map",
+        location: { lat: -25.2637, lng: -57.5759 },
+        ...overrides,
+      },
+    })
+
+    it("stores the pin and a fixed street label for a map order", async () => {
+      await placeOrder(mapInput())
+
+      const address = txMock.order.create.mock.calls[0][0].data.shippingAddress
+      expect(address).toMatchObject({
+        street: "Ubicación marcada en el mapa",
+        reference: "",
+        department: "",
+        latitude: -25.2637,
+        longitude: -57.5759,
+        city: "Asunción",
+        country: "Paraguay",
+        notes: "Portón verde",
+      })
+    })
+
+    it("never stores written address fields sent along a map order", async () => {
+      await placeOrder(mapInput({ street: "Calle falsa 123", reference: "x", department: "y", postalCode: "1234" }))
+
+      const address = txMock.order.create.mock.calls[0][0].data.shippingAddress
+      expect(address).toMatchObject({ street: "Ubicación marcada en el mapa", reference: "", department: "", postalCode: null })
+    })
+
+    it("still derives the price from the zone for a map order", async () => {
+      await placeOrder(mapInput({ shippingOptionId: "luque-2" }))
+
+      const data = txMock.order.create.mock.calls[0][0].data
+      expect(data.shippingCost).toBe(35_000)
+      expect(data.shippingAddress).toMatchObject({ city: "Luque", shippingOptionId: "luque-2" })
+    })
+
+    it("keeps the typed city of an interior or international map order", async () => {
+      await placeOrder(mapInput({ shippingOptionId: "interior", city: "Encarnación" }))
+      await placeOrder(mapInput({ country: "Argentina", shippingOptionId: "", city: "Rosario" }))
+
+      const [interior, abroad] = txMock.order.create.mock.calls.map(([call]) => call.data.shippingAddress)
+      expect(interior).toMatchObject({ city: "Encarnación", latitude: -25.2637 })
+      expect(abroad).toMatchObject({ city: "Rosario", country: "Argentina", longitude: -57.5759 })
+    })
+
+    it("stores no coordinates for a written address and keeps its fields", async () => {
+      await placeOrder({
+        ...input,
+        shippingAddress: { ...input.shippingAddress, locationMode: "address", location: { lat: 1, lng: 2 } },
+      })
+
+      const address = txMock.order.create.mock.calls[0][0].data.shippingAddress
+      expect(address).not.toHaveProperty("latitude")
+      expect(address).not.toHaveProperty("longitude")
+      expect(address).toMatchObject({ street: "Calle 1", reference: "Casa 2", department: "Central" })
+    })
+
+    it("stores no coordinates for the legacy payload without a mode", async () => {
+      await placeOrder(input)
+
+      const address = txMock.order.create.mock.calls[0][0].data.shippingAddress
+      expect(address).not.toHaveProperty("latitude")
+      expect(address).not.toHaveProperty("longitude")
+    })
+
+    it("stores empty strings for the optional written fields that were omitted", async () => {
+      await placeOrder({
+        ...input,
+        shippingAddress: { country: "Paraguay", city: "x", shippingOptionId: "asuncion", street: "Calle 1", notes: "n" },
+      })
+
+      expect(txMock.order.create.mock.calls[0][0].data.shippingAddress).toMatchObject({ reference: "", department: "" })
+    })
+  })
+
   it("reports Paraguay as the shipping country of a domestic order", async () => {
     await expect(placeOrder(input)).resolves.toMatchObject({ ok: true, order: { shippingCountry: "Paraguay" } })
   })

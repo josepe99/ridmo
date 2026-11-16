@@ -81,6 +81,56 @@ describe("PaymentStep", () => {
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
   })
 
+  it("leaves out the optional reference and department when they were not given", () => {
+    setup({ values: { ...values, shippingAddress: { ...values.shippingAddress, reference: "", department: "" } } })
+
+    const row = screen.getByText("Dirección").closest("div") as HTMLElement
+    expect(row.textContent).toBe("DirecciónCalle Palma 123AsuncionParaguay")
+  })
+
+  describe("map location", () => {
+    const mapValues: CheckoutFormValues = {
+      ...values,
+      shippingAddress: {
+        ...values.shippingAddress,
+        street: "Calle olvidada",
+        locationMode: "map",
+        location: { lat: -25.2637, lng: -57.5759 },
+      },
+    }
+
+    it("recaps the marked point with a link to the map instead of the street", () => {
+      setup({ values: mapValues })
+
+      expect(screen.getByText(/Ubicación marcada en el mapa/)).toBeInTheDocument()
+      expect(screen.queryByText(/Calle olvidada/)).not.toBeInTheDocument()
+      const link = screen.getByRole("link", { name: "Ver ubicación en el mapa" })
+      expect(link).toHaveAttribute(
+        "href",
+        "https://www.openstreetmap.org/?mlat=-25.2637&mlon=-57.5759#map=18/-25.2637/-57.5759"
+      )
+      expect(link).toHaveAttribute("target", "_blank")
+      expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"))
+      expect(screen.getByText(/Asuncion/)).toBeInTheDocument()
+      expect(screen.getByText("Portón negro")).toBeInTheDocument()
+    })
+
+    it("shows no map link for a written address", () => {
+      setup()
+
+      expect(screen.queryByRole("link", { name: "Ver ubicación en el mapa" })).not.toBeInTheDocument()
+    })
+
+    it("ignores a stale pin while the shopper is in address mode", () => {
+      setup({
+        values: { ...values, shippingAddress: { ...values.shippingAddress, locationMode: "address", location: { lat: 1, lng: 2 } } },
+      })
+
+      expect(screen.queryByRole("link", { name: "Ver ubicación en el mapa" })).not.toBeInTheDocument()
+      expect(screen.getByText(/Calle Palma 123, Casa 12/)).toBeInTheDocument()
+    })
+  })
+
   it("recaps the chosen shipping zone with its price", () => {
     setup()
 
