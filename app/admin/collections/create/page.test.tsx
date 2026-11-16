@@ -35,7 +35,7 @@ describe("create collection page upload handler", () => {
     await expect(handler(form)).resolves.toEqual({ success: false, error: "File is required" })
   })
 
-  it("uploads the file to the collections folder with automatic quality", async () => {
+  it("uploads the file to the collections folder to the ridmo folder", async () => {
     vi.mocked(uploadImage).mockResolvedValue({ success: true, data: { url: "https://res.cloudinary.com/x" } } as never)
     const handler = await getHandler()
     const file = new File(["x"], "a.png", { type: "image/png" })
@@ -44,7 +44,7 @@ describe("create collection page upload handler", () => {
 
     const result = await handler(form)
 
-    expect(uploadImage).toHaveBeenCalledWith(file, { folder: "milowearco/collections", quality: "auto" })
+    expect(uploadImage).toHaveBeenCalledWith(file, { folder: "ridmo/collections" })
     expect(result).toEqual({ success: true, data: { url: "https://res.cloudinary.com/x" } })
   })
 })

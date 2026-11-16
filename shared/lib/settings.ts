@@ -6,10 +6,46 @@
 // Database Configuration
 export const DATABASE_URL = process.env.DATABASE_URL!;
 
-// Cloudinary Configuration
-export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME!;
-export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY!;
-export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET!;
+// Object storage (S3-compatible, MinIO) is read lazily through getS3Config() so that
+// builds and pages that never upload files do not need the S3_* variables.
+export interface S3Config {
+  endpoint: string;
+  region: string;
+  bucket: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  forcePathStyle: boolean;
+  /** Public base URL of the bucket, without a trailing slash (e.g. https://media.example/bucket). */
+  publicUrl: string;
+}
+
+const REQUIRED_S3_VARS = [
+  'S3_ENDPOINT',
+  'S3_BUCKET',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+  'S3_PUBLIC_URL',
+] as const;
+
+export function getS3Config(): S3Config {
+  const missing = REQUIRED_S3_VARS.filter(name => !process.env[name]);
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required S3 environment variables: ${missing.join(', ')}\n` +
+      'Configure the MinIO/S3 settings to enable file uploads.'
+    );
+  }
+
+  return {
+    endpoint: process.env.S3_ENDPOINT!,
+    region: process.env.S3_REGION || 'us-east-1',
+    bucket: process.env.S3_BUCKET!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE !== 'false',
+    publicUrl: process.env.S3_PUBLIC_URL!.replace(/\/+$/, ''),
+  };
+}
 
 // Application Configuration
 export const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -24,9 +60,6 @@ export function validateEnvironmentVariables() {
   const requiredVars = [
     'AUTH_SECRET',
     'DATABASE_URL',
-    'CLOUDINARY_CLOUD_NAME',
-    'CLOUDINARY_API_KEY',
-    'CLOUDINARY_API_SECRET',
   ];
 
   const missingVars = requiredVars.filter(varName => !process.env[varName]);

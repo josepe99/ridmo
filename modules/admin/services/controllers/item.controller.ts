@@ -120,7 +120,7 @@ export class ItemController extends BaseController {
             // Upload images if any
             if (imageFiles.length > 0) {
               uploadedImages = await this.imageController.uploadImages(imageFiles, {
-                folder: 'milowearco/items'
+                folder: 'ridmo/items'
               });
             }
 
@@ -205,7 +205,7 @@ export class ItemController extends BaseController {
             // Upload new images if any
             if (imageFiles.length > 0) {
               uploadedImages = await this.imageController.uploadImages(imageFiles, {
-                folder: 'milowearco/items'
+                folder: 'ridmo/items'
               });
             }
 

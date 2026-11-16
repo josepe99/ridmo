@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const cloudinary = vi.hoisted(() => ({ uploadImage: vi.fn(), deleteImage: vi.fn() }))
+const storage = vi.hoisted(() => ({ uploadImage: vi.fn(), deleteImage: vi.fn() }))
 
-vi.mock("@/modules/admin/services/datasources/cloudinary.datasource", () => ({
-  CloudinaryService: cloudinary,
+vi.mock("@/modules/admin/services/datasources/s3.datasource", () => ({
+  S3Service: storage,
 }))
 
 import { ImageController } from "./image.controller"
@@ -12,10 +12,8 @@ import { ImageController } from "./image.controller"
 const controller = new ImageController()
 
 const uploaded = (publicId: string) => ({
-  url: `https://res.cloudinary.com/${publicId}.jpg`,
+  url: `https://media.ridmo.test/ridmo-media/${publicId}.jpg`,
   publicId,
-  width: 1,
-  height: 1,
   format: "jpg",
   bytes: 1,
 })
@@ -27,8 +25,8 @@ const imageFile = (name = "a.jpg", type = "image/jpeg", size = 10) => {
 }
 
 beforeEach(() => {
-  cloudinary.uploadImage.mockReset().mockImplementation(async (file: File) => uploaded(file.name))
-  cloudinary.deleteImage.mockReset().mockResolvedValue(undefined)
+  storage.uploadImage.mockReset().mockImplementation(async (file: File) => uploaded(file.name))
+  storage.deleteImage.mockReset().mockResolvedValue(undefined)
   vi.spyOn(console, "error").mockImplementation(() => {})
 })
 
@@ -41,7 +39,7 @@ describe("uploadSingleImage validation", () => {
     await expect(controller.uploadSingleImage(imageFile("x", type))).rejects.toThrow(
       "Invalid file type. Only images are allowed."
     )
-    expect(cloudinary.uploadImage).not.toHaveBeenCalled()
+    expect(storage.uploadImage).not.toHaveBeenCalled()
   })
 
   it("rejects files over 10MB but accepts exactly 10MB", async () => {
@@ -53,12 +51,12 @@ describe("uploadSingleImage validation", () => {
     ).resolves.toBeDefined()
   })
 
-  it("uploads to the items folder with auto quality, letting callers override", async () => {
+  it("uploads to the items folder, letting callers override", async () => {
     await controller.uploadSingleImage(imageFile())
     await controller.uploadSingleImage(imageFile(), { folder: "other" })
 
-    expect(cloudinary.uploadImage.mock.calls[0][1]).toEqual({ folder: "milowearco/items", quality: "auto" })
-    expect(cloudinary.uploadImage.mock.calls[1][1]).toEqual({ folder: "other", quality: "auto" })
+    expect(storage.uploadImage.mock.calls[0][1]).toEqual({ folder: "ridmo/items" })
+    expect(storage.uploadImage.mock.calls[1][1]).toEqual({ folder: "other" })
   })
 })
 
@@ -80,14 +78,13 @@ describe("uploadFromBase64", () => {
   it("uploads the string with the default folder", async () => {
     await controller.uploadFromBase64("data:image/png;base64,AAA")
 
-    expect(cloudinary.uploadImage).toHaveBeenCalledWith("data:image/png;base64,AAA", {
-      folder: "milowearco/items",
-      quality: "auto",
+    expect(storage.uploadImage).toHaveBeenCalledWith("data:image/png;base64,AAA", {
+      folder: "ridmo/items",
     })
   })
 
   it("rethrows provider errors", async () => {
-    cloudinary.uploadImage.mockRejectedValue(new Error("boom"))
+    storage.uploadImage.mockRejectedValue(new Error("boom"))
 
     await expect(controller.uploadFromBase64("x")).rejects.toThrow("boom")
   })
@@ -97,12 +94,12 @@ describe("deleteImage / deleteImages", () => {
   it("deleteImage reports success as a boolean and never throws", async () => {
     await expect(controller.deleteImage("p")).resolves.toBe(true)
 
-    cloudinary.deleteImage.mockRejectedValue(new Error("x"))
+    storage.deleteImage.mockRejectedValue(new Error("x"))
     await expect(controller.deleteImage("p")).resolves.toBe(false)
   })
 
   it("deleteImages separates successes from failures and keeps going", async () => {
-    cloudinary.deleteImage
+    storage.deleteImage
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error("x"))
       .mockResolvedValueOnce(undefined)
@@ -169,12 +166,12 @@ describe("DELETE", () => {
   it("deletes one image by publicId", async () => {
     const response = await del("?publicId=abc")
 
-    expect(cloudinary.deleteImage).toHaveBeenCalledWith("abc")
+    expect(storage.deleteImage).toHaveBeenCalledWith("abc")
     expect(response.status).toBe(200)
   })
 
   it("answers 500 when the single delete fails", async () => {
-    cloudinary.deleteImage.mockRejectedValue(new Error("x"))
+    storage.deleteImage.mockRejectedValue(new Error("x"))
 
     const response = await del("?publicId=abc")
 

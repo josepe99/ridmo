@@ -1,27 +1,27 @@
 import {
-  CloudinaryService,
-  CloudinaryUploadOptions,
-  CloudinaryResource,
-  CloudinaryListOptions,
-} from './cloudinary.datasource';
+  S3Service,
+  StorageUploadOptions,
+  StorageResource,
+  StorageListOptions,
+} from './s3.datasource';
 
 export class FileDatasource {
   async uploadImage(
     file: File | Buffer | string,
-    options: CloudinaryUploadOptions = {}
+    options: StorageUploadOptions = {}
   ) {
-    return await CloudinaryService.uploadImage(file, options);
+    return await S3Service.uploadImage(file, options);
   }
 
-  async getImage(publicId: string): Promise<CloudinaryResource> {
-    return await CloudinaryService.getImage(publicId);
+  async getImage(publicId: string): Promise<StorageResource> {
+    return await S3Service.getImage(publicId);
   }
 
-  async getImages(options: CloudinaryListOptions = {}): Promise<CloudinaryResource[]> {
-    return await CloudinaryService.getImages(options);
+  async getImages(options: StorageListOptions = {}): Promise<StorageResource[]> {
+    return await S3Service.getImages(options);
   }
 
   async removeImage(publicId: string): Promise<void> {
-    return await CloudinaryService.removeImage(publicId);
+    return await S3Service.removeImage(publicId);
   }
 }

@@ -45,7 +45,7 @@ describe("FileController", () => {
     ["getImages", () => controller.getImages(), "getImages", "Failed to list files"],
     ["removeImage", () => controller.removeImage("x"), "removeImage", "Failed to remove file"],
   ] as const)("%s hides provider errors behind a generic message", async (_name, call, method, message) => {
-    datasource[method].mockRejectedValue(new Error("cloudinary secret"))
+    datasource[method].mockRejectedValue(new Error("storage secret"))
 
     await expect(call()).rejects.toThrow(message)
   })

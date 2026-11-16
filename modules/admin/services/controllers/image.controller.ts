@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BaseController } from './base.controller';
-import { CloudinaryService, CloudinaryUploadOptions } from '@/modules/admin/services/datasources/cloudinary.datasource';
+import { S3Service, StorageUploadOptions } from '@/modules/admin/services/datasources/s3.datasource';
 
 export interface ImageUploadResponse {
   url: string;
   publicId: string;
-  width: number;
-  height: number;
   format: string;
   bytes: number;
 }
 
 export class ImageController extends BaseController {
   /**
-   * Upload multiple images to Cloudinary
+   * Upload multiple images to storage
    */
   async uploadImages(
     files: File[],
-    options: CloudinaryUploadOptions = {}
+    options: StorageUploadOptions = {}
   ): Promise<ImageUploadResponse[]> {
     try {
       const uploadPromises = files.map(file => this.uploadSingleImage(file, options));
@@ -29,11 +27,11 @@ export class ImageController extends BaseController {
   }
 
   /**
-   * Upload a single image to Cloudinary
+   * Upload a single image to storage
    */
   async uploadSingleImage(
     file: File,
-    options: CloudinaryUploadOptions = {}
+    options: StorageUploadOptions = {}
   ): Promise<ImageUploadResponse> {
     try {
       // Validate file type
@@ -46,13 +44,12 @@ export class ImageController extends BaseController {
         throw new Error('File size too large. Maximum 10MB allowed.');
       }
 
-      const uploadOptions: CloudinaryUploadOptions = {
-        folder: 'milowearco/items',
-        quality: 'auto',
+      const uploadOptions: StorageUploadOptions = {
+        folder: 'ridmo/items',
         ...options,
       };
 
-      const result = await CloudinaryService.uploadImage(file, uploadOptions);
+      const result = await S3Service.uploadImage(file, uploadOptions);
       return result;
     } catch (error) {
       console.error('Error uploading single image:', error);
@@ -65,16 +62,15 @@ export class ImageController extends BaseController {
    */
   async uploadFromBase64(
     base64String: string,
-    options: CloudinaryUploadOptions = {}
+    options: StorageUploadOptions = {}
   ): Promise<ImageUploadResponse> {
     try {
-      const uploadOptions: CloudinaryUploadOptions = {
-        folder: 'milowearco/items',
-        quality: 'auto',
+      const uploadOptions: StorageUploadOptions = {
+        folder: 'ridmo/items',
         ...options,
       };
 
-      const result = await CloudinaryService.uploadImage(base64String, uploadOptions);
+      const result = await S3Service.uploadImage(base64String, uploadOptions);
       return result;
     } catch (error) {
       console.error('Error uploading image from base64:', error);
@@ -83,11 +79,11 @@ export class ImageController extends BaseController {
   }
 
   /**
-   * Delete an image from Cloudinary
+   * Delete an image from storage
    */
   async deleteImage(publicId: string): Promise<boolean> {
     try {
-      await CloudinaryService.deleteImage(publicId);
+      await S3Service.deleteImage(publicId);
       return true;
     } catch (error) {
       console.error('Error deleting image:', error);
@@ -96,7 +92,7 @@ export class ImageController extends BaseController {
   }
 
   /**
-   * Delete multiple images from Cloudinary
+   * Delete multiple images from storage
    */
   async deleteImages(publicIds: string[]): Promise<{ success: string[]; failed: string[] }> {
     const success: string[] = [];
@@ -104,7 +100,7 @@ export class ImageController extends BaseController {
 
     for (const publicId of publicIds) {
       try {
-        await CloudinaryService.deleteImage(publicId);
+        await S3Service.deleteImage(publicId);
         success.push(publicId);
       } catch (error) {
         console.error(`Error deleting image ${publicId}:`, error);

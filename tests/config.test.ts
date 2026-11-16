@@ -4,7 +4,7 @@ import tailwindConfig from "../tailwind.config"
 
 // Static contracts: cheap checks that catch config regressions without booting Next.
 describe("next.config", () => {
-  it("allows Cloudinary images over https", () => {
+  it("keeps allowing legacy Cloudinary images over https", () => {
     const patterns = nextConfig.images?.remotePatterns ?? []
 
     expect(patterns).toContainEqual(
@@ -16,10 +16,25 @@ describe("next.config", () => {
     expect(nextConfig.images?.formats).toEqual(["image/avif", "image/webp"])
   })
 
-  it("only allows safe remote image hosts (no wildcard hostnames)", () => {
+  it("allows MinIO media images over https and the local dev MinIO over http", () => {
+    const patterns = nextConfig.images?.remotePatterns ?? []
+
+    expect(patterns).toContainEqual(
+      expect.objectContaining({ protocol: "https", hostname: "media.ridmo.com.py" })
+    )
+    expect(patterns).toContainEqual(
+      expect.objectContaining({ protocol: "http", hostname: "localhost", port: "9000" })
+    )
+  })
+
+  it("only allows safe remote image hosts (no wildcard hostnames, http only for localhost)", () => {
     for (const pattern of nextConfig.images?.remotePatterns ?? []) {
       expect(pattern.hostname).not.toContain("*")
-      expect(pattern.protocol).toBe("https")
+      if (pattern.protocol === "http") {
+        expect(pattern.hostname).toBe("localhost")
+      } else {
+        expect(pattern.protocol).toBe("https")
+      }
     }
   })
 

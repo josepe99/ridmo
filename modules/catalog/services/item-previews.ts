@@ -6,7 +6,7 @@ import type { ProductSummary } from "../types"
 /**
  * Prisma cannot slice a scalar list (`String[]`) inside `select`, so the previews are read with
  * a MongoDB aggregation that projects only the first PREVIEW_IMAGES pictures of each item
- * (main image + hover image) instead of shipping every Cloudinary URL over the wire.
+ * (main image + hover image) instead of shipping every image URL over the wire.
  */
 const PREVIEW_IMAGES = 2
 

@@ -43,6 +43,13 @@ const nextConfig = {
         hostname: 'media.ridmo.com.py',
         pathname: '/**',
       },
+      // Local development MinIO (docker-compose.dev.yml)
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],

@@ -159,11 +159,11 @@ describe("ImageUploadComponent: existing images", () => {
 describe("ImageUploadComponent: uploading to Cloudinary", () => {
   it("offers the upload action only when there are pending files", async () => {
     render(<Harness initial={[existing()]} />)
-    expect(screen.queryByRole("button", { name: "Upload to Cloudinary" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Upload images" })).not.toBeInTheDocument()
 
     await userEvent.upload(fileInput(), png())
 
-    expect(screen.getByRole("button", { name: "Upload to Cloudinary" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Upload images" })).toBeInTheDocument()
   })
 
   it("posts pending files and stores the returned URLs", async () => {
@@ -177,7 +177,7 @@ describe("ImageUploadComponent: uploading to Cloudinary", () => {
     render(<Harness onChange={onChange} />)
     await userEvent.upload(fileInput(), png())
 
-    await userEvent.click(screen.getByRole("button", { name: "Upload to Cloudinary" }))
+    await userEvent.click(screen.getByRole("button", { name: "Upload images" }))
 
     await waitFor(() => expect(screen.getByText("Uploaded")).toBeInTheDocument())
     expect(fetch).toHaveBeenCalledWith("/api/admin/images", { method: "POST", body: expect.any(FormData) })
@@ -193,7 +193,7 @@ describe("ImageUploadComponent: uploading to Cloudinary", () => {
     render(<Harness />)
     await userEvent.upload(fileInput(), png())
 
-    await userEvent.click(screen.getByRole("button", { name: "Upload to Cloudinary" }))
+    await userEvent.click(screen.getByRole("button", { name: "Upload images" }))
 
     expect(await screen.findByText("Failed to upload images")).toBeInTheDocument()
     expect(screen.getByText("Pending")).toBeInTheDocument()
@@ -204,12 +204,12 @@ describe("ImageUploadComponent: uploading to Cloudinary", () => {
     render(<Harness />)
     await userEvent.upload(fileInput(), png())
 
-    await userEvent.click(screen.getByRole("button", { name: "Upload to Cloudinary" }))
+    await userEvent.click(screen.getByRole("button", { name: "Upload images" }))
 
     expect(await screen.findByText("offline")).toBeInTheDocument()
   })
 
-  // SUSPECTED BUG (image-upload.tsx:242 and :286): the "Upload to Cloudinary" and remove (X)
+  // SUSPECTED BUG (image-upload.tsx:242 and :286): the "Upload images" and remove (X)
   // buttons have no `type="button"`, so inside the <form> of ItemForm clicking them also
   // SUBMITS the form (the default button type is "submit").
   it("does not submit a surrounding form when removing an image", async () => {

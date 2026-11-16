@@ -1,8 +1,8 @@
 import {
-  CloudinaryUploadOptions,
-  CloudinaryResource,
-  CloudinaryListOptions,
-} from '../datasources/cloudinary.datasource';
+  StorageUploadOptions,
+  StorageResource,
+  StorageListOptions,
+} from '../datasources/s3.datasource';
 import { FileDatasource } from '../datasources/file.datasource';
 
 export class FileController {
@@ -14,7 +14,7 @@ export class FileController {
 
   async uploadImage(
     file: File | Buffer | string,
-    options: CloudinaryUploadOptions = {}
+    options: StorageUploadOptions = {}
   ) {
     try {
       return await this.datasource.uploadImage(file, options);
@@ -24,7 +24,7 @@ export class FileController {
     }
   }
 
-  async getImage(publicId: string): Promise<CloudinaryResource> {
+  async getImage(publicId: string): Promise<StorageResource> {
     try {
       return await this.datasource.getImage(publicId);
     } catch (error) {
@@ -33,7 +33,7 @@ export class FileController {
     }
   }
 
-  async getImages(options: CloudinaryListOptions = {}): Promise<CloudinaryResource[]> {
+  async getImages(options: StorageListOptions = {}): Promise<StorageResource[]> {
     try {
       return await this.datasource.getImages(options);
     } catch (error) {

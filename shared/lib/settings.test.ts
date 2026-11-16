@@ -2,12 +2,17 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 const unset = undefined as unknown as string
 
-const REQUIRED_NON_AUTH = [
-  "DATABASE_URL",
-  "CLOUDINARY_CLOUD_NAME",
-  "CLOUDINARY_API_KEY",
-  "CLOUDINARY_API_SECRET",
-]
+const REQUIRED_NON_AUTH = ["DATABASE_URL"]
+
+const S3_ENV = {
+  S3_ENDPOINT: "http://minio:9000",
+  S3_REGION: "us-east-1",
+  S3_BUCKET: "ridmo-media",
+  S3_ACCESS_KEY_ID: "key",
+  S3_SECRET_ACCESS_KEY: "secret",
+  S3_FORCE_PATH_STYLE: "true",
+  S3_PUBLIC_URL: "https://media.ridmo.test/ridmo-media/",
+}
 
 async function loadSettings() {
   vi.resetModules()
@@ -32,17 +37,11 @@ describe("settings defaults", () => {
   it("reads configured values from the environment", async () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://ridmo.test")
     vi.stubEnv("DATABASE_URL", "mongodb://localhost:27017/test")
-    vi.stubEnv("CLOUDINARY_CLOUD_NAME", "cloud")
-    vi.stubEnv("CLOUDINARY_API_KEY", "key")
-    vi.stubEnv("CLOUDINARY_API_SECRET", "secret")
 
     const settings = await loadSettings()
 
     expect(settings.NEXT_PUBLIC_APP_URL).toBe("https://ridmo.test")
     expect(settings.DATABASE_URL).toBe("mongodb://localhost:27017/test")
-    expect(settings.CLOUDINARY_CLOUD_NAME).toBe("cloud")
-    expect(settings.CLOUDINARY_API_KEY).toBe("key")
-    expect(settings.CLOUDINARY_API_SECRET).toBe("secret")
   })
 
   it("defaults NODE_ENV to development when unset", async () => {
@@ -61,7 +60,7 @@ describe("validateEnvironmentVariables", () => {
     const { validateEnvironmentVariables } = await loadSettings()
 
     expect(() => validateEnvironmentVariables()).toThrow(
-      /Missing required environment variables:[^]*DATABASE_URL[^]*CLOUDINARY_CLOUD_NAME[^]*CLOUDINARY_API_KEY[^]*CLOUDINARY_API_SECRET/
+      /Missing required environment variables:[^]*DATABASE_URL/
     )
   })
 
@@ -77,5 +76,49 @@ describe("validateEnvironmentVariables", () => {
     for (const name of REQUIRED_NON_AUTH) vi.stubEnv(name, unset)
 
     await expect(loadSettings()).rejects.toThrow(/Missing required environment variables/)
+  })
+})
+
+describe("getS3Config", () => {
+  it("reads the S3 settings lazily and strips the trailing slash of the public URL", async () => {
+    const { getS3Config } = await loadSettings()
+    for (const [name, value] of Object.entries(S3_ENV)) vi.stubEnv(name, value)
+
+    expect(getS3Config()).toEqual({
+      endpoint: "http://minio:9000",
+      region: "us-east-1",
+      bucket: "ridmo-media",
+      accessKeyId: "key",
+      secretAccessKey: "secret",
+      forcePathStyle: true,
+      publicUrl: "https://media.ridmo.test/ridmo-media",
+    })
+  })
+
+  it("defaults the region and path style when they are not set", async () => {
+    const { getS3Config } = await loadSettings()
+    for (const [name, value] of Object.entries(S3_ENV)) vi.stubEnv(name, value)
+    vi.stubEnv("S3_REGION", unset)
+    vi.stubEnv("S3_FORCE_PATH_STYLE", unset)
+
+    expect(getS3Config()).toMatchObject({ region: "us-east-1", forcePathStyle: true })
+  })
+
+  it("does not fail on import when S3 is not configured", async () => {
+    vi.stubEnv("NODE_ENV", "development")
+    vi.stubEnv("DATABASE_URL", "mongodb://localhost:27017/test")
+    vi.stubEnv("AUTH_SECRET", "secret")
+    for (const name of Object.keys(S3_ENV)) vi.stubEnv(name, unset)
+
+    await expect(loadSettings()).resolves.toBeDefined()
+  })
+
+  it("names every missing S3 variable in the error", async () => {
+    const { getS3Config } = await loadSettings()
+    for (const name of Object.keys(S3_ENV)) vi.stubEnv(name, unset)
+
+    expect(() => getS3Config()).toThrow(
+      /Missing required S3 environment variables:[^]*S3_ENDPOINT[^]*S3_BUCKET[^]*S3_ACCESS_KEY_ID[^]*S3_SECRET_ACCESS_KEY[^]*S3_PUBLIC_URL/
+    )
   })
 })

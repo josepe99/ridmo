@@ -39,7 +39,7 @@ model Item {
   sku          String?
   inventory    Int        @default(0)
   isActive     Boolean    @default(true)
-  images       String[]   // Array of Cloudinary URLs
+  images       String[]   // Array of image URLs (MinIO; legacy records may point to Cloudinary)
   tags         String[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt

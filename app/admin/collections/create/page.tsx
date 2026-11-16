@@ -18,8 +18,7 @@ export default async function CreateCollectionPage() {
     }
 
     const result = await uploadImageAction(file, {
-      folder: "milowearco/collections",
-      quality: "auto",
+      folder: "ridmo/collections",
     })
 
     return result

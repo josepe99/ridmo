@@ -246,7 +246,7 @@ export function ImageUploadComponent({
                 size="sm"
                 variant="outline"
               >
-                {uploading ? 'Uploading...' : 'Upload to Cloudinary'}
+                {uploading ? 'Uploading...' : 'Upload images'}
               </Button>
             )}
           </div>

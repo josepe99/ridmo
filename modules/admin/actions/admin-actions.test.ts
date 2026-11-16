@@ -31,7 +31,7 @@ vi.mock("../services/controllers/item.controller", () => ({
     getItemById = items.getItemById
   },
 }))
-vi.mock("../services/datasources/cloudinary.datasource", () => ({}))
+vi.mock("../services/datasources/s3.datasource", () => ({}))
 
 import { getByAdminAction, getCollectionById } from "./collections.actions"
 import { getImage, getImages, removeImage, uploadImage } from "./file.actions"

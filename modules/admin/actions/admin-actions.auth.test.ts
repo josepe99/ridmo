@@ -27,7 +27,7 @@ vi.mock("../services/controllers/item.controller", () => ({
     getItemById = controllers.item.getItemById
   },
 }))
-vi.mock("../services/datasources/cloudinary.datasource", () => ({}))
+vi.mock("../services/datasources/s3.datasource", () => ({}))
 
 import { requireAdmin } from "@/modules/users/server"
 import * as collectionActions from "./collections.actions"

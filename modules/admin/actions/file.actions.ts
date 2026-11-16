@@ -1,14 +1,14 @@
 'use server'
 
 import { requireAdmin } from '@/modules/users/server'
-import { CloudinaryListOptions, CloudinaryUploadOptions } from '../services/datasources/cloudinary.datasource'
+import { StorageListOptions, StorageUploadOptions } from '../services/datasources/s3.datasource'
 import { FileController } from '../services/controllers/file.controller'
 
 const fileController = new FileController()
 
 export async function uploadImage(
   file: File | Buffer | string,
-  options: CloudinaryUploadOptions = {}
+  options: StorageUploadOptions = {}
 ) {
   await requireAdmin()
   try {
@@ -31,7 +31,7 @@ export async function getImage(publicId: string) {
   }
 }
 
-export async function getImages(options: CloudinaryListOptions = {}) {
+export async function getImages(options: StorageListOptions = {}) {
   await requireAdmin()
   try {
     const data = await fileController.getImages(options)
