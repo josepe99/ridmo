@@ -1,0 +1,159 @@
+# Production stack for Ridmo (https://ridmo.com.py), fronted by Cloudflare.
+#
+# Traffic path: Cloudflare edge -> cloudflared (Tunnel, outbound only) -> app / minio.
+# No container publishes a host port, so the server needs no open inbound ports
+# and Cloudflare terminates TLS.
+#
+# Cloudflare Zero Trust > Networks > Tunnels > (your tunnel) > Public hostnames:
+#   ridmo.com.py        -> http://app:3000
+#   www.ridmo.com.py    -> http://app:3000
+#   media.ridmo.com.py  -> http://minio:9000   (public S3 API / media files)
+#   minio.ridmo.com.py  -> http://minio:9001   (admin console, protect with Cloudflare Access)
+#
+# Usage:
+#   cp .env.production.example .env.production   # then fill it in
+#   docker compose --env-file .env.production up -d --build
+#   docker compose --env-file .env.production run --rm migrate   # first deploy: create collections/indexes
+name: ridmo
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - app
+      - minio
+    networks: [edge]
+
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: https://ridmo.com.py
+        NEXT_PUBLIC_EMAIL: ${NEXT_PUBLIC_EMAIL:-}
+        NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER:-}
+        NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER: ${NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER:-}
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+    image: ridmo-app:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: mongodb://mongo:27017/RIDMO?replicaSet=rs0
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
+      AUTH_URL: https://ridmo.com.py
+      AUTH_TRUST_HOST: "true"
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-}
+      NEXT_PUBLIC_SITE_URL: https://ridmo.com.py
+      NEXT_PUBLIC_APP_URL: https://ridmo.com.py
+      NEXT_PUBLIC_EMAIL: ${NEXT_PUBLIC_EMAIL:-}
+      NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER:-}
+      NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER: ${NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: https://ridmo.com.py
+      BANK_TRANSFER_BANK_NAME: ${BANK_TRANSFER_BANK_NAME:-}
+      BANK_TRANSFER_ACCOUNT_HOLDER: ${BANK_TRANSFER_ACCOUNT_HOLDER:-}
+      BANK_TRANSFER_ACCOUNT_NUMBER: ${BANK_TRANSFER_ACCOUNT_NUMBER:-}
+      BANK_TRANSFER_ALIAS: ${BANK_TRANSFER_ALIAS:-}
+      BANK_TRANSFER_NOTES: ${BANK_TRANSFER_NOTES:-}
+      # S3-compatible storage (MinIO)
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: ${MINIO_BUCKET:-ridmo-media}
+      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+      S3_FORCE_PATH_STYLE: "true"
+      S3_PUBLIC_URL: https://media.ridmo.com.py/${MINIO_BUCKET:-ridmo-media}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    networks: [edge, internal]
+
+  # One-off job: `docker compose run --rm migrate` (needs the schema, so it reuses the app image).
+  migrate:
+    image: ridmo-app:latest
+    profiles: [tools]
+    command: ["pnpm", "exec", "prisma", "db", "push"]
+    environment:
+      DATABASE_URL: mongodb://mongo:27017/RIDMO?replicaSet=rs0
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks: [internal]
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    # Prisma needs a replica set (transactions). Single node, reachable only on the internal network.
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: |
+        mongosh --quiet --port 27017 --eval "
+          try { rs.status().ok } catch (e) {
+            rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }).ok
+          }
+        " | grep -q 1
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+    networks: [internal]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: https://minio.ridmo.com.py
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [edge, internal]
+
+  # Creates the bucket on first run and makes objects publicly readable (read-only, no listing).
+  minio-init:
+    image: minio/mc:latest
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-ridmo-media}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing "local/$$MINIO_BUCKET"
+        mc anonymous set download "local/$$MINIO_BUCKET"
+    networks: [internal]
+
+networks:
+  # Reachable from cloudflared.
+  edge:
+  # Databases and storage internals; no outside access.
+  internal:
+    internal: true
+
+volumes:
+  mongo-data:
+  minio-data:

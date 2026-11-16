@@ -9,6 +9,8 @@ export const SITE_LANGUAGE = "es-PY"
 export const SITE_CURRENCY = "PYG"
 export const TWITTER_HANDLE = "@milowearcompany"
 export const SITE_LOGO_PATH = "/images/ridmo-logo.png"
+/** Open Graph image: the square brand logo (500x500, transparent PNG). */
+export const SITE_OG_IMAGE = { url: SITE_LOGO_PATH, width: 500, height: 500, alt: "RIDMO - Collares y relojes cubanos" }
 
 export const SITE_TITLE = "RIDMO | Collares y Relojes Cubanos, Lentes Exclusivos en Paraguay"
 export const SITE_DESCRIPTION =
