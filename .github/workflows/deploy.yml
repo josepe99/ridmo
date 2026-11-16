@@ -1,0 +1,57 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_migrate:
+        description: "Run `prisma db push` after deploying (schema changes)"
+        type: boolean
+        default: false
+
+# One deploy at a time; never cancel a deploy that is already running.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Deploy on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          APP_DIR: ${{ vars.VPS_APP_DIR || '/opt/ridmo' }}
+          RUN_MIGRATE: ${{ inputs.run_migrate && 'true' || 'false' }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          ssh -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" \
+            "APP_DIR='$APP_DIR' RUN_MIGRATE='$RUN_MIGRATE' DEPLOY_SHA='$DEPLOY_SHA' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$APP_DIR"
+          git fetch --prune origin main
+          git reset --hard "$DEPLOY_SHA"
+          docker compose --env-file .env.production up -d --build --remove-orphans
+          if [ "$RUN_MIGRATE" = "true" ]; then
+            docker compose --env-file .env.production run --rm migrate
+          fi
+          docker image prune -f
+          docker compose --env-file .env.production ps
+          REMOTE
