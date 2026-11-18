@@ -257,7 +257,7 @@ export function ItemForm({
       )}
 
       <div className="grid gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="name">Name</Label>
             <Input
@@ -298,7 +298,7 @@ export function ItemForm({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
             <Label htmlFor="price">Price</Label>
             <Input
@@ -391,6 +391,7 @@ export function ItemForm({
               onClick={addTag}
               variant="outline"
               disabled={submitting}
+              className="shrink-0"
             >
               Add
             </Button>
@@ -400,15 +401,15 @@ export function ItemForm({
               {values.tags.map((tag) => (
                 <div
                   key={tag}
-                  className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
+                  className="flex max-w-full items-center gap-1 rounded bg-blue-100 px-2 py-1 text-sm text-blue-800"
                 >
-                  <span>{tag}</span>
+                  <span className="min-w-0 break-all">{tag}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => removeTag(tag)}
-                    className="h-4 w-4 p-0 text-blue-600 hover:text-blue-800"
+                    className="h-6 w-6 shrink-0 p-0 text-blue-600 hover:text-blue-800 sm:h-5 sm:w-5"
                     disabled={submitting}
                     aria-label={`Remove ${tag}`}
                   >
@@ -433,18 +434,19 @@ export function ItemForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         {onCancel && (
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={submitting}
+            className="h-10 w-full sm:h-9 sm:w-auto"
           >
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting} className="h-10 w-full sm:h-9 sm:w-auto">
           {submitting
             ? submittingLabel ||
               (isEdit ? "Updating..." : "Creating...")

@@ -201,13 +201,19 @@ export function CollectionForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={submitting}
+            className="h-10 w-full sm:h-9 sm:w-auto"
+          >
             {cancelLabel}
           </Button>
         )}
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting} className="h-10 w-full sm:h-9 sm:w-auto">
           {submitting ? submittingLabel : submitLabel}
         </Button>
       </div>

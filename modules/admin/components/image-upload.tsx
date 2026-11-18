@@ -192,7 +192,7 @@ export function ImageUploadComponent({
       {/* Upload Area */}
       <div
         className={cn(
-          'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
+          'border-2 border-dashed rounded-lg p-4 text-center transition-colors sm:p-6',
           dragActive ? 'border-primary bg-primary/10' : 'border-gray-300',
           images.length >= maxImages ? 'opacity-50 pointer-events-none' : ''
         )}
@@ -206,7 +206,7 @@ export function ImageUploadComponent({
           <div>
             <p className="text-sm text-gray-600">
               Drag and drop images here, or{' '}
-              <Label htmlFor="file-upload" className="text-primary cursor-pointer hover:underline">
+              <Label htmlFor="file-upload" className="inline-block cursor-pointer py-2 text-primary hover:underline sm:py-0">
                 browse
               </Label>
             </p>
@@ -236,7 +236,7 @@ export function ImageUploadComponent({
       {/* Image Previews */}
       {images.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Label>Image Previews ({images.length}/{maxImages})</Label>
             {images.some(img => img.file && !img.url) && (
               <Button
@@ -251,9 +251,9 @@ export function ImageUploadComponent({
             )}
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {images.map((image, index) => (
-              <div key={index} className="relative group">
+              <div key={index} className="group relative min-w-0">
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                   <img
                     src={image.preview || image.url}
@@ -288,7 +288,7 @@ export function ImageUploadComponent({
                   type="button"
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 h-8 w-8 p-1 opacity-100 transition-opacity focus-visible:opacity-100 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100"
                   onClick={() => removeImage(index)}
                 >
                   <X className="h-3 w-3" />

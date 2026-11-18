@@ -37,20 +37,20 @@ export default async function AdminCollectionPage({ params }: PageProps) {
   const createItemHref = `/admin/item/create?collectionId=${collection.id}`
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex flex-wrap items-start gap-3 sm:items-center sm:gap-4">
         <Link href="/admin">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="size-10 sm:size-9">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">{collection.name}</h1>
-          <p className="text-gray-600 mt-1">{collection.description || 'No description'}</p>
+        <div className="min-w-0 flex-1 basis-[calc(100%-4rem)] sm:basis-0">
+          <h1 className="break-words text-2xl font-bold sm:text-3xl">{collection.name}</h1>
+          <p className="mt-1 break-words text-gray-600">{collection.description || 'No description'}</p>
         </div>
-        <Link href={createItemHref}>
-          <Button>
+        <Link href={createItemHref} className="w-full sm:w-auto">
+          <Button className="h-10 w-full sm:h-9 sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Item
           </Button>
@@ -58,7 +58,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
       </div>
 
       {/* Collection Info */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-500">Total Items</CardTitle>
@@ -107,7 +107,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
         <h2 className="text-xl font-semibold mb-4">Items</h2>
         
         {collection.items.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {collection.items.map((item) => (
               <Card key={item.id} className="group hover:shadow-lg transition-shadow">
                 <CardHeader className="p-0">
@@ -117,6 +117,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
                         src={item.images[0]}
                         alt={item.name}
                         fill
+                        sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
@@ -127,9 +128,9 @@ export default async function AdminCollectionPage({ params }: PageProps) {
                   </div>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-sm line-clamp-1">{item.name}</h3>
-                    <Badge variant={item.isActive ? "default" : "secondary"} className="text-xs">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <h3 className="min-w-0 text-sm font-medium line-clamp-1">{item.name}</h3>
+                    <Badge variant={item.isActive ? "default" : "secondary"} className="shrink-0 text-xs">
                       {item.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
@@ -155,7 +156,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
 
                   <div className="flex gap-2 mt-4">
                     <EditItemModal item={item} />
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button variant="outline" size="sm" className="h-10 text-red-600 hover:text-red-700 sm:h-8">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -164,7 +165,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+          <div className="px-4 text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
             <div className="max-w-md mx-auto">
               <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <Plus className="h-6 w-6 text-gray-400" />

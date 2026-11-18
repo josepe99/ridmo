@@ -40,17 +40,17 @@ export function CreateCollectionPageClient({ onUploadImage }: CreateCollectionPa
   }
 
   return (
-    <div className="container mx-auto min-h-screen px-4 py-8">
+    <div className="container mx-auto min-h-screen px-4 py-6 sm:py-8">
       <div className="flex h-full items-center justify-center">
         <div className="w-full max-w-2xl space-y-6">
-          <div className="flex items-center gap-3">
-            <Link href="/admin">
-              <Button variant="outline" size="icon">
+          <div className="flex items-start gap-3 sm:items-center">
+            <Link href="/admin" className="shrink-0">
+              <Button variant="outline" size="icon" className="size-10 sm:size-9">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold">Create New Collection</h1>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold sm:text-3xl">Create New Collection</h1>
               <p className="text-gray-600 mt-1">Add a new collection to organize your products.</p>
             </div>
           </div>

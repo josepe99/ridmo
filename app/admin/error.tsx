@@ -14,7 +14,7 @@ export default function AdminError({ reset }: { error: Error & { digest?: string
       <p className="mt-2 text-gray-600">
         Es posible que tu sesión haya vencido o que ya no tengas acceso de administrador.
       </p>
-      <div className="mt-6 flex items-center justify-center gap-4 text-sm">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-sm">
         <button type="button" onClick={reset} className="underline underline-offset-4">
           Reintentar
         </button>

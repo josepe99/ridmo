@@ -9,6 +9,9 @@ type GridProductCardProps = {
   collectionSlug?: string;
 };
 
+// Grid is 2 columns on mobile and 4 from md up, so the browser can pick a right-sized variant.
+const CARD_IMAGE_SIZES = "(min-width: 768px) 25vw, 50vw";
+
 export default function GridProductCard({
   product,
   collectionSlug,
@@ -35,6 +38,7 @@ export default function GridProductCard({
           }
           fill
           alt={product.name}
+          sizes={CARD_IMAGE_SIZES}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
@@ -44,6 +48,7 @@ export default function GridProductCard({
             src={product.hoverImage}
             fill
             alt=""
+            sizes={CARD_IMAGE_SIZES}
             className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             loading="lazy"
           />

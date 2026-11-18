@@ -6,6 +6,7 @@ import { Input } from "@/shared/ui/input"
 import { useState, useEffect } from "react"
 import type React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { UserMenu } from "@/modules/users"
 import type { CollectionLink } from "@/modules/catalog"
 
@@ -90,26 +91,27 @@ export default function MainNav({ collections }: MainNavProps) {
       {/* Main Header */}
       <div className="relative flex items-center h-12 px-4 md:px-6">
         <div className="flex items-center gap-3 lg:w-1/3">
+          {/* Mobile: the logo is the only way home (the centered wordmark is md+). */}
+          <Link href="/" aria-label="Ridmo - Inicio" className="flex items-center md:hidden">
+            <Image src="/images/ridmo-logo.png" alt="Ridmo" width={32} height={32} className="h-8 w-8" />
+          </Link>
           <Button
             variant="ghost"
-            className="gap-2 px-2 text-xs font-semibold uppercase tracking-[0.2em] sm:px-4"
+            className="hidden gap-2 px-4 text-xs font-semibold uppercase tracking-[0.2em] md:inline-flex"
             onClick={openContact}
           >
             <span className="text-sm leading-none">+</span>
-            {/* Below 340px the label would push the header past the viewport; it stays for screen readers. */}
-            <span className="sr-only min-[340px]:not-sr-only">Contactanos</span>
+            <span>Contactanos</span>
           </Button>
         </div>
         {/* Center Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center pointer-events-none select-none">
-          <Link href="/" className="flex items-center gap-3 pointer-events-auto select-auto">
-            <span className="text-4xl font-extrabold hidden md:block"
-              style={{
-                fontFamily: 'Canela'
-              }}
-            >
-              RIDMO
-            </span>
+          <Link
+            href="/"
+            aria-label="Ridmo - Inicio"
+            className="hidden items-center pointer-events-auto select-auto md:flex"
+          >
+            <Image src="/images/ridmo-logo.png" alt="Ridmo" width={40} height={40} className="h-10 w-10" />
           </Link>
         </div>
         {/* Right Icons */}

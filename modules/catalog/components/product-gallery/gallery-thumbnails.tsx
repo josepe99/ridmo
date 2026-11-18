@@ -30,6 +30,7 @@ export default function GalleryThumbnails({ name, images, activeIndex, onSelect 
             alt={`${name} thumbnail ${idx + 1}`}
             width={40}
             height={40}
+            loading="lazy"
             className="h-full w-full object-cover"
           />
         </button>

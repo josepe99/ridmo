@@ -35,6 +35,7 @@ export default function GalleryHero({ name, leftImage, rightImage, onOpenLeft, o
             fill
             sizes="(min-width: 1024px) 50vw, 0px"
             className="object-cover"
+            loading="lazy"
           />
         </button>
       </div>

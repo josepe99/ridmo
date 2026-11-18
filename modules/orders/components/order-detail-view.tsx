@@ -9,7 +9,7 @@ import { OrderStatusBadge } from "./order-status-badge"
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border border-neutral-200 bg-white p-6">
+    <section className="border border-neutral-200 bg-white p-4 sm:p-6">
       <h2 className="text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-500">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
@@ -26,9 +26,9 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-500">Pedido</p>
-          <h1 className="mt-1 font-serif text-4xl tracking-display text-neutral-900">{order.orderNumber}</h1>
+          <h1 className="mt-1 break-words font-serif text-3xl tracking-display text-neutral-900 sm:text-4xl">{order.orderNumber}</h1>
           <p className="mt-1 text-sm text-neutral-500">{formatOrderDate(order.createdAt)}</p>
         </div>
         <OrderStatusBadge status={order.status} className="self-start sm:self-auto" />
@@ -40,16 +40,16 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
 
       <div className="grid gap-6 md:grid-cols-2">
         <Section title="Cliente">
-          <dl className="space-y-1 text-sm text-neutral-700">
+          <dl className="space-y-1 break-words text-sm text-neutral-700">
             <dd className="text-base font-medium text-neutral-900">{customer.fullName}</dd>
             <dd>
-              <a href={`tel:${customer.phone}`} className="underline underline-offset-4">
+              <a href={`tel:${customer.phone}`} className="inline-flex min-h-10 items-center underline underline-offset-4">
                 {customer.phone}
               </a>
             </dd>
             {customer.email ? (
               <dd>
-                <a href={`mailto:${customer.email}`} className="underline underline-offset-4">
+                <a href={`mailto:${customer.email}`} className="inline-flex min-h-10 items-center break-all underline underline-offset-4">
                   {customer.email}
                 </a>
               </dd>
@@ -58,7 +58,7 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
         </Section>
 
         <Section title="Envío">
-          <address className="space-y-1 text-sm not-italic text-neutral-700">
+          <address className="space-y-1 break-words text-sm not-italic text-neutral-700">
             <p className="text-base font-medium text-neutral-900">{shippingAddress.street}</p>
             {shippingAddress.reference ? <p>{shippingAddress.reference}</p> : null}
             <p>{cityLine}</p>
@@ -82,7 +82,7 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
       <Section title="Productos">
         <ul className="divide-y divide-neutral-100">
           {order.items.map((line) => (
-            <li key={line.itemId} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+            <li key={line.itemId} className="flex items-center gap-3 py-4 sm:gap-4 first:pt-0 last:pb-0">
               <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-neutral-100">
                 <Image
                   src={line.image || "/placeholder.svg"}
@@ -93,7 +93,7 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-neutral-900">{line.name}</p>
+                <p className="line-clamp-2 break-words text-sm font-medium text-neutral-900">{line.name}</p>
                 <p className="text-xs text-neutral-500">
                   {line.quantity} × {formatOrderMoney(line.unitPrice, order.currency)}
                 </p>
@@ -105,7 +105,7 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
           ))}
         </ul>
         <dl className="mt-6 space-y-3 border-t border-neutral-200 pt-4 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-neutral-500">Subtotal</dt>
             <dd className="text-neutral-900">{formatOrderMoney(order.subtotal, order.currency)}</dd>
           </div>
@@ -118,9 +118,9 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
               {hasShippingCharge ? formatOrderMoney(order.shippingCost, order.currency) : "A coordinar"}
             </dd>
           </div>
-          <div className="flex items-baseline justify-between pt-1">
+          <div className="flex items-baseline justify-between gap-4 pt-1">
             <dt className="text-[10px] font-semibold uppercase tracking-eyebrow text-neutral-500">Total</dt>
-            <dd className="font-serif text-3xl text-neutral-900">{formatOrderMoney(order.total, order.currency)}</dd>
+            <dd className="font-serif text-2xl text-neutral-900 sm:text-3xl">{formatOrderMoney(order.total, order.currency)}</dd>
           </div>
         </dl>
       </Section>

@@ -18,7 +18,8 @@ const MAX_ITEMS_PER_COLLECTION_PAGE = 100
 const getCachedActiveCollections = unstable_cache(
   async (): Promise<CollectionWithProducts[]> => {
     const collections = await prisma.collection.findMany({
-      where: { isActive: true },
+      // Same "active item" criterion the previews use, so a collection never renders empty.
+      where: { isActive: true, items: { some: { isActive: true } } },
       select: {
         id: true,
         name: true,

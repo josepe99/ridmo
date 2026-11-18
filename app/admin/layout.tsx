@@ -14,12 +14,12 @@ export default async function AdminLayout({
   await requireAdminPage()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
       {/* Admin Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               <Link href="/">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
@@ -28,7 +28,7 @@ export default async function AdminLayout({
               </Link>
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-gray-600" />
-                <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+                <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">Admin Panel</h1>
               </div>
             </div>
             <EnableNotificationsButton vapidPublicKey={getVapidPublicKey()} />
@@ -39,24 +39,24 @@ export default async function AdminLayout({
       {/* Admin Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4">
-          <nav className="flex space-x-8">
+          <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:gap-6 sm:px-0 md:gap-8">
             <Link
               href="/admin"
-              className="flex items-center gap-2 px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+              className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
             >
               <Package className="h-4 w-4" />
               Collections
             </Link>
             <Link
               href="/admin/orders"
-              className="flex items-center gap-2 px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+              className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
             >
               <ShoppingBag className="h-4 w-4" />
               Pedidos
             </Link>
             <Link
               href="/admin/users"
-              className="flex items-center gap-2 px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+              className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
             >
               <Users className="h-4 w-4" />
               Usuarios

@@ -41,12 +41,12 @@ export function EditItemModal({ item }: EditItemModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex-1">
+        <Button variant="outline" size="sm" className="h-10 flex-1 sm:h-8">
           <Edit className="h-4 w-4 mr-1" />
           Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:max-w-[700px] sm:p-6">
         <DialogHeader>
           <DialogTitle>Edit Item</DialogTitle>
           <DialogDescription>

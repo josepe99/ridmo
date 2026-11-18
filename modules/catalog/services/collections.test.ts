@@ -60,13 +60,13 @@ describe("getActiveCollectionsWithProducts", () => {
     expect(collection.products).toEqual([])
   })
 
-  it("only queries active collections, newest first, without loading their items", async () => {
+  it("only queries active collections that have at least one active item, newest first, without loading their items", async () => {
     prismaMock.collection.findMany.mockResolvedValue([])
 
     await getActiveCollectionsWithProducts()
 
     const args = prismaMock.collection.findMany.mock.calls[0][0]
-    expect(args.where).toEqual({ isActive: true })
+    expect(args.where).toEqual({ isActive: true, items: { some: { isActive: true } } })
     expect(args.select.items).toBeUndefined()
     expect(args.orderBy).toEqual({ createdAt: "desc" })
   })

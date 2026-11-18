@@ -34,15 +34,15 @@ export function CreateItemPageClient({
   const hasCollections = collections.length > 0
 
   return (
-    <div className="container mx-auto min-h-screen px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin">
-          <Button variant="outline" size="icon">
+    <div className="container mx-auto min-h-screen px-4 py-6 sm:py-8">
+      <div className="mb-6 flex items-start gap-3 sm:items-center">
+        <Link href="/admin" className="shrink-0">
+          <Button variant="outline" size="icon" className="size-10 sm:size-9">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div>
-          <h1 className="text-3xl font-bold">Create New Item</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold sm:text-3xl">Create New Item</h1>
           <p className="text-gray-600 mt-1">
             Add a new item and assign it to a collection.
           </p>
@@ -69,12 +69,12 @@ export function CreateItemPageClient({
               <p className="text-gray-600">
                 You need at least one collection before creating items.
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Button onClick={() => router.push("/admin")}>
                   Back to admin
                 </Button>
                 <Link href="/admin/collections/create">
-                  <Button variant="outline">
+                  <Button variant="outline" className="w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Create a collection
                   </Button>

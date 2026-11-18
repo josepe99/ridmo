@@ -59,7 +59,7 @@ export function OrderStatusActions({ orderId, status }: { orderId: string; statu
             disabled={isPending}
             onClick={() => change(target)}
             className={cn(
-              "border px-5 py-3 text-xs font-semibold uppercase tracking-label transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50",
+              "min-h-11 border px-5 py-3 text-xs max-sm:w-full font-semibold uppercase tracking-label transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50",
               target === "CANCELLED"
                 ? "border-neutral-300 bg-white text-neutral-600 hover:border-black hover:text-black"
                 : "border-black bg-black text-white hover:bg-neutral-800"

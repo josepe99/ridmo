@@ -44,7 +44,7 @@ export function RoleControl({ userId, role, isSelf }: RoleControlProps) {
         onClick={change}
         disabled={isSelf || pending}
         title={isSelf ? "No podés cambiar tu propio rol" : undefined}
-        className="border border-neutral-300 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-label text-neutral-900 transition-colors duration-200 hover:border-black disabled:cursor-not-allowed disabled:opacity-40"
+        className="min-h-10 w-full border border-neutral-300 px-3 py-1.5 text-[10px] md:min-h-0 md:w-auto font-semibold uppercase tracking-label text-neutral-900 transition-colors duration-200 hover:border-black disabled:cursor-not-allowed disabled:opacity-40"
       >
         {label}
       </button>

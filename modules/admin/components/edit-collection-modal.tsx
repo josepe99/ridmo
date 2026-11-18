@@ -81,12 +81,12 @@ export function EditCollectionModal({ collection }: EditCollectionModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="h-10 sm:h-8">
           <Edit className="h-4 w-4 mr-1" />
           Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:max-w-[425px] sm:p-6">
         <DialogHeader>
           <DialogTitle>Edit Collection</DialogTitle>
           <DialogDescription>

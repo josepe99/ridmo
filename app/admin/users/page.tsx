@@ -22,9 +22,9 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
   const list = await listUsers({ query, page: Number.isFinite(page) ? page : 1 })
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Usuarios</h1>
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl font-bold sm:text-3xl">Usuarios</h1>
         <p className="text-gray-600 mt-2">
           Quién puede entrar al panel de administración. Los registros nuevos son siempre clientes: solo un
           administrador puede promover a otro usuario.
