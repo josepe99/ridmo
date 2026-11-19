@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     if (existingCollection) {
       return NextResponse.json(
-        { error: 'A collection with this slug already exists' },
+        { error: 'Ya existe una colección con este slug' },
         { status: 400 }
       )
     }
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     console.error('Error creating collection:', error)
     return NextResponse.json(
-      { error: 'Failed to create collection' },
+      { error: 'No se pudo crear la colección' },
       { status: 500 }
     )
   }
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     if (denied) return denied
     console.error('Error fetching collections:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch collections' },
+      { error: 'No se pudieron cargar las colecciones' },
       { status: 500 }
     )
   }

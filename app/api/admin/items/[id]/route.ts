@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     if (denied) return denied
     console.error('Error in item GET API:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest) {
     if (denied) return denied
     console.error('Error in item PUT API:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }
@@ -44,7 +44,7 @@ export async function DELETE(request: NextRequest) {
     if (denied) return denied
     console.error('Error in item DELETE API:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }

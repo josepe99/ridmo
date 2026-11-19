@@ -37,14 +37,14 @@ describe("uploadSingleImage validation", () => {
 
   it.each(["application/pdf", "text/html", "image/svg+xml", ""])("rejects the %j type", async (type) => {
     await expect(controller.uploadSingleImage(imageFile("x", type))).rejects.toThrow(
-      "Invalid file type. Only images are allowed."
+      "Tipo de archivo inválido. Solo se permiten imágenes."
     )
     expect(storage.uploadImage).not.toHaveBeenCalled()
   })
 
   it("rejects files over 10MB but accepts exactly 10MB", async () => {
     await expect(controller.uploadSingleImage(imageFile("big", "image/png", 10 * 1024 * 1024 + 1))).rejects.toThrow(
-      "File size too large. Maximum 10MB allowed."
+      "El archivo es demasiado grande. Máximo 10 MB."
     )
     await expect(
       controller.uploadSingleImage(imageFile("limit", "image/png", 10 * 1024 * 1024))
@@ -70,7 +70,7 @@ describe("uploadImages", () => {
   it("fails the whole batch with a generic error when one upload fails", async () => {
     await expect(
       controller.uploadImages([imageFile("ok"), imageFile("bad", "application/pdf")])
-    ).rejects.toThrow("Failed to upload images")
+    ).rejects.toThrow("No se pudieron subir las imágenes")
   })
 })
 
@@ -133,7 +133,7 @@ describe("POST", () => {
     const response = await postWith(new FormData())
 
     expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({ success: false, error: "No images provided" })
+    expect(await response.json()).toEqual({ success: false, error: "No se enviaron imágenes" })
   })
 
   it("uploads the images and reports the count", async () => {
@@ -155,7 +155,7 @@ describe("POST", () => {
     const response = await postWith(form)
 
     expect(response.status).toBe(500)
-    expect((await response.json()).error).toBe("Failed to upload images")
+    expect((await response.json()).error).toBe("No se pudieron subir las imágenes")
   })
 })
 
@@ -188,6 +188,6 @@ describe("DELETE", () => {
     const response = await del("")
 
     expect(response.status).toBe(400)
-    expect((await response.json()).error).toBe("Public ID(s) required")
+    expect((await response.json()).error).toBe("Se requiere al menos un ID público")
   })
 })

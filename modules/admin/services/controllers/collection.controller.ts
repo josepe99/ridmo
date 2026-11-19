@@ -5,8 +5,8 @@ import { CollectionDatasource } from '../datasources/collection.datasource';
 
 // Validation schemas
 const createCollectionSchema = z.object({
-  name: z.string().min(1, 'Collection name is required'),
-  slug: z.string().min(1, 'Collection slug is required'),
+  name: z.string().min(1, 'El nombre de la colección es obligatorio'),
+  slug: z.string().min(1, 'El slug de la colección es obligatorio'),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
   isActive: z.boolean().default(true),
@@ -77,7 +77,7 @@ export class CollectionController extends BaseController {
           // Get single collection
           const collection = await this.collectionDatasource.findById(collectionId);
           if (!collection) {
-            return this.createErrorResponse('Collection not found', 404);
+            return this.createErrorResponse('Colección no encontrada', 404);
           }
           return this.createSuccessResponse(collection);
         }
@@ -115,7 +115,7 @@ export class CollectionController extends BaseController {
         const collectionId = pathSegments[pathSegments.length - 1];
 
         if (!collectionId) {
-          return this.createErrorResponse('Collection ID is required', 400);
+          return this.createErrorResponse('El id de la colección es obligatorio', 400);
         }
 
         const collection = await this.collectionDatasource.update(collectionId, data);
@@ -135,11 +135,11 @@ export class CollectionController extends BaseController {
         const collectionId = pathSegments[pathSegments.length - 1];
 
         if (!collectionId) {
-          return this.createErrorResponse('Collection ID is required', 400);
+          return this.createErrorResponse('El id de la colección es obligatorio', 400);
         }
 
         await this.collectionDatasource.delete(collectionId);
-        return this.createSuccessResponse({ message: 'Collection deleted successfully' });
+        return this.createSuccessResponse({ message: 'Colección eliminada con éxito' });
       }
     );
   }

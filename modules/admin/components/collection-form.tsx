@@ -41,9 +41,9 @@ const defaultValues: CollectionFormValues = {
 export function CollectionForm({
   initialValues,
   onSubmit,
-  submitLabel = "Save collection",
-  submittingLabel = "Saving...",
-  cancelLabel = "Cancel",
+  submitLabel = "Guardar colección",
+  submittingLabel = "Guardando...",
+  cancelLabel = "Cancelar",
   onCancel,
   renderImageField,
   onUploadImage,
@@ -90,13 +90,13 @@ export function CollectionForm({
       const result = await onUploadImage(formData)
 
       if (!result?.success || !result?.data?.url) {
-        throw new Error(result?.error || "Failed to upload image")
+        throw new Error(result?.error || "No se pudo subir la imagen")
       }
 
       setValues(prev => ({ ...prev, imageUrl: result.data.url }))
     } catch (error) {
       console.error("Error uploading image", error)
-      setUploadError("Failed to upload image. Please try again.")
+      setUploadError("No se pudo subir la imagen. Intentá de nuevo.")
     } finally {
       setUploading(false)
     }
@@ -126,7 +126,7 @@ export function CollectionForm({
     : (
       <div className="grid gap-3">
         <div className="grid gap-2">
-          <Label htmlFor="imageFile">Upload image</Label>
+          <Label htmlFor="imageFile">Subir imagen</Label>
           <Input
             id="imageFile"
             type="file"
@@ -137,7 +137,7 @@ export function CollectionForm({
           {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="imageUrl">Image URL</Label>
+          <Label htmlFor="imageUrl">URL de la imagen</Label>
           <Input
             id="imageUrl"
             value={values.imageUrl}
@@ -146,7 +146,7 @@ export function CollectionForm({
             disabled={submitting}
           />
           {values.imageUrl && (
-            <p className="text-xs text-gray-500 break-all">Uploaded link: {values.imageUrl}</p>
+            <p className="text-xs text-gray-500 break-all">Enlace subido: {values.imageUrl}</p>
           )}
         </div>
       </div>
@@ -156,12 +156,12 @@ export function CollectionForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">Nombre</Label>
           <Input
             id="name"
             value={values.name}
             onChange={handleNameChange}
-            placeholder="Collection name"
+            placeholder="Nombre de la colección"
             required
             disabled={submitting}
           />
@@ -176,15 +176,15 @@ export function CollectionForm({
             required
             disabled={submitting}
           />
-          <p className="text-xs text-gray-500">Auto-generated: {autoSlug || "n/a"}</p>
+          <p className="text-xs text-gray-500">Generado automáticamente: {autoSlug || "n/d"}</p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">Descripción</Label>
           <Textarea
             id="description"
             value={values.description}
             onChange={(e) => setValues(prev => ({ ...prev, description: e.target.value }))}
-            placeholder="Collection description..."
+            placeholder="Descripción de la colección..."
             rows={3}
             disabled={submitting}
           />
@@ -197,7 +197,7 @@ export function CollectionForm({
             onCheckedChange={(checked) => setValues(prev => ({ ...prev, isActive: checked }))}
             disabled={submitting}
           />
-          <Label htmlFor="isActive">Active</Label>
+          <Label htmlFor="isActive">Activa</Label>
         </div>
       </div>
 

@@ -24,7 +24,7 @@ export async function getItems(options?: {
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching items:', error)
-    return { success: false, error: 'Failed to fetch items' }
+    return { success: false, error: 'No se pudieron cargar los productos' }
   }
 }
 
@@ -35,7 +35,7 @@ export async function getItemById(id: string) {
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching item:', error)
-    return { success: false, error: 'Failed to fetch item' }
+    return { success: false, error: 'No se pudo cargar el producto' }
   }
 }
 
@@ -51,6 +51,6 @@ export async function getItemsByCollectionId(collectionId: string) {
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching items by collection:', error)
-    return { success: false, error: 'Failed to fetch items by collection' }
+    return { success: false, error: 'No se pudieron cargar los productos de la colección' }
   }
 }

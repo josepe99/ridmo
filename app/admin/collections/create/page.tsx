@@ -14,7 +14,7 @@ export default async function CreateCollectionPage() {
 
     const file = formData.get("file")
     if (!(file instanceof File)) {
-      return { success: false, error: "File is required" }
+      return { success: false, error: "El archivo es obligatorio" }
     }
 
     const result = await uploadImageAction(file, {

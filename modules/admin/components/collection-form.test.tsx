@@ -21,10 +21,10 @@ describe("CollectionForm: fields", () => {
   it("starts empty and active by default", () => {
     setup()
 
-    expect(screen.getByLabelText("Name")).toHaveValue("")
+    expect(screen.getByLabelText("Nombre")).toHaveValue("")
     expect(screen.getByLabelText("Slug")).toHaveValue("")
-    expect(screen.getByRole("switch", { name: "Active" })).toBeChecked()
-    expect(screen.getByText("Auto-generated: n/a")).toBeInTheDocument()
+    expect(screen.getByRole("switch", { name: "Activa" })).toBeChecked()
+    expect(screen.getByText("Generado automáticamente: n/d")).toBeInTheDocument()
   })
 
   it("starts from the initial values", () => {
@@ -32,15 +32,15 @@ describe("CollectionForm: fields", () => {
       initialValues: { name: "Cadenas", slug: "cadenas", description: "Macizas", isActive: false },
     })
 
-    expect(screen.getByLabelText("Name")).toHaveValue("Cadenas")
-    expect(screen.getByLabelText("Description")).toHaveValue("Macizas")
-    expect(screen.getByRole("switch", { name: "Active" })).not.toBeChecked()
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Cadenas")
+    expect(screen.getByLabelText("Descripción")).toHaveValue("Macizas")
+    expect(screen.getByRole("switch", { name: "Activa" })).not.toBeChecked()
   })
 
   it("derives the slug from the name as the shopper types", async () => {
     const { user } = setup()
 
-    await user.type(screen.getByLabelText("Name"), "Cadenas")
+    await user.type(screen.getByLabelText("Nombre"), "Cadenas")
 
     expect(screen.getByLabelText("Slug")).toHaveValue("cadenas")
   })
@@ -51,7 +51,7 @@ describe("CollectionForm: fields", () => {
   it("turns spaces into dashes when deriving the slug", async () => {
     const { user } = setup()
 
-    await user.type(screen.getByLabelText("Name"), "Pulseras Cubanas")
+    await user.type(screen.getByLabelText("Nombre"), "Pulseras Cubanas")
 
     expect(screen.getByLabelText("Slug")).toHaveValue("pulseras-cubanas")
   })
@@ -67,9 +67,9 @@ describe("CollectionForm: fields", () => {
   it("toggles the active switch", async () => {
     const { user } = setup()
 
-    await user.click(screen.getByRole("switch", { name: "Active" }))
+    await user.click(screen.getByRole("switch", { name: "Activa" }))
 
-    expect(screen.getByRole("switch", { name: "Active" })).not.toBeChecked()
+    expect(screen.getByRole("switch", { name: "Activa" })).not.toBeChecked()
   })
 })
 
@@ -79,7 +79,7 @@ describe("CollectionForm: submit", () => {
       initialValues: { name: "  Cadenas  ", slug: " cadenas ", description: " desc ", imageUrl: " u " },
     })
 
-    await user.click(screen.getByRole("button", { name: "Save collection" }))
+    await user.click(screen.getByRole("button", { name: "Guardar colección" }))
 
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Cadenas",
@@ -98,13 +98,13 @@ describe("CollectionForm: submit", () => {
       submittingLabel: "Guardando...",
     })
 
-    await user.click(screen.getByRole("button", { name: "Save collection" }))
+    await user.click(screen.getByRole("button", { name: "Guardar colección" }))
 
     const busy = await screen.findByRole("button", { name: "Guardando..." })
     expect(busy).toBeDisabled()
-    expect(screen.getByLabelText("Name")).toBeDisabled()
+    expect(screen.getByLabelText("Nombre")).toBeDisabled()
     finish()
-    await waitFor(() => expect(screen.getByRole("button", { name: "Save collection" })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole("button", { name: "Guardar colección" })).toBeEnabled())
   })
 
   it("recovers when the submit handler throws", async () => {
@@ -115,15 +115,15 @@ describe("CollectionForm: submit", () => {
       },
     })
 
-    await user.click(screen.getByRole("button", { name: "Save collection" }))
+    await user.click(screen.getByRole("button", { name: "Guardar colección" }))
 
-    await waitFor(() => expect(screen.getByRole("button", { name: "Save collection" })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole("button", { name: "Guardar colección" })).toBeEnabled())
   })
 
   it("supports custom labels", () => {
-    setup({ submitLabel: "Update Collection", cancelLabel: "Close", onCancel: () => {} })
+    setup({ submitLabel: "Actualizar colección", cancelLabel: "Close", onCancel: () => {} })
 
-    expect(screen.getByRole("button", { name: "Update Collection" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Actualizar colección" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument()
   })
 
@@ -131,7 +131,7 @@ describe("CollectionForm: submit", () => {
     const onCancel = vi.fn()
     const { user } = setup({ onCancel })
 
-    await user.click(screen.getByRole("button", { name: "Cancel" }))
+    await user.click(screen.getByRole("button", { name: "Cancelar" }))
 
     expect(onCancel).toHaveBeenCalled()
   })
@@ -139,7 +139,7 @@ describe("CollectionForm: submit", () => {
   it("has no Cancel button without a handler", () => {
     setup()
 
-    expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument()
   })
 })
 
@@ -150,11 +150,11 @@ describe("CollectionForm: image", () => {
     noUpload.mockResolvedValue({ success: true, data: { url: "https://res.cloudinary.com/b.png" } })
     const { user, onSubmit } = setup({ initialValues: { name: "a", slug: "a" } })
 
-    await user.upload(screen.getByLabelText("Upload image"), file)
+    await user.upload(screen.getByLabelText("Subir imagen"), file)
 
-    await waitFor(() => expect(screen.getByLabelText("Image URL")).toHaveValue("https://res.cloudinary.com/b.png"))
+    await waitFor(() => expect(screen.getByLabelText("URL de la imagen")).toHaveValue("https://res.cloudinary.com/b.png"))
     expect(noUpload.mock.calls[0][0].get("file")).toBe(file)
-    await user.click(screen.getByRole("button", { name: "Save collection" }))
+    await user.click(screen.getByRole("button", { name: "Guardar colección" }))
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: "https://res.cloudinary.com/b.png" }))
   })
 
@@ -165,27 +165,27 @@ describe("CollectionForm: image", () => {
     noUpload.mockResolvedValue(response)
     const { user } = setup()
 
-    await user.upload(screen.getByLabelText("Upload image"), file)
+    await user.upload(screen.getByLabelText("Subir imagen"), file)
 
-    expect(await screen.findByText("Failed to upload image. Please try again.")).toBeInTheDocument()
-    expect(screen.getByLabelText("Image URL")).toHaveValue("")
+    expect(await screen.findByText("No se pudo subir la imagen. Intentá de nuevo.")).toBeInTheDocument()
+    expect(screen.getByLabelText("URL de la imagen")).toHaveValue("")
   })
 
   it("shows an upload error when the upload throws", async () => {
     noUpload.mockRejectedValue(new Error("network"))
     const { user } = setup()
 
-    await user.upload(screen.getByLabelText("Upload image"), file)
+    await user.upload(screen.getByLabelText("Subir imagen"), file)
 
-    expect(await screen.findByText("Failed to upload image. Please try again.")).toBeInTheDocument()
+    expect(await screen.findByText("No se pudo subir la imagen. Intentá de nuevo.")).toBeInTheDocument()
   })
 
   it("accepts a pasted image URL and shows it", async () => {
     const { user } = setup()
 
-    await user.type(screen.getByLabelText("Image URL"), "https://x.test/a.png")
+    await user.type(screen.getByLabelText("URL de la imagen"), "https://x.test/a.png")
 
-    expect(screen.getByText("Uploaded link: https://x.test/a.png")).toBeInTheDocument()
+    expect(screen.getByText("Enlace subido: https://x.test/a.png")).toBeInTheDocument()
   })
 
   it("delegates the image field to renderImageField when provided", async () => {
@@ -198,9 +198,9 @@ describe("CollectionForm: image", () => {
       ),
     })
 
-    expect(screen.queryByLabelText("Upload image")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Subir imagen")).not.toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "pick (none)" }))
-    await user.click(screen.getByRole("button", { name: "Save collection" }))
+    await user.click(screen.getByRole("button", { name: "Guardar colección" }))
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: "https://custom/img.png" }))
   })

@@ -43,14 +43,14 @@ export function EditItemModal({ item }: EditItemModalProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-10 flex-1 sm:h-8">
           <Edit className="h-4 w-4 mr-1" />
-          Edit
+          Editar
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:max-w-[700px] sm:p-6">
         <DialogHeader>
-          <DialogTitle>Edit Item</DialogTitle>
+          <DialogTitle>Editar producto</DialogTitle>
           <DialogDescription>
-            Update the item details. You can add new images or remove existing ones.
+            Actualizá los datos del producto. Podés agregar imágenes nuevas o quitar las existentes.
           </DialogDescription>
         </DialogHeader>
 
@@ -72,8 +72,8 @@ export function EditItemModal({ item }: EditItemModalProps) {
             images: item.images,
             collectionId: item.collectionId,
           }}
-          submitLabel="Update Item"
-          submittingLabel="Updating..."
+          submitLabel="Actualizar producto"
+          submittingLabel="Actualizando..."
           onCancel={() => setOpen(false)}
           onSuccess={() => {
             setOpen(false)

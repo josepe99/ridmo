@@ -6,14 +6,14 @@ import { ImageController } from './image.controller';
 
 // Validation schemas
 const createItemSchema = z.object({
-  name: z.string().min(1, 'Item name is required'),
-  slug: z.string().min(1, 'Item slug is required'),
+  name: z.string().min(1, 'El nombre del producto es obligatorio'),
+  slug: z.string().min(1, 'El slug del producto es obligatorio'),
   description: z.string().optional(),
-  price: z.number().positive('Price must be positive'),
+  price: z.number().positive('El precio debe ser positivo'),
   comparePrice: z.number().positive().optional(),
   sku: z.string().optional(),
-  inventory: z.number().int().min(0, 'Inventory cannot be negative').default(0),
-  collectionId: z.string().min(1, 'Collection ID is required'),
+  inventory: z.number().int().min(0, 'El inventario no puede ser negativo').default(0),
+  collectionId: z.string().min(1, 'El id de la colección es obligatorio'),
   images: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   isActive: z.boolean().default(true),
@@ -81,7 +81,7 @@ export class ItemController extends BaseController {
           // Get single item
           const item = await this.itemDatasource.findById(itemId);
           if (!item) {
-            return this.createErrorResponse('Item not found', 404);
+            return this.createErrorResponse('Producto no encontrado', 404);
           }
           return this.createSuccessResponse(item);
         }
@@ -172,7 +172,7 @@ export class ItemController extends BaseController {
             return this.createErrorResponse(error.message, 400);
           }
           
-          return this.createErrorResponse('Failed to create item', 500);
+          return this.createErrorResponse('No se pudo crear el producto', 500);
         }
       }
     );
@@ -189,7 +189,7 @@ export class ItemController extends BaseController {
           const itemId = pathSegments[pathSegments.length - 1];
 
           if (!itemId) {
-            return this.createErrorResponse('Item ID is required', 400);
+            return this.createErrorResponse('El id del producto es obligatorio', 400);
           }
 
           const contentType = req.headers.get('content-type') || '';
@@ -270,7 +270,7 @@ export class ItemController extends BaseController {
             return this.createErrorResponse(error.message, 400);
           }
           
-          return this.createErrorResponse('Failed to update item', 500);
+          return this.createErrorResponse('No se pudo actualizar el producto', 500);
         }
       }
     );
@@ -284,11 +284,11 @@ export class ItemController extends BaseController {
         const itemId = pathSegments[pathSegments.length - 1];
 
         if (!itemId) {
-          return this.createErrorResponse('Item ID is required', 400);
+          return this.createErrorResponse('El id del producto es obligatorio', 400);
         }
 
         await this.itemDatasource.delete(itemId);
-        return this.createSuccessResponse({ message: 'Item deleted successfully' });
+        return this.createSuccessResponse({ message: 'Producto eliminado con éxito' });
       }
     );
   }

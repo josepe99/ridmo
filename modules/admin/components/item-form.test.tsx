@@ -21,9 +21,9 @@ const okResponse = (body: unknown = { id: "i1" }) =>
   ({ ok: true, json: async () => body }) as Response
 
 async function fillRequired(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("Name"), "Cadena")
-  await user.type(screen.getByLabelText("Price"), "1500.5")
-  await user.type(screen.getByLabelText("Inventory"), "7")
+  await user.type(screen.getByLabelText("Nombre"), "Cadena")
+  await user.type(screen.getByLabelText("Precio"), "1500.5")
+  await user.type(screen.getByLabelText("Inventario"), "7")
 }
 
 const sentForm = () => vi.mocked(fetch).mock.calls[0][1]?.body as FormData
@@ -40,7 +40,7 @@ describe("ItemForm: fields", () => {
   it("derives the slug from the name", async () => {
     const user = setup()
 
-    await user.type(screen.getByLabelText("Name"), "Cadena Milan 60")
+    await user.type(screen.getByLabelText("Nombre"), "Cadena Milan 60")
 
     expect(screen.getByLabelText("Slug")).toHaveValue("cadena-milan-60")
   })
@@ -59,18 +59,18 @@ describe("ItemForm: fields", () => {
       },
     })
 
-    expect(screen.getByLabelText("Price")).toHaveValue(100)
-    expect(screen.getByLabelText("Inventory")).toHaveValue(3)
+    expect(screen.getByLabelText("Precio")).toHaveValue(100)
+    expect(screen.getByLabelText("Inventario")).toHaveValue(3)
     expect(screen.getByText("oro")).toBeInTheDocument()
-    expect(screen.getByRole("switch", { name: "Active" })).not.toBeChecked()
+    expect(screen.getByRole("switch", { name: "Activo" })).not.toBeChecked()
   })
 
   it("adds tags with the button or Enter, ignoring blanks and duplicates", async () => {
     const user = setup()
-    const input = screen.getByPlaceholderText("Add tag")
+    const input = screen.getByPlaceholderText("Agregar etiqueta")
 
     await user.type(input, "oro")
-    await user.click(screen.getByRole("button", { name: "Add" }))
+    await user.click(screen.getByRole("button", { name: "Agregar" }))
     await user.type(input, "plata{Enter}")
     await user.type(input, "oro{Enter}")
     await user.clear(input)
@@ -82,7 +82,7 @@ describe("ItemForm: fields", () => {
   it("removes a tag", async () => {
     const user = setup({ initialValues: { tags: ["oro", "plata"] } })
 
-    await user.click(screen.getByRole("button", { name: "Remove oro" }))
+    await user.click(screen.getByRole("button", { name: "Quitar oro" }))
 
     expect(screen.queryByText("oro")).not.toBeInTheDocument()
     expect(screen.getByText("plata")).toBeInTheDocument()
@@ -90,20 +90,20 @@ describe("ItemForm: fields", () => {
 
   it("shows the collection picker only when options are given", () => {
     const first = render(<ItemForm mode="create" />)
-    expect(screen.queryByText("Collection")).not.toBeInTheDocument()
+    expect(screen.queryByText("Colección")).not.toBeInTheDocument()
     first.unmount()
 
     render(<ItemForm mode="create" collectionOptions={[{ id: "c1", name: "Cadenas" }]} />)
-    expect(screen.getByText("Collection")).toBeInTheDocument()
+    expect(screen.getByText("Colección")).toBeInTheDocument()
     expect(screen.getByRole("combobox")).toHaveTextContent("Cadenas")
   })
 
   it("uses mode specific submit labels unless overridden", () => {
     const { rerender } = render(<ItemForm mode="create" collectionId="c1" />)
-    expect(screen.getByRole("button", { name: "Create Item" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Crear producto" })).toBeInTheDocument()
 
     rerender(<ItemForm mode="edit" itemId="i1" />)
-    expect(screen.getByRole("button", { name: "Update Item" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Actualizar producto" })).toBeInTheDocument()
 
     rerender(<ItemForm mode="edit" itemId="i1" submitLabel="Guardar" />)
     expect(screen.getByRole("button", { name: "Guardar" })).toBeInTheDocument()
@@ -114,9 +114,9 @@ describe("ItemForm: create", () => {
   it("posts the multipart form to the items endpoint", async () => {
     const user = setup({ initialValues: { sku: " SKU-1 ", comparePrice: "2000" } })
     await fillRequired(user)
-    await user.type(screen.getByLabelText("Description"), "  Oro  ")
+    await user.type(screen.getByLabelText("Descripción"), "  Oro  ")
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
     expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/admin/items")
@@ -138,7 +138,7 @@ describe("ItemForm: create", () => {
     const user = setup()
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
     await waitFor(() => expect(fetch).toHaveBeenCalled())
     const form = sentForm()
@@ -151,9 +151,9 @@ describe("ItemForm: create", () => {
     const user = setup({ collectionId: undefined })
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
-    expect(toast.error).toHaveBeenCalledWith("Please select a collection before creating an item.")
+    expect(toast.error).toHaveBeenCalledWith("Elegí una colección antes de crear el producto.")
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -161,10 +161,10 @@ describe("ItemForm: create", () => {
     const user = setup()
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Item created successfully!"))
-    expect(screen.getByLabelText("Name")).toHaveValue("")
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("¡Producto creado con éxito!"))
+    expect(screen.getByLabelText("Nombre")).toHaveValue("")
     expect(routerMock.refresh).toHaveBeenCalled()
   })
 
@@ -173,10 +173,10 @@ describe("ItemForm: create", () => {
     const user = setup({ onSuccess })
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith({ id: "i1" }))
-    expect(screen.getByLabelText("Name")).toHaveValue("Cadena")
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Cadena")
     expect(routerMock.refresh).not.toHaveBeenCalled()
   })
 
@@ -188,10 +188,10 @@ describe("ItemForm: create", () => {
     const user = setup()
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("An item with this slug already exists"))
-    expect(screen.getByLabelText("Name")).toHaveValue("Cadena")
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Cadena")
   })
 
   it("falls back to a generic message when the error body is not JSON", async () => {
@@ -204,9 +204,9 @@ describe("ItemForm: create", () => {
     const user = setup()
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Failed to create item"))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("No se pudo crear el producto"))
   })
 
   it("reports network failures and re-enables the form", async () => {
@@ -214,17 +214,17 @@ describe("ItemForm: create", () => {
     const user = setup()
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("offline"))
-    expect(screen.getByRole("button", { name: "Create Item" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Crear producto" })).toBeEnabled()
   })
 
   it("sends the URLs of images that were already uploaded", async () => {
     const user = setup({ initialValues: { images: ["https://res.cloudinary.com/a.jpg"] } })
     await fillRequired(user)
 
-    await user.click(screen.getByRole("button", { name: "Create Item" }))
+    await user.click(screen.getByRole("button", { name: "Crear producto" }))
 
     await waitFor(() => expect(fetch).toHaveBeenCalled())
     expect(sentForm().get("existingImages")).toBe(JSON.stringify(["https://res.cloudinary.com/a.jpg"]))
@@ -239,12 +239,12 @@ describe("ItemForm: edit", () => {
       initialValues: { name: "Cadena", slug: "cadena", price: "10", inventory: "2" },
     })
 
-    await user.click(screen.getByRole("button", { name: "Update Item" }))
+    await user.click(screen.getByRole("button", { name: "Actualizar producto" }))
 
     await waitFor(() => expect(fetch).toHaveBeenCalled())
     expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/admin/items/i9")
     expect(vi.mocked(fetch).mock.calls[0][1]?.method).toBe("PUT")
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Item updated successfully!"))
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("¡Producto actualizado con éxito!"))
   })
 
   it("falls back to the id inside the initial values", async () => {
@@ -253,7 +253,7 @@ describe("ItemForm: edit", () => {
       initialValues: { id: "i7", name: "C", slug: "c", price: "1", inventory: "1" },
     })
 
-    await user.click(screen.getByRole("button", { name: "Update Item" }))
+    await user.click(screen.getByRole("button", { name: "Actualizar producto" }))
 
     await waitFor(() => expect(fetch).toHaveBeenCalled())
     expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/admin/items/i7")
@@ -262,9 +262,9 @@ describe("ItemForm: edit", () => {
   it("refuses to update without an item id", async () => {
     const user = setup({ mode: "edit", initialValues: { name: "C", slug: "c", price: "1", inventory: "1" } })
 
-    await user.click(screen.getByRole("button", { name: "Update Item" }))
+    await user.click(screen.getByRole("button", { name: "Actualizar producto" }))
 
-    expect(toast.error).toHaveBeenCalledWith("Missing item id to update.")
+    expect(toast.error).toHaveBeenCalledWith("Falta el id del producto a actualizar.")
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -275,17 +275,17 @@ describe("ItemForm: edit", () => {
       initialValues: { name: "Cadena", slug: "cadena", price: "10", inventory: "2" },
     })
 
-    await user.click(screen.getByRole("button", { name: "Update Item" }))
+    await user.click(screen.getByRole("button", { name: "Actualizar producto" }))
 
     await waitFor(() => expect(routerMock.refresh).toHaveBeenCalled())
-    expect(screen.getByLabelText("Name")).toHaveValue("Cadena")
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Cadena")
   })
 
   it("calls onCancel", async () => {
     const onCancel = vi.fn()
     const user = setup({ mode: "edit", itemId: "i9", onCancel })
 
-    await user.click(screen.getByRole("button", { name: "Cancel" }))
+    await user.click(screen.getByRole("button", { name: "Cancelar" }))
 
     expect(onCancel).toHaveBeenCalled()
   })

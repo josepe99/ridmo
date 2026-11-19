@@ -40,10 +40,10 @@ describe("FileController", () => {
   })
 
   it.each([
-    ["uploadImage", () => controller.uploadImage("x"), "uploadImage", "Failed to upload file"],
-    ["getImage", () => controller.getImage("x"), "getImage", "Failed to fetch file"],
-    ["getImages", () => controller.getImages(), "getImages", "Failed to list files"],
-    ["removeImage", () => controller.removeImage("x"), "removeImage", "Failed to remove file"],
+    ["uploadImage", () => controller.uploadImage("x"), "uploadImage", "No se pudo subir el archivo"],
+    ["getImage", () => controller.getImage("x"), "getImage", "No se pudo obtener el archivo"],
+    ["getImages", () => controller.getImages(), "getImages", "No se pudieron listar los archivos"],
+    ["removeImage", () => controller.removeImage("x"), "removeImage", "No se pudo eliminar el archivo"],
   ] as const)("%s hides provider errors behind a generic message", async (_name, call, method, message) => {
     datasource[method].mockRejectedValue(new Error("storage secret"))
 

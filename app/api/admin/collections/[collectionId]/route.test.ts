@@ -64,6 +64,6 @@ describe("PUT /api/admin/collections/[collectionId]", () => {
     const response = await PUT(put({ name: "" }), { params: Promise.resolve({ collectionId: "c1" }) })
 
     expect(response.status).toBe(500)
-    expect(await response.json()).toEqual({ error: "Failed to update collection" })
+    expect(await response.json()).toEqual({ error: "No se pudo actualizar la colección" })
   })
 })

@@ -27,7 +27,7 @@ describe("POST /api/admin/collections", () => {
     const response = await POST(post({ name: "Cadenas", slug: "cadenas" }))
 
     expect(response.status).toBe(400)
-    expect((await response.json()).error).toBe("A collection with this slug already exists")
+    expect((await response.json()).error).toBe("Ya existe una colección con este slug")
     expect(prismaMock.collection.create).not.toHaveBeenCalled()
   })
 
@@ -57,7 +57,7 @@ describe("POST /api/admin/collections", () => {
     const response = await POST(post({ name: "x", slug: "x" }))
 
     expect(response.status).toBe(500)
-    expect(await response.json()).toEqual({ error: "Failed to create collection" })
+    expect(await response.json()).toEqual({ error: "No se pudo crear la colección" })
   })
 })
 

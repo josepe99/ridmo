@@ -16,7 +16,7 @@ export async function uploadImage(
     return { success: true, data }
   } catch (error) {
     console.error('Error uploading file:', error)
-    return { success: false, error: 'Failed to upload file' }
+    return { success: false, error: 'No se pudo subir el archivo' }
   }
 }
 
@@ -27,7 +27,7 @@ export async function getImage(publicId: string) {
     return { success: true, data }
   } catch (error) {
     console.error('Error getting file:', error)
-    return { success: false, error: 'Failed to get file' }
+    return { success: false, error: 'No se pudo obtener el archivo' }
   }
 }
 
@@ -38,7 +38,7 @@ export async function getImages(options: StorageListOptions = {}) {
     return { success: true, data }
   } catch (error) {
     console.error('Error listing files:', error)
-    return { success: false, error: 'Failed to list files' }
+    return { success: false, error: 'No se pudieron listar los archivos' }
   }
 }
 
@@ -49,6 +49,6 @@ export async function removeImage(publicId: string) {
     return { success: true }
   } catch (error) {
     console.error('Error removing file:', error)
-    return { success: false, error: 'Failed to remove file' }
+    return { success: false, error: 'No se pudo eliminar el archivo' }
   }
 }

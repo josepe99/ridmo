@@ -23,7 +23,7 @@ describe("create collection page upload handler", () => {
   it("rejects requests without a file", async () => {
     const handler = await getHandler()
 
-    await expect(handler(new FormData())).resolves.toEqual({ success: false, error: "File is required" })
+    await expect(handler(new FormData())).resolves.toEqual({ success: false, error: "El archivo es obligatorio" })
     expect(uploadImage).not.toHaveBeenCalled()
   })
 
@@ -32,7 +32,7 @@ describe("create collection page upload handler", () => {
     const form = new FormData()
     form.set("file", "not a file")
 
-    await expect(handler(form)).resolves.toEqual({ success: false, error: "File is required" })
+    await expect(handler(form)).resolves.toEqual({ success: false, error: "El archivo es obligatorio" })
   })
 
   it("uploads the file to the collections folder to the ridmo folder", async () => {

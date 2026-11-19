@@ -30,11 +30,11 @@ export function CreateCollectionPageClient({ onUploadImage }: CreateCollectionPa
     })
 
     if (!response.ok) {
-      toast.error("Failed to create collection")
+      toast.error("No se pudo crear la colección")
       return
     }
 
-    toast.success("Collection created successfully!")
+    toast.success("¡Colección creada con éxito!")
     router.push("/admin")
     router.refresh()
   }
@@ -50,19 +50,19 @@ export function CreateCollectionPageClient({ onUploadImage }: CreateCollectionPa
               </Button>
             </Link>
             <div className="min-w-0">
-              <h1 className="text-2xl font-bold sm:text-3xl">Create New Collection</h1>
-              <p className="text-gray-600 mt-1">Add a new collection to organize your products.</p>
+              <h1 className="text-2xl font-bold sm:text-3xl">Crear nueva colección</h1>
+              <p className="text-gray-600 mt-1">Agregá una colección para organizar tus productos.</p>
             </div>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Collection details</CardTitle>
+              <CardTitle>Detalles de la colección</CardTitle>
             </CardHeader>
             <CardContent>
               <CollectionForm
-                submitLabel="Create collection"
-                submittingLabel="Creating..."
+                submitLabel="Crear colección"
+                submittingLabel="Creando..."
                 onSubmit={handleSubmit}
                 onUploadImage={onUploadImage}
               />

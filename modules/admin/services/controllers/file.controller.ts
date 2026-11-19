@@ -20,7 +20,7 @@ export class FileController {
       return await this.datasource.uploadImage(file, options);
     } catch (error) {
       console.error('Error uploading file:', error);
-      throw new Error('Failed to upload file');
+      throw new Error('No se pudo subir el archivo');
     }
   }
 
@@ -29,7 +29,7 @@ export class FileController {
       return await this.datasource.getImage(publicId);
     } catch (error) {
       console.error('Error fetching file:', error);
-      throw new Error('Failed to fetch file');
+      throw new Error('No se pudo obtener el archivo');
     }
   }
 
@@ -38,7 +38,7 @@ export class FileController {
       return await this.datasource.getImages(options);
     } catch (error) {
       console.error('Error listing files:', error);
-      throw new Error('Failed to list files');
+      throw new Error('No se pudieron listar los archivos');
     }
   }
 
@@ -47,7 +47,7 @@ export class FileController {
       await this.datasource.removeImage(publicId);
     } catch (error) {
       console.error('Error removing file:', error);
-      throw new Error('Failed to remove file');
+      throw new Error('No se pudo eliminar el archivo');
     }
   }
 }

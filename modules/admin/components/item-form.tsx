@@ -138,12 +138,12 @@ export function ItemForm({
     e.preventDefault()
 
     if (mode === "create" && !values.collectionId) {
-      toast.error("Please select a collection before creating an item.")
+      toast.error("Elegí una colección antes de crear el producto.")
       return
     }
 
     if (isEdit && !targetItemId) {
-      toast.error("Missing item id to update.")
+      toast.error("Falta el id del producto a actualizar.")
       return
     }
 
@@ -196,13 +196,13 @@ export function ItemForm({
         const errorData = await response.json().catch(() => null)
         throw new Error(
           errorData?.error ||
-            `Failed to ${isEdit ? "update" : "create"} item`
+            `No se pudo ${isEdit ? "actualizar" : "crear"} el producto`
         )
       }
 
       const item = await response.json()
       toast.success(
-        isEdit ? "Item updated successfully!" : "Item created successfully!"
+        isEdit ? "¡Producto actualizado con éxito!" : "¡Producto creado con éxito!"
       )
 
       if (onSuccess) {
@@ -223,7 +223,7 @@ export function ItemForm({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to submit item form"
+          : "No se pudo enviar el formulario"
       )
     } finally {
       setSubmitting(false)
@@ -234,7 +234,7 @@ export function ItemForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {collectionOptions && collectionOptions.length > 0 && (
         <div className="grid gap-2">
-          <Label htmlFor="collectionId">Collection</Label>
+          <Label htmlFor="collectionId">Colección</Label>
           <Select
             value={values.collectionId}
             onValueChange={(val) =>
@@ -243,7 +243,7 @@ export function ItemForm({
             disabled={submitting}
           >
             <SelectTrigger id="collectionId">
-              <SelectValue placeholder="Select a collection" />
+              <SelectValue placeholder="Elegí una colección" />
             </SelectTrigger>
             <SelectContent>
               {collectionOptions.map((option) => (
@@ -259,12 +259,12 @@ export function ItemForm({
       <div className="grid gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Nombre</Label>
             <Input
               id="name"
               value={values.name}
               onChange={handleNameChange}
-              placeholder="Item name"
+              placeholder="Nombre del producto"
               required
               disabled={submitting}
             />
@@ -285,14 +285,14 @@ export function ItemForm({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">Descripción</Label>
           <Textarea
             id="description"
             value={values.description}
             onChange={(e) =>
               setValues((prev) => ({ ...prev, description: e.target.value }))
             }
-            placeholder="Item description..."
+            placeholder="Descripción del producto..."
             rows={3}
             disabled={submitting}
           />
@@ -300,7 +300,7 @@ export function ItemForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
-            <Label htmlFor="price">Price</Label>
+            <Label htmlFor="price">Precio</Label>
             <Input
               id="price"
               type="number"
@@ -315,7 +315,7 @@ export function ItemForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="comparePrice">Compare Price</Label>
+            <Label htmlFor="comparePrice">Precio anterior</Label>
             <Input
               id="comparePrice"
               type="number"
@@ -332,7 +332,7 @@ export function ItemForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="inventory">Inventory</Label>
+            <Label htmlFor="inventory">Inventario</Label>
             <Input
               id="inventory"
               type="number"
@@ -371,12 +371,12 @@ export function ItemForm({
         />
 
         <div className="grid gap-2">
-          <Label>Tags</Label>
+          <Label>Etiquetas</Label>
           <div className="flex gap-2">
             <Input
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
-              placeholder="Add tag"
+              placeholder="Agregar etiqueta"
               className="flex-1"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -393,7 +393,7 @@ export function ItemForm({
               disabled={submitting}
               className="shrink-0"
             >
-              Add
+              Agregar
             </Button>
           </div>
           {values.tags.length > 0 && (
@@ -411,7 +411,7 @@ export function ItemForm({
                     onClick={() => removeTag(tag)}
                     className="h-6 w-6 shrink-0 p-0 text-blue-600 hover:text-blue-800 sm:h-5 sm:w-5"
                     disabled={submitting}
-                    aria-label={`Remove ${tag}`}
+                    aria-label={`Quitar ${tag}`}
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -430,7 +430,7 @@ export function ItemForm({
             }
             disabled={submitting}
           />
-          <Label htmlFor="isActive">Active</Label>
+          <Label htmlFor="isActive">Activo</Label>
         </div>
       </div>
 
@@ -443,14 +443,14 @@ export function ItemForm({
             disabled={submitting}
             className="h-10 w-full sm:h-9 sm:w-auto"
           >
-            Cancel
+            Cancelar
           </Button>
         )}
         <Button type="submit" disabled={submitting} className="h-10 w-full sm:h-9 sm:w-auto">
           {submitting
             ? submittingLabel ||
-              (isEdit ? "Updating..." : "Creating...")
-            : submitLabel || (isEdit ? "Update Item" : "Create Item")}
+              (isEdit ? "Actualizando..." : "Creando...")
+            : submitLabel || (isEdit ? "Actualizar producto" : "Crear producto")}
         </Button>
       </div>
     </form>

@@ -56,7 +56,7 @@ describe("ImageUploadComponent: adding files", () => {
     expect(onChange).toHaveBeenCalledWith([
       expect.objectContaining({ url: "", preview: "blob:preview", isExisting: false }),
     ])
-    expect(screen.getByText("Pending")).toBeInTheDocument()
+    expect(screen.getByText("Pendiente")).toBeInTheDocument()
     expect(screen.getByText("one.png")).toBeInTheDocument()
   })
 
@@ -66,8 +66,8 @@ describe("ImageUploadComponent: adding files", () => {
 
     await user.upload(fileInput(), new File(["x"], "doc.pdf", { type: "application/pdf" }))
 
-    expect(await screen.findByText(/File type application\/pdf is not supported/)).toBeInTheDocument()
-    expect(screen.queryByText("Pending")).not.toBeInTheDocument()
+    expect(await screen.findByText(/El tipo de archivo application\/pdf no es compatible/)).toBeInTheDocument()
+    expect(screen.queryByText("Pendiente")).not.toBeInTheDocument()
   })
 
   it("rejects files over the size limit", async () => {
@@ -75,7 +75,7 @@ describe("ImageUploadComponent: adding files", () => {
 
     await userEvent.upload(fileInput(), png("big.png", 2 * 1024 * 1024))
 
-    expect(await screen.findByText("File size must be less than 1MB")).toBeInTheDocument()
+    expect(await screen.findByText("El archivo debe pesar menos de 1 MB")).toBeInTheDocument()
   })
 
   it("accepts a file exactly at the size limit", async () => {
@@ -92,8 +92,8 @@ describe("ImageUploadComponent: adding files", () => {
 
     await userEvent.upload(fileInput(), [png("a.png"), png("b.png")])
 
-    expect(await screen.findByText("Maximum 2 images allowed")).toBeInTheDocument()
-    expect(screen.queryByText("Pending")).not.toBeInTheDocument()
+    expect(await screen.findByText("Se permiten hasta 2 imágenes")).toBeInTheDocument()
+    expect(screen.queryByText("Pendiente")).not.toBeInTheDocument()
   })
 
   it("disables the picker once the limit is reached", () => {
@@ -105,7 +105,7 @@ describe("ImageUploadComponent: adding files", () => {
   it("adds files dropped on the area and tracks drag state", () => {
     const onChange = vi.fn()
     render(<Harness onChange={onChange} />)
-    const area = screen.getByText(/Drag and drop images here/).closest("div.border-dashed") as HTMLElement
+    const area = screen.getByText(/Arrastrá y soltá imágenes acá/).closest("div.border-dashed") as HTMLElement
 
     fireEvent.dragEnter(area)
     expect(area).toHaveClass("border-primary")
@@ -121,9 +121,9 @@ describe("ImageUploadComponent: existing images", () => {
   it("labels saved images and shows the counter", () => {
     render(<Harness initial={[existing()]} maxImages={5} />)
 
-    expect(screen.getByText("Saved")).toBeInTheDocument()
-    expect(screen.getByText("Image Previews (1/5)")).toBeInTheDocument()
-    expect(screen.getByText("Existing image")).toBeInTheDocument()
+    expect(screen.getByText("Guardada")).toBeInTheDocument()
+    expect(screen.getByText("Vista previa (1/5)")).toBeInTheDocument()
+    expect(screen.getByText("Imagen existente")).toBeInTheDocument()
   })
 
   it("removes an image without revoking the URL of a saved one", async () => {
@@ -148,7 +148,7 @@ describe("ImageUploadComponent: existing images", () => {
 
   it("falls back to a placeholder when an image fails to load", () => {
     render(<Harness initial={[existing()]} />)
-    const image = screen.getByAltText("Preview 1")
+    const image = screen.getByAltText("Vista previa 1")
 
     fireEvent.error(image)
 
@@ -159,11 +159,11 @@ describe("ImageUploadComponent: existing images", () => {
 describe("ImageUploadComponent: uploading to Cloudinary", () => {
   it("offers the upload action only when there are pending files", async () => {
     render(<Harness initial={[existing()]} />)
-    expect(screen.queryByRole("button", { name: "Upload images" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Subir imágenes" })).not.toBeInTheDocument()
 
     await userEvent.upload(fileInput(), png())
 
-    expect(screen.getByRole("button", { name: "Upload images" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Subir imágenes" })).toBeInTheDocument()
   })
 
   it("posts pending files and stores the returned URLs", async () => {
@@ -177,9 +177,9 @@ describe("ImageUploadComponent: uploading to Cloudinary", () => {
     render(<Harness onChange={onChange} />)
     await userEvent.upload(fileInput(), png())
 
-    await userEvent.click(screen.getByRole("button", { name: "Upload images" }))
+    await userEvent.click(screen.getByRole("button", { name: "Subir imágenes" }))
 
-    await waitFor(() => expect(screen.getByText("Uploaded")).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText("Subida")).toBeInTheDocument())
     expect(fetch).toHaveBeenCalledWith("/api/admin/images", { method: "POST", body: expect.any(FormData) })
     const body = vi.mocked(fetch).mock.calls[0][1]?.body as FormData
     expect(body.get("image0")).toBeInstanceOf(File)
@@ -193,10 +193,10 @@ describe("ImageUploadComponent: uploading to Cloudinary", () => {
     render(<Harness />)
     await userEvent.upload(fileInput(), png())
 
-    await userEvent.click(screen.getByRole("button", { name: "Upload images" }))
+    await userEvent.click(screen.getByRole("button", { name: "Subir imágenes" }))
 
-    expect(await screen.findByText("Failed to upload images")).toBeInTheDocument()
-    expect(screen.getByText("Pending")).toBeInTheDocument()
+    expect(await screen.findByText("No se pudieron subir las imágenes")).toBeInTheDocument()
+    expect(screen.getByText("Pendiente")).toBeInTheDocument()
   })
 
   it("shows an error when the request itself throws", async () => {
@@ -204,12 +204,12 @@ describe("ImageUploadComponent: uploading to Cloudinary", () => {
     render(<Harness />)
     await userEvent.upload(fileInput(), png())
 
-    await userEvent.click(screen.getByRole("button", { name: "Upload images" }))
+    await userEvent.click(screen.getByRole("button", { name: "Subir imágenes" }))
 
     expect(await screen.findByText("offline")).toBeInTheDocument()
   })
 
-  // SUSPECTED BUG (image-upload.tsx:242 and :286): the "Upload images" and remove (X)
+  // SUSPECTED BUG (image-upload.tsx:242 and :286): the "Subir imágenes" and remove (X)
   // buttons have no `type="button"`, so inside the <form> of ItemForm clicking them also
   // SUBMITS the form (the default button type is "submit").
   it("does not submit a surrounding form when removing an image", async () => {
