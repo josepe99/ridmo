@@ -26,13 +26,13 @@ const customerSchema = z.object({
       const digits = value.replace(/\D/g, "").length
       return digits >= 6 && digits <= 15
     }, "Ingresá un teléfono válido"),
+  // Required: the order confirmation ("estamos verificando tu pedido") is sent to this address.
   email: z
-    .string()
+    .string({ required_error: REQUIRED_MESSAGE })
     .trim()
+    .min(1, REQUIRED_MESSAGE)
     .max(120, "Máximo 120 caracteres")
-    .email("Ingresá un email válido")
-    .or(z.literal(""))
-    .optional(),
+    .email("Ingresá un email válido"),
 })
 
 export const LOCATION_REQUIRED_MESSAGE = "Marcá tu ubicación en el mapa"

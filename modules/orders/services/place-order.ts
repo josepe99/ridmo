@@ -140,6 +140,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
           id: created.id,
           orderNumber: created.orderNumber,
           shippingCountry: input.shippingAddress.country,
+          customerName: input.customer.fullName,
+          customerEmail: input.customer.email || null,
           accessToken,
           shippingCost: priced.shippingCost,
           total: created.total,

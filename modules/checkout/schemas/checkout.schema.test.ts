@@ -25,17 +25,18 @@ describe("createOrderInputSchema", () => {
     if (parsed.success) expect(parsed.data.customer.fullName).toBe("Maria Gomez")
   })
 
-  it("allows an empty email", () => {
+  it.each(["", "   "])("requires the email: rejects %j", (email) => {
     const parsed = createOrderInputSchema.safeParse({
       ...validInput,
-      customer: { ...validInput.customer, email: "" },
+      customer: { ...validInput.customer, email },
     })
-    expect(parsed.success).toBe(true)
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) expect(parsed.error.issues[0].path).toEqual(["customer", "email"])
   })
 
-  it("allows omitting the email", () => {
+  it("requires the email: rejects omitting it", () => {
     const { email: _email, ...customer } = validInput.customer
-    expect(createOrderInputSchema.safeParse({ ...validInput, customer }).success).toBe(true)
+    expect(createOrderInputSchema.safeParse({ ...validInput, customer }).success).toBe(false)
   })
 
   it.each([undefined, "", "   "])("requires delivery notes: rejects %j", (notes) => {

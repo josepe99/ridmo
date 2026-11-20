@@ -7,7 +7,7 @@ vi.mock("next/server", async (importOriginal) => ({
   }),
 }))
 vi.mock("@/modules/orders/server", () => ({ placeOrder: vi.fn() }))
-vi.mock("@/modules/notifications/server", () => ({ notifyNewOrder: vi.fn() }))
+vi.mock("@/modules/notifications/server", () => ({ notifyNewOrder: vi.fn(), notifyCustomerOrderReceived: vi.fn() }))
 vi.mock("@/modules/users/server", () => ({ getCurrentUser: vi.fn() }))
 
 import { placeOrder } from "@/modules/orders/server"
@@ -15,7 +15,7 @@ import { getCurrentUser } from "@/modules/users/server"
 import { createOrder } from "./create-order.action"
 
 const validInput = {
-  customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "" },
+  customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "ana@example.com" },
   shippingAddress: {
     street: "Calle Palma 123",
     reference: "Casa 12",
@@ -30,7 +30,7 @@ const validInput = {
 
 const placed = {
   ok: true as const,
-  order: { id: "o1", orderNumber: "RID-000001", shippingCountry: "Paraguay", accessToken: "secret-token-1234567890", shippingCost: 20_000, total: 22_000, currency: "PYG" },
+  order: { id: "o1", orderNumber: "RID-000001", shippingCountry: "Paraguay", customerName: "Ana Perez", customerEmail: "ana@example.com", accessToken: "secret-token-1234567890", shippingCost: 20_000, total: 22_000, currency: "PYG" },
 }
 
 beforeEach(() => {

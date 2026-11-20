@@ -94,6 +94,9 @@ export type PlacedOrder = {
   id: string
   orderNumber: string
   shippingCountry: string
+  /** Contact of the customer, used to send the order-received email. */
+  customerName: string
+  customerEmail: string | null
   /** Secret that unlocks the public confirmation page of this order. */
   accessToken: string
   /** Shipping charged by the server (already included in `total`). */
