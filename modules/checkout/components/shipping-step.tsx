@@ -164,7 +164,6 @@ export function ShippingStep({ form, message, onBack, onContinue, summary }: Shi
             type="email"
             inputMode="email"
             autoComplete="email"
-            optional
             registration={register("customer.email")}
             error={errors.customer?.email?.message}
           />

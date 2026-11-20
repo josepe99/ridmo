@@ -28,13 +28,13 @@ export default async function AdminCollectionsPage() {
     <div className="container mx-auto px-4 py-6 sm:py-8">
       <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold sm:text-3xl">Admin - Collections</h1>
-          <p className="text-gray-600 mt-2">Manage your product collections</p>
+          <h1 className="text-2xl font-bold sm:text-3xl">Administración - Colecciones</h1>
+          <p className="text-gray-600 mt-2">Gestioná las colecciones de productos</p>
         </div>
         <Link href="/admin/collections/create" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
-            New Collection
+            Nueva colección
           </Button>
         </Link>
       </div>
@@ -54,7 +54,7 @@ export default async function AdminCollectionsPage() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">No image</span>
+                    <span className="text-gray-400 text-sm">Sin imagen</span>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
@@ -63,23 +63,23 @@ export default async function AdminCollectionsPage() {
             <CardContent className="p-4">
               <CardTitle className="mb-2 break-words text-lg">{collection.name}</CardTitle>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                {collection.description || 'No description'}
+                {collection.description || 'Sin descripción'}
               </p>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
-                <span>{collection._count.items} items</span>
+                <span>{collection._count.items} {collection._count.items === 1 ? 'producto' : 'productos'}</span>
                 <span className={`px-2 py-1 rounded-full text-xs ${
                   collection.isActive 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-gray-100 text-gray-800'
                 }`}>
-                  {collection.isActive ? 'Active' : 'Inactive'}
+                  {collection.isActive ? 'Activa' : 'Inactiva'}
                 </span>
               </div>
               <div className="flex gap-2">
                 <Link href={`/admin/collections/${collection.id}`} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">
                     <Eye className="h-4 w-4 mr-1" />
-                    View
+                    Ver
                   </Button>
                 </Link>
                 <EditCollectionModal collection={collection} />
@@ -95,12 +95,12 @@ export default async function AdminCollectionsPage() {
             <div className="h-24 w-24 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
               <Plus className="h-8 w-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No collections yet</h3>
-            <p className="text-gray-500 mb-4">Get started by creating your first collection</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Todavía no hay colecciones</h3>
+            <p className="text-gray-500 mb-4">Empezá creando tu primera colección</p>
             <Link href="/admin/collections/create">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                New Collection
+                Nueva colección
               </Button>
             </Link>
           </div>

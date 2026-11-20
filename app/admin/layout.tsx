@@ -23,12 +23,12 @@ export default async function AdminLayout({
               <Link href="/">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Store
+                  Volver a la tienda
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-gray-600" />
-                <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">Admin Panel</h1>
+                <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">Panel de administración</h1>
               </div>
             </div>
             <EnableNotificationsButton vapidPublicKey={getVapidPublicKey()} />
@@ -45,7 +45,7 @@ export default async function AdminLayout({
               className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
             >
               <Package className="h-4 w-4" />
-              Collections
+              Colecciones
             </Link>
             <Link
               href="/admin/orders"

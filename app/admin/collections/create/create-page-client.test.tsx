@@ -13,8 +13,8 @@ import { CreateCollectionPageClient } from "./create-page-client"
 async function fillAndSubmit() {
   const user = userEvent.setup({ delay: null })
   render(<CreateCollectionPageClient onUploadImage={vi.fn()} />)
-  await user.type(screen.getByLabelText("Name"), "Cadenas")
-  await user.click(screen.getByRole("button", { name: "Create collection" }))
+  await user.type(screen.getByLabelText("Nombre"), "Cadenas")
+  await user.click(screen.getByRole("button", { name: "Crear colección" }))
 }
 
 beforeEach(() => {
@@ -28,7 +28,7 @@ describe("CreateCollectionPageClient", () => {
   it("renders the heading and a link back to the admin", () => {
     render(<CreateCollectionPageClient onUploadImage={vi.fn()} />)
 
-    expect(screen.getByRole("heading", { name: "Create New Collection" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Crear nueva colección" })).toBeInTheDocument()
     expect(screen.getAllByRole("link")[0]).toHaveAttribute("href", "/admin")
   })
 
@@ -40,7 +40,7 @@ describe("CreateCollectionPageClient", () => {
     expect(url).toBe("/api/admin/collections")
     expect(init?.method).toBe("POST")
     expect(JSON.parse(init?.body as string)).toMatchObject({ name: "Cadenas", isActive: true })
-    expect(toast.success).toHaveBeenCalledWith("Collection created successfully!")
+    expect(toast.success).toHaveBeenCalledWith("¡Colección creada con éxito!")
     expect(routerMock.refresh).toHaveBeenCalled()
   })
 
@@ -49,7 +49,7 @@ describe("CreateCollectionPageClient", () => {
 
     await fillAndSubmit()
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Failed to create collection"))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("No se pudo crear la colección"))
     expect(routerMock.push).not.toHaveBeenCalled()
   })
 })

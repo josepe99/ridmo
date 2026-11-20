@@ -38,11 +38,11 @@ export function ImageUploadComponent({
 
   const validateFile = (file: File): string | null => {
     if (!acceptedTypes.includes(file.type)) {
-      return `File type ${file.type} is not supported. Accepted types: ${acceptedTypes.join(', ')}`;
+      return `El tipo de archivo ${file.type} no es compatible. Tipos aceptados: ${acceptedTypes.join(', ')}`;
     }
 
     if (file.size > maxFileSize * 1024 * 1024) {
-      return `File size must be less than ${maxFileSize}MB`;
+      return `El archivo debe pesar menos de ${maxFileSize} MB`;
     }
 
     return null;
@@ -56,7 +56,7 @@ export function ImageUploadComponent({
 
       // Check if adding these files would exceed max images
       if (images.length + fileArray.length > maxImages) {
-        setError(`Maximum ${maxImages} images allowed`);
+        setError(`Se permiten hasta ${maxImages} imágenes`);
         return;
       }
 
@@ -152,7 +152,7 @@ export function ImageUploadComponent({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload images');
+        throw new Error('No se pudieron subir las imágenes');
       }
 
       const result = await response.json();
@@ -179,7 +179,7 @@ export function ImageUploadComponent({
         onImagesChange(updatedImages);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload images');
+      setError(err instanceof Error ? err.message : 'No se pudieron subir las imágenes');
     } finally {
       setUploading(false);
     }
@@ -187,7 +187,7 @@ export function ImageUploadComponent({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <Label>Images</Label>
+      <Label>Imágenes</Label>
       
       {/* Upload Area */}
       <div
@@ -205,13 +205,13 @@ export function ImageUploadComponent({
           <Upload className="h-8 w-8 text-gray-400" />
           <div>
             <p className="text-sm text-gray-600">
-              Drag and drop images here, or{' '}
+              Arrastrá y soltá imágenes acá, o{' '}
               <Label htmlFor="file-upload" className="inline-block cursor-pointer py-2 text-primary hover:underline sm:py-0">
-                browse
+                explorá tus archivos
               </Label>
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Max {maxImages} images, {maxFileSize}MB each. Supported: JPG, PNG, WebP
+              Máx. {maxImages} imágenes, {maxFileSize} MB cada una. Formatos: JPG, PNG, WebP
             </p>
           </div>
         </div>
@@ -237,7 +237,7 @@ export function ImageUploadComponent({
       {images.length > 0 && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Label>Image Previews ({images.length}/{maxImages})</Label>
+            <Label>Vista previa ({images.length}/{maxImages})</Label>
             {images.some(img => img.file && !img.url) && (
               <Button
                 type="button"
@@ -246,7 +246,7 @@ export function ImageUploadComponent({
                 size="sm"
                 variant="outline"
               >
-                {uploading ? 'Uploading...' : 'Upload images'}
+                {uploading ? 'Subiendo...' : 'Subir imágenes'}
               </Button>
             )}
           </div>
@@ -257,7 +257,7 @@ export function ImageUploadComponent({
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                   <img
                     src={image.preview || image.url}
-                    alt={`Preview ${index + 1}`}
+                    alt={`Vista previa ${index + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -270,15 +270,15 @@ export function ImageUploadComponent({
                 <div className="absolute top-2 left-2">
                   {image.isExisting ? (
                     <div className="bg-green-500 text-white text-xs px-2 py-1 rounded">
-                      Saved
+                      Guardada
                     </div>
                   ) : image.url ? (
                     <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                      Uploaded
+                      Subida
                     </div>
                   ) : (
                     <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">
-                      Pending
+                      Pendiente
                     </div>
                   )}
                 </div>
@@ -296,7 +296,7 @@ export function ImageUploadComponent({
 
                 {/* File Info */}
                 <div className="mt-1 text-xs text-gray-500 truncate">
-                  {image.file?.name || 'Existing image'}
+                  {image.file?.name || 'Imagen existente'}
                 </div>
               </div>
             ))}

@@ -42,16 +42,16 @@ export function CreateItemPageClient({
           </Button>
         </Link>
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold sm:text-3xl">Create New Item</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Crear nuevo producto</h1>
           <p className="text-gray-600 mt-1">
-            Add a new item and assign it to a collection.
+            Agregá un producto y asignalo a una colección.
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Item details</CardTitle>
+          <CardTitle>Detalles del producto</CardTitle>
         </CardHeader>
         <CardContent>
           {hasCollections ? (
@@ -61,22 +61,22 @@ export function CreateItemPageClient({
               collectionOptions={collections}
               onSuccess={handleSuccess}
               onCancel={() => router.push("/admin")}
-              submitLabel="Create item"
-              submittingLabel="Creating..."
+              submitLabel="Crear producto"
+              submittingLabel="Creando..."
             />
           ) : (
             <div className="space-y-4">
               <p className="text-gray-600">
-                You need at least one collection before creating items.
+                Necesitás al menos una colección antes de crear productos.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button onClick={() => router.push("/admin")}>
-                  Back to admin
+                  Volver al panel
                 </Button>
                 <Link href="/admin/collections/create">
                   <Button variant="outline" className="w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create a collection
+                    Crear una colección
                   </Button>
                 </Link>
               </div>

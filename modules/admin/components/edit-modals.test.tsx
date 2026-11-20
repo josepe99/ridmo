@@ -47,22 +47,22 @@ describe("EditCollectionModal", () => {
     render(<EditCollectionModal collection={collection} />)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
-    expect(await screen.findByRole("dialog", { name: "Edit Collection" })).toBeInTheDocument()
-    expect(screen.getByLabelText("Name")).toHaveValue("Cadenas")
-    expect(screen.getByLabelText("Description")).toHaveValue("Macizas")
-    expect(screen.getByText("Saved")).toBeInTheDocument()
+    expect(await screen.findByRole("dialog", { name: "Editar colección" })).toBeInTheDocument()
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Cadenas")
+    expect(screen.getByLabelText("Descripción")).toHaveValue("Macizas")
+    expect(screen.getByText("Guardada")).toBeInTheDocument()
   })
 
   it("saves with PUT, shows a success toast, closes and refreshes", async () => {
     render(<EditCollectionModal collection={collection} />)
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
-    await userEvent.type(await screen.findByLabelText("Name"), "s")
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
+    await userEvent.type(await screen.findByLabelText("Nombre"), "s")
 
-    await userEvent.click(screen.getByRole("button", { name: "Update Collection" }))
+    await userEvent.click(screen.getByRole("button", { name: "Actualizar colección" }))
 
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Collection updated successfully!"))
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("¡Colección actualizada con éxito!"))
     const [url, init] = vi.mocked(fetch).mock.calls[0]
     expect(url).toBe("/api/admin/collections/c1")
     expect(init?.method).toBe("PUT")
@@ -78,11 +78,11 @@ describe("EditCollectionModal", () => {
   it("shows an error toast and stays open when the update fails", async () => {
     vi.mocked(fetch).mockResolvedValue({ ok: false } as Response)
     render(<EditCollectionModal collection={collection} />)
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
-    await userEvent.click(await screen.findByRole("button", { name: "Update Collection" }))
+    await userEvent.click(await screen.findByRole("button", { name: "Actualizar colección" }))
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Failed to update collection"))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("No se pudo actualizar la colección"))
     expect(screen.getByRole("dialog")).toBeInTheDocument()
     expect(routerMock.refresh).not.toHaveBeenCalled()
   })
@@ -93,7 +93,7 @@ describe("EditCollectionModal", () => {
     async function openAndPickImage() {
       URL.createObjectURL = vi.fn(() => "blob:preview")
       render(<EditCollectionModal collection={{ ...collection, imageUrl: null }} />)
-      await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+      await userEvent.click(screen.getByRole("button", { name: "Editar" }))
       await screen.findByRole("dialog")
       await userEvent.upload(document.getElementById("file-upload") as HTMLInputElement, newFile())
     }
@@ -107,7 +107,7 @@ describe("EditCollectionModal", () => {
         .mockResolvedValueOnce({ ok: true } as Response)
       await openAndPickImage()
 
-      await userEvent.click(screen.getByRole("button", { name: "Update Collection" }))
+      await userEvent.click(screen.getByRole("button", { name: "Actualizar colección" }))
 
       await waitFor(() => expect(toast.success).toHaveBeenCalled())
       const [uploadUrl, uploadInit] = vi.mocked(fetch).mock.calls[0]
@@ -122,18 +122,18 @@ describe("EditCollectionModal", () => {
       vi.mocked(fetch).mockResolvedValueOnce({ ok: false } as Response)
       await openAndPickImage()
 
-      await userEvent.click(screen.getByRole("button", { name: "Update Collection" }))
+      await userEvent.click(screen.getByRole("button", { name: "Actualizar colección" }))
 
-      await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Failed to update collection"))
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith("No se pudo actualizar la colección"))
       expect(fetch).toHaveBeenCalledTimes(1)
     })
   })
 
   it("closes with Cancel without calling the API", async () => {
     render(<EditCollectionModal collection={collection} />)
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
-    await userEvent.click(await screen.findByRole("button", { name: "Cancel" }))
+    await userEvent.click(await screen.findByRole("button", { name: "Cancelar" }))
 
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
     expect(fetch).not.toHaveBeenCalled()
@@ -141,11 +141,11 @@ describe("EditCollectionModal", () => {
 
   it("starts without images when the collection has none", async () => {
     render(<EditCollectionModal collection={{ ...collection, imageUrl: null }} />)
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
     await screen.findByRole("dialog")
 
-    expect(screen.queryByText("Saved")).not.toBeInTheDocument()
+    expect(screen.queryByText("Guardada")).not.toBeInTheDocument()
   })
 })
 
@@ -154,19 +154,19 @@ describe("EditItemModal", () => {
     render(<EditItemModal item={item} />)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
-    expect(await screen.findByRole("dialog", { name: "Edit Item" })).toBeInTheDocument()
-    expect(screen.getByLabelText("Name")).toHaveValue("Cadena Milan")
-    expect(screen.getByLabelText("Price")).toHaveValue(100)
+    expect(await screen.findByRole("dialog", { name: "Editar producto" })).toBeInTheDocument()
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Cadena Milan")
+    expect(screen.getByLabelText("Precio")).toHaveValue(100)
     expect(screen.getByText("oro")).toBeInTheDocument()
   })
 
   it("updates the item, closes the dialog and refreshes", async () => {
     render(<EditItemModal item={item} />)
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
-    await userEvent.click(await screen.findByRole("button", { name: "Update Item" }))
+    await userEvent.click(await screen.findByRole("button", { name: "Actualizar producto" }))
 
     await waitFor(() => expect(routerMock.refresh).toHaveBeenCalled())
     expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/admin/items/i1")
@@ -175,9 +175,9 @@ describe("EditItemModal", () => {
 
   it("closes with Cancel", async () => {
     render(<EditItemModal item={item} />)
-    await userEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await userEvent.click(screen.getByRole("button", { name: "Editar" }))
 
-    await userEvent.click(await screen.findByRole("button", { name: "Cancel" }))
+    await userEvent.click(await screen.findByRole("button", { name: "Cancelar" }))
 
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
   })

@@ -52,7 +52,7 @@ export function EditCollectionModal({ collection }: EditCollectionModalProps) {
           method: "POST",
           body: formDataImg,
         })
-        if (!uploadRes.ok) throw new Error("Error uploading image")
+        if (!uploadRes.ok) throw new Error("Error al subir la imagen")
         const uploadData = await uploadRes.json()
         imageUrl = uploadData.data?.images?.[0]?.url || imageUrl
       }
@@ -66,15 +66,15 @@ export function EditCollectionModal({ collection }: EditCollectionModalProps) {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update collection")
+        throw new Error("No se pudo actualizar la colección")
       }
 
-      toast.success("Collection updated successfully!")
+      toast.success("¡Colección actualizada con éxito!")
       setOpen(false)
       router.refresh()
     } catch (error) {
       console.error("Error updating collection:", error)
-      toast.error("Failed to update collection")
+      toast.error("No se pudo actualizar la colección")
     }
   }
 
@@ -83,14 +83,14 @@ export function EditCollectionModal({ collection }: EditCollectionModalProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-10 sm:h-8">
           <Edit className="h-4 w-4 mr-1" />
-          Edit
+          Editar
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:max-w-[425px] sm:p-6">
         <DialogHeader>
-          <DialogTitle>Edit Collection</DialogTitle>
+          <DialogTitle>Editar colección</DialogTitle>
           <DialogDescription>
-            Update the collection details.
+            Actualizá los datos de la colección.
           </DialogDescription>
         </DialogHeader>
         <CollectionForm
@@ -101,8 +101,8 @@ export function EditCollectionModal({ collection }: EditCollectionModalProps) {
             imageUrl: collection.imageUrl || "",
             isActive: collection.isActive,
           }}
-          submitLabel="Update Collection"
-          submittingLabel="Updating..."
+          submitLabel="Actualizar colección"
+          submittingLabel="Actualizando..."
           onCancel={() => setOpen(false)}
           onSubmit={handleSubmit}
           renderImageField={(imageUrl, setImageUrl) => (

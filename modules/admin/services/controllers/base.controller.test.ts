@@ -97,7 +97,7 @@ describe("handleRequest", () => {
 
     expect(response.status).toBe(400)
     const body = await response.json()
-    expect(body.error).toBe("Validation failed")
+    expect(body.error).toBe("Error de validación")
     expect(body.details[0].path).toEqual(["name"])
     expect(handler).not.toHaveBeenCalled()
   })
@@ -108,7 +108,7 @@ describe("handleRequest", () => {
     })
 
     expect(response.status).toBe(500)
-    expect(await response.json()).toEqual({ error: "Internal server error" })
+    expect(await response.json()).toEqual({ error: "Error interno del servidor" })
   })
 })
 
@@ -139,7 +139,7 @@ describe("HTTP verbs", () => {
       const response = await controller[verb](request({ method: verb === "GET" ? "GET" : verb }))
 
       expect(response.status).toBe(501)
-      expect(await response.json()).toEqual({ success: false, error: "Method not implemented" })
+      expect(await response.json()).toEqual({ success: false, error: "Método no implementado" })
     }
   )
 })

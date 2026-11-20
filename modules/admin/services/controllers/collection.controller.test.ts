@@ -124,7 +124,7 @@ describe("GET", () => {
     const response = await controller.GET(req("/api/admin/collections/missing"))
 
     expect(response.status).toBe(404)
-    expect(await response.json()).toEqual({ success: false, error: "Collection not found" })
+    expect(await response.json()).toEqual({ success: false, error: "Colección no encontrada" })
   })
 })
 
@@ -174,7 +174,7 @@ describe("DELETE", () => {
     expect(ds.delete).toHaveBeenCalledWith("c1")
     expect(await response.json()).toEqual({
       success: true,
-      data: { message: "Collection deleted successfully" },
+      data: { message: "Colección eliminada con éxito" },
     })
   })
 

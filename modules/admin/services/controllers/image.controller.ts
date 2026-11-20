@@ -22,7 +22,7 @@ export class ImageController extends BaseController {
       return await Promise.all(uploadPromises);
     } catch (error) {
       console.error('Error uploading images:', error);
-      throw new Error('Failed to upload images');
+      throw new Error('No se pudieron subir las imágenes');
     }
   }
 
@@ -36,12 +36,12 @@ export class ImageController extends BaseController {
     try {
       // Validate file type
       if (!this.isValidImageFile(file)) {
-        throw new Error('Invalid file type. Only images are allowed.');
+        throw new Error('Tipo de archivo inválido. Solo se permiten imágenes.');
       }
 
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        throw new Error('File size too large. Maximum 10MB allowed.');
+        throw new Error('El archivo es demasiado grande. Máximo 10 MB.');
       }
 
       const uploadOptions: StorageUploadOptions = {
@@ -154,7 +154,7 @@ export class ImageController extends BaseController {
           const files = await this.processFormDataImages(formData);
 
           if (files.length === 0) {
-            return this.createErrorResponse('No images provided', 400);
+            return this.createErrorResponse('No se enviaron imágenes', 400);
           }
 
           const uploadedImages = await this.uploadImages(files);
@@ -166,7 +166,7 @@ export class ImageController extends BaseController {
         } catch (error) {
           console.error('Error in image upload endpoint:', error);
           return this.createErrorResponse(
-            error instanceof Error ? error.message : 'Failed to upload images',
+            error instanceof Error ? error.message : 'No se pudieron subir las imágenes',
             500
           );
         }
@@ -189,9 +189,9 @@ export class ImageController extends BaseController {
           // Delete single image
           const success = await this.deleteImage(publicId);
           if (success) {
-            return this.createSuccessResponse({ message: 'Image deleted successfully' });
+            return this.createSuccessResponse({ message: 'Imagen eliminada con éxito' });
           } else {
-            return this.createErrorResponse('Failed to delete image', 500);
+            return this.createErrorResponse('No se pudo eliminar la imagen', 500);
           }
         } else if (publicIds) {
           // Delete multiple images
@@ -199,7 +199,7 @@ export class ImageController extends BaseController {
           const result = await this.deleteImages(ids);
           return this.createSuccessResponse(result);
         } else {
-          return this.createErrorResponse('Public ID(s) required', 400);
+          return this.createErrorResponse('Se requiere al menos un ID público', 400);
         }
       }
     );

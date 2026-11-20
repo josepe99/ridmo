@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     console.error('Error in image upload API:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }
@@ -29,7 +29,7 @@ export async function DELETE(request: NextRequest) {
     if (denied) return denied
     console.error('Error in image delete API:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }

@@ -8,17 +8,17 @@ vi.mock("next/server", async (importOriginal) => ({
   }),
 }))
 vi.mock("@/modules/orders/server", () => ({ placeOrder: vi.fn() }))
-vi.mock("@/modules/notifications/server", () => ({ notifyNewOrder: vi.fn() }))
+vi.mock("@/modules/notifications/server", () => ({ notifyNewOrder: vi.fn(), notifyCustomerOrderReceived: vi.fn() }))
 // Guest checkout: no signed-in user (ownership is covered in create-order.user.test.ts).
 vi.mock("@/modules/users/server", () => ({ getCurrentUser: vi.fn(async () => null) }))
 
 import { after } from "next/server"
-import { notifyNewOrder } from "@/modules/notifications/server"
+import { notifyCustomerOrderReceived, notifyNewOrder } from "@/modules/notifications/server"
 import { placeOrder } from "@/modules/orders/server"
 import { createOrder } from "./create-order.action"
 
 const validInput = {
-  customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "" },
+  customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "ana@example.com" },
   shippingAddress: {
     street: "Calle Palma 123",
     reference: "Casa 12",
@@ -37,6 +37,8 @@ const placed = {
     id: "o1",
     orderNumber: "RID-000001",
     shippingCountry: "Paraguay",
+    customerName: "Ana Perez",
+    customerEmail: "ana@example.com",
     accessToken: "secret-token-1234567890",
     shippingCost: 20_000,
     total: 22_000,
@@ -47,6 +49,7 @@ const placed = {
 beforeEach(() => {
   vi.mocked(placeOrder).mockReset()
   vi.mocked(notifyNewOrder).mockReset().mockResolvedValue(1)
+  vi.mocked(notifyCustomerOrderReceived).mockReset().mockResolvedValue(true)
   vi.mocked(after).mockClear()
   vi.spyOn(console, "error").mockImplementation(() => {})
 })
@@ -292,6 +295,20 @@ describe("createOrder: success", () => {
 
     expect(after).toHaveBeenCalledTimes(1)
     expect(notifyNewOrder).toHaveBeenCalledWith(placed.order)
+  })
+
+  it("emails the customer that the order is being verified", async () => {
+    vi.mocked(placeOrder).mockResolvedValue(placed)
+
+    await createOrder(validInput)
+
+    expect(notifyCustomerOrderReceived).toHaveBeenCalledWith({
+      orderNumber: "RID-000001",
+      customerName: "Ana Perez",
+      customerEmail: "ana@example.com",
+      total: 22_000,
+      currency: "PYG",
+    })
   })
 
   it("still succeeds when the push notification rejects", async () => {

@@ -89,6 +89,7 @@ const cont = (user: User) => user.click(screen.getByRole("button", { name: "Cont
 async function fillShipping(user: User) {
   await user.type(screen.getByLabelText("Nombre completo"), "Ana Perez")
   await user.type(screen.getByLabelText("Teléfono"), "+595 981 000 000")
+  await user.type(screen.getByLabelText("Email"), "ana@example.com")
   await user.type(screen.getByLabelText("Calle"), "Calle Palma 123")
   await user.type(screen.getByLabelText(/^Número o referencia/), "Casa 12")
   await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "asuncion")
@@ -100,6 +101,7 @@ async function fillShipping(user: User) {
 async function fillShippingOnMap(user: User) {
   await user.type(screen.getByLabelText("Nombre completo"), "Ana Perez")
   await user.type(screen.getByLabelText("Teléfono"), "+595 981 000 000")
+  await user.type(screen.getByLabelText("Email"), "ana@example.com")
   await user.click(screen.getByRole("radio", { name: "Marcar en el mapa" }))
   await user.click(await screen.findByRole("button", { name: "Marcar punto de prueba" }))
   await user.selectOptions(screen.getByLabelText("Ciudad / zona de envío"), "asuncion")
@@ -279,8 +281,8 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
 
     await cont(user)
 
-    // Name, phone, street and delivery notes: the city comes from the zone, the rest is optional.
-    expect(await screen.findAllByText("Completá este campo")).toHaveLength(4)
+    // Name, phone, email, street and delivery notes: the city comes from the zone, the rest is optional.
+    expect(await screen.findAllByText("Completá este campo")).toHaveLength(5)
     expect(currentStep()).toHaveTextContent("Datos de envío")
     expect(screen.queryByRole("heading", { level: 2, name: "Datos de pago" })).not.toBeInTheDocument()
     expect(createOrder).not.toHaveBeenCalled()
@@ -296,7 +298,8 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     const name = screen.getByLabelText("Nombre completo")
     await waitFor(() => expect(name).toHaveAttribute("aria-invalid", "true"))
     expect(name).toHaveAccessibleDescription("Completá este campo")
-    expect(screen.getByLabelText(/^Email/)).not.toHaveAttribute("aria-invalid")
+    expect(screen.getByLabelText("Email")).toHaveAttribute("aria-invalid", "true")
+    expect(screen.getByLabelText(/^Código postal/)).not.toHaveAttribute("aria-invalid")
   })
 
   it("rejects an invalid phone", async () => {
@@ -313,12 +316,13 @@ describe("CheckoutFlow: step 2 (shipping)", () => {
     expect(currentStep()).toHaveTextContent("Datos de envío")
   })
 
-  it("rejects an invalid email but accepts an empty one", async () => {
+  it("rejects an invalid email", async () => {
     seedCart([line()])
     const { user } = await renderCheckout()
     await goToShipping(user)
     await fillShipping(user)
-    await user.type(screen.getByLabelText(/^Email/), "not-an-email")
+    await user.clear(screen.getByLabelText("Email"))
+    await user.type(screen.getByLabelText("Email"), "not-an-email")
 
     await cont(user)
 
@@ -504,7 +508,7 @@ describe("CheckoutFlow: step 3 (payment)", () => {
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1))
     expect(createOrder).toHaveBeenCalledWith({
-      customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "" },
+      customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "ana@example.com" },
       shippingAddress: {
         street: "Calle Palma 123",
         reference: "Casa 12",
@@ -681,7 +685,7 @@ describe("CheckoutFlow: delivery location on the map", () => {
     seedCart([line()])
     const { user } = await renderCheckout({
       defaults: {
-        customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "" },
+        customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "ana@example.com" },
         shippingAddress: {
           street: "",
           reference: "",

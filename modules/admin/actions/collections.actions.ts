@@ -12,7 +12,7 @@ export async function getCollectionById(id: string) {
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching collection:', error)
-    return { success: false, error: 'Failed to fetch collection' }
+    return { success: false, error: 'No se pudo cargar la colección' }
   }
 }
 
@@ -20,7 +20,7 @@ export async function getByAdminAction(id: string) {
   await requireAdmin()
   const identifier = id?.trim()
   if (!identifier) {
-    return { success: false, error: 'Collection id is required' }
+    return { success: false, error: 'El id de la colección es obligatorio' }
   }
 
   try {
@@ -28,6 +28,6 @@ export async function getByAdminAction(id: string) {
     return { success: true, data: result }
   } catch (error) {
     console.error('Error fetching admin collection:', error)
-    return { success: false, error: 'Failed to fetch collection' }
+    return { success: false, error: 'No se pudo cargar la colección' }
   }
 }

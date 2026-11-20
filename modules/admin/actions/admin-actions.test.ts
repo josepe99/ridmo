@@ -56,14 +56,14 @@ describe("collection actions", () => {
 
     await expect(getCollectionById("c1")).resolves.toEqual({
       success: false,
-      error: "Failed to fetch collection",
+      error: "No se pudo cargar la colección",
     })
   })
 
   it.each(["", "   "])("getByAdminAction requires an identifier (%j)", async (id) => {
     await expect(getByAdminAction(id)).resolves.toEqual({
       success: false,
-      error: "Collection id is required",
+      error: "El id de la colección es obligatorio",
     })
     expect(collections.getByAdmin).not.toHaveBeenCalled()
   })
@@ -80,7 +80,7 @@ describe("collection actions", () => {
 
     await expect(getByAdminAction("c1")).resolves.toEqual({
       success: false,
-      error: "Failed to fetch collection",
+      error: "No se pudo cargar la colección",
     })
   })
 })
@@ -111,26 +111,26 @@ describe("item actions", () => {
     items.getItemById.mockResolvedValueOnce({ id: "i1" }).mockRejectedValueOnce(new Error("x"))
 
     await expect(getItemById("i1")).resolves.toEqual({ success: true, data: { id: "i1" } })
-    await expect(getItemById("i1")).resolves.toEqual({ success: false, error: "Failed to fetch item" })
+    await expect(getItemById("i1")).resolves.toEqual({ success: false, error: "No se pudo cargar el producto" })
   })
 
   it("getItems and getItemsByCollectionId report failures without leaking details", async () => {
     items.getItems.mockRejectedValue(new Error("secret"))
 
-    await expect(getItems()).resolves.toEqual({ success: false, error: "Failed to fetch items" })
+    await expect(getItems()).resolves.toEqual({ success: false, error: "No se pudieron cargar los productos" })
     await expect(getItemsByCollectionId("c1")).resolves.toEqual({
       success: false,
-      error: "Failed to fetch items by collection",
+      error: "No se pudieron cargar los productos de la colección",
     })
   })
 })
 
 describe("file actions", () => {
   it.each([
-    ["uploadImage", () => uploadImage("x"), files.uploadImage, "Failed to upload file"],
-    ["getImage", () => getImage("x"), files.getImage, "Failed to get file"],
-    ["getImages", () => getImages(), files.getImages, "Failed to list files"],
-    ["removeImage", () => removeImage("x"), files.removeImage, "Failed to remove file"],
+    ["uploadImage", () => uploadImage("x"), files.uploadImage, "No se pudo subir el archivo"],
+    ["getImage", () => getImage("x"), files.getImage, "No se pudo obtener el archivo"],
+    ["getImages", () => getImages(), files.getImages, "No se pudieron listar los archivos"],
+    ["removeImage", () => removeImage("x"), files.removeImage, "No se pudo eliminar el archivo"],
   ])("%s returns a failure envelope when the controller throws", async (_name, call, mock, error) => {
     mock.mockRejectedValue(new Error("provider secret"))
 

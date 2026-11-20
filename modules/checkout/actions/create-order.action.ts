@@ -1,7 +1,7 @@
 "use server"
 
 import { after } from "next/server"
-import { notifyNewOrder } from "@/modules/notifications/server"
+import { notifyCustomerOrderReceived, notifyNewOrder } from "@/modules/notifications/server"
 import { placeOrder } from "@/modules/orders/server"
 import { getCurrentUser } from "@/modules/users/server"
 import { createOrderInputSchema } from "../schemas/checkout.schema"
@@ -46,7 +46,7 @@ const FAILURE_MESSAGES: Record<CreateOrderFailureCode, string> = {
  * Creates an order from the checkout form.
  *
  * The client may only say WHICH items and HOW MANY (plus which shipping option); every
- * price, including the shipping cost, is computed on the server. Admin notification runs after the response is sent and can
+ * price, including the shipping cost, is computed on the server. Admin push and the customer's confirmation email run after the response is sent and can
  * never fail or delay the order.
  */
 export async function createOrder(input: unknown): Promise<CreateOrderResult> {
@@ -100,7 +100,17 @@ export async function createOrder(input: unknown): Promise<CreateOrderResult> {
   }
 
   const { order } = result
-  const notify = () => notifyNewOrder(order)
+  const notify = () =>
+    Promise.allSettled([
+      notifyNewOrder(order),
+      notifyCustomerOrderReceived({
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        total: order.total,
+        currency: order.currency,
+      }),
+    ])
   try {
     after(notify)
   } catch {

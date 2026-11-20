@@ -47,12 +47,12 @@ export default async function AdminCollectionPage({ params }: PageProps) {
         </Link>
         <div className="min-w-0 flex-1 basis-[calc(100%-4rem)] sm:basis-0">
           <h1 className="break-words text-2xl font-bold sm:text-3xl">{collection.name}</h1>
-          <p className="mt-1 break-words text-gray-600">{collection.description || 'No description'}</p>
+          <p className="mt-1 break-words text-gray-600">{collection.description || 'Sin descripción'}</p>
         </div>
         <Link href={createItemHref} className="w-full sm:w-auto">
           <Button className="h-10 w-full sm:h-9 sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
-            Add Item
+            Agregar producto
           </Button>
         </Link>
       </div>
@@ -61,7 +61,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
       <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Items</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Total de productos</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{collection.items.length}</div>
@@ -70,7 +70,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Active Items</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Productos activos</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -81,22 +81,22 @@ export default async function AdminCollectionPage({ params }: PageProps) {
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Status</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Estado</CardTitle>
           </CardHeader>
           <CardContent>
             <Badge variant={collection.isActive ? "default" : "secondary"}>
-              {collection.isActive ? 'Active' : 'Inactive'}
+              {collection.isActive ? 'Activo' : 'Inactivo'}
             </Badge>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Created</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Creada</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-gray-600">
-              {new Date(collection.createdAt).toLocaleDateString()}
+              {new Date(collection.createdAt).toLocaleDateString('es-PY')}
             </div>
           </CardContent>
         </Card>
@@ -104,7 +104,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
 
       {/* Items Grid */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Items</h2>
+        <h2 className="text-xl font-semibold mb-4">Productos</h2>
         
         {collection.items.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
@@ -122,7 +122,7 @@ export default async function AdminCollectionPage({ params }: PageProps) {
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                        <span className="text-gray-400 text-sm">No image</span>
+                        <span className="text-gray-400 text-sm">Sin imagen</span>
                       </div>
                     )}
                   </div>
@@ -131,18 +131,18 @@ export default async function AdminCollectionPage({ params }: PageProps) {
                   <div className="mb-2 flex items-start justify-between gap-2">
                     <h3 className="min-w-0 text-sm font-medium line-clamp-1">{item.name}</h3>
                     <Badge variant={item.isActive ? "default" : "secondary"} className="shrink-0 text-xs">
-                      {item.isActive ? 'Active' : 'Inactive'}
+                      {item.isActive ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </div>
                   
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex justify-between">
-                      <span>Price:</span>
+                      <span>Precio:</span>
                       <Price value={item.price} className="font-medium" />
                     </div>
                     {item.comparePrice && (
                       <div className="flex justify-between">
-                        <span>Compare:</span>
+                        <span>Precio anterior:</span>
                         <Price value={item.comparePrice} className="line-through" />
                       </div>
                     )}
@@ -170,12 +170,12 @@ export default async function AdminCollectionPage({ params }: PageProps) {
               <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <Plus className="h-6 w-6 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No items yet</h3>
-              <p className="text-gray-500 mb-4">Add your first item to this collection</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Todavía no hay productos</h3>
+              <p className="text-gray-500 mb-4">Agregá tu primer producto a esta colección</p>
               <Link href={createItemHref}>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Item
+                  Agregar producto
                 </Button>
               </Link>
             </div>

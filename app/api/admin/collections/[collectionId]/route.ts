@@ -13,7 +13,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 		// Actualizar la colección
 		const updated = await collectionController.updateCollection(id, body);
 		if (!updated) {
-			return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+			return NextResponse.json({ error: 'Colección no encontrada' }, { status: 404 });
 		}
 		// Obtener la colección actualizada
 		const result = await collectionController.getCollectionById(id);
@@ -22,6 +22,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 		const denied = authorizationErrorResponse(error)
 		if (denied) return denied
 		console.error('Error updating collection:', error);
-		return NextResponse.json({ error: 'Failed to update collection' }, { status: 500 });
+		return NextResponse.json({ error: 'No se pudo actualizar la colección' }, { status: 500 });
 	}
 }

@@ -21,7 +21,7 @@ export abstract class BaseController {
         if (!validationResult.success) {
           return NextResponse.json(
             { 
-              error: 'Validation failed', 
+              error: 'Error de validación', 
               details: validationResult.error.errors 
             },
             { status: 400 }
@@ -35,7 +35,7 @@ export abstract class BaseController {
     } catch (error) {
       console.error('Controller error:', error);
       return NextResponse.json(
-        { error: 'Internal server error' },
+        { error: 'Error interno del servidor' },
         { status: 500 }
       );
     }
@@ -86,22 +86,22 @@ export abstract class BaseController {
 
   // HTTP Method handlers
   async GET(request: NextRequest): Promise<NextResponse> {
-    return this.createErrorResponse('Method not implemented', 501);
+    return this.createErrorResponse('Método no implementado', 501);
   }
 
   async POST(request: NextRequest): Promise<NextResponse> {
-    return this.createErrorResponse('Method not implemented', 501);
+    return this.createErrorResponse('Método no implementado', 501);
   }
 
   async PUT(request: NextRequest): Promise<NextResponse> {
-    return this.createErrorResponse('Method not implemented', 501);
+    return this.createErrorResponse('Método no implementado', 501);
   }
 
   async PATCH(request: NextRequest): Promise<NextResponse> {
-    return this.createErrorResponse('Method not implemented', 501);
+    return this.createErrorResponse('Método no implementado', 501);
   }
 
   async DELETE(request: NextRequest): Promise<NextResponse> {
-    return this.createErrorResponse('Method not implemented', 501);
+    return this.createErrorResponse('Método no implementado', 501);
   }
 }

@@ -55,7 +55,7 @@ function Harness({ defaults, onBack = vi.fn(), onValid = vi.fn(), message }: Har
 }
 
 const valid: CheckoutFormValues = {
-  customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "" },
+  customer: { fullName: "Ana Perez", phone: "+595 981 000 000", email: "ana@example.com" },
   shippingAddress: {
     street: "Calle Palma 123",
     reference: "Casa 12",
@@ -117,14 +117,14 @@ describe("ShippingStep", () => {
     expect(options).toContain("Argentina")
   })
 
-  it("marks email, reference, department and postal code as optional, and nothing else", () => {
+  it("marks reference, department and postal code as optional, and nothing else", () => {
     render(<Harness />)
 
-    expect(screen.getAllByText("Opcional")).toHaveLength(4)
-    for (const label of [/^Email.*Opcional$/, /^Número o referencia.*Opcional$/, /^Departamento.*Opcional$/, /^Código postal.*Opcional$/]) {
+    expect(screen.getAllByText("Opcional")).toHaveLength(3)
+    for (const label of [/^Número o referencia.*Opcional$/, /^Departamento.*Opcional$/, /^Código postal.*Opcional$/]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument()
     }
-    for (const label of ["Calle", "País", ZONE, "Notas de entrega", "Nombre completo", "Teléfono"]) {
+    for (const label of ["Calle", "País", ZONE, "Notas de entrega", "Nombre completo", "Teléfono", "Email"]) {
       // An exact-name lookup only matches labels without the "Opcional" suffix.
       expect(screen.getByLabelText(label)).toBeInTheDocument()
     }
@@ -182,8 +182,8 @@ describe("ShippingStep", () => {
 
     await user.click(screen.getByRole("button", { name: "Continuar" }))
 
-    // Name, phone, street and notes; the city comes from the zone that is still to be chosen.
-    expect(await screen.findAllByText("Completá este campo")).toHaveLength(4)
+    // Name, phone, email, street and notes; the city comes from the zone that is still to be chosen.
+    expect(await screen.findAllByText("Completá este campo")).toHaveLength(5)
     expect(screen.getByText("Elegí una zona de envío")).toBeInTheDocument()
     expect(onValid).not.toHaveBeenCalled()
   })
@@ -198,7 +198,8 @@ describe("ShippingStep", () => {
     await waitFor(() => expect(name).toHaveAttribute("aria-invalid", "true"))
     expect(name).toHaveAttribute("aria-describedby", "fullName-error")
     expect(name).toHaveAccessibleDescription("Completá este campo")
-    expect(screen.getByLabelText(/^Email/)).not.toHaveAttribute("aria-invalid")
+    expect(screen.getByLabelText("Email")).toHaveAttribute("aria-invalid", "true")
+    expect(screen.getByLabelText(/^Código postal/)).not.toHaveAttribute("aria-invalid")
   })
 
   it("rejects an invalid phone and an invalid email", async () => {
